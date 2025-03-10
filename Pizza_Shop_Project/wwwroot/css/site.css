@@ -1,0 +1,411 @@
+/* html {
+  font-size: 14px;
+}  */
+
+/* @media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+} */
+
+/* html {
+  position: relative;
+  min-height: 100%;
+} */
+
+
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* login page css  */
+
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+body {
+    line-height: 1;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+body {
+    background-color: #fafafa;
+}
+
+.pizza-img-div {
+    padding: 0px 0px 0px 0px !important;
+    /* height: 10px !important; */
+}
+
+.pizza-img-tag {
+    object-fit: cover;
+}
+
+.login-main-div {
+    background-color: rgb(207 233 243);
+}
+
+.sub-login-div{
+    max-width: 550px;
+}
+
+.logo-name {
+    color: #0084c3;
+    font-weight: 600;
+    opacity: 1;
+    font-size: xx-large;
+    margin-left: 10px;
+
+}
+
+form i {
+    margin-left: -30px;
+    cursor: pointer;
+}
+
+.pass-inp, .email-inp, .confirmPassword-inp {
+    width: 100%;
+    border: 1px solid rgb(156, 156, 156);
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.login-form input[type=email]::-webkit-input-placeholder:after,
+.login-form input[type=password]::-webkit-input-placeholder:after {
+    content: '*' !important;
+    color: red !important;
+}
+
+@media (max-width:767px) {
+    .login-main-div {
+        background-image: linear-gradient(rgba(210, 208, 208, 0.743), rgba(198, 198, 198, 0.423)), url("/images/dominos_background.jpg");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .rememberme-div {
+        font-weight: 500;
+        font-size: 10px;
+    }
+
+    .rememberme-div a {
+        color: #002130;
+        font-size: 14px;
+        margin-top: 2px;
+    }
+
+    .logo-name {
+        color: #00567a;
+        font-weight: 700;
+        opacity: 1;
+        font-size: xx-large;
+        margin-left: 10px;
+
+    }
+}
+
+.rememberme-div {
+    font-size: 14px;
+    padding: 8px;
+}
+
+.login-btn {
+    margin-left: 3px !important;
+}
+
+.welcome-text {
+    display: flex;
+    padding-left: 13%;
+}
+
+#email-error-txt, #password-error-txt {
+    display: flex;
+    padding-left: 1%;
+    font-size: 15px;
+}
+
+.text {
+    display: flex;
+    padding-left: 13%;
+}
+
+
+/* Dashboard css  */
+
+.logo-name-aside {
+    font-size: 20px;
+    color: #0084c3;
+    font-weight: 600;
+    opacity: 1;
+    margin-left: 5px;
+}
+
+.logo-text {
+    color: #0084c3;
+}
+
+.nav-header{
+    background-color: #0084c3;
+
+}
+
+.solid-btn{
+    background-color: #0084c3;
+    color: white;
+}
+
+.hollow-btn{
+    background-color: white;
+    color: #0084c3;
+    border: 1px solid #0084c3;
+}
+
+.user-text{
+    color: #0084c3;
+}
+
+@media (min-device-width:570px) {
+
+
+    .main-navbar {
+        width: 100% !important;
+        /* background: #000;  */
+    }
+}
+
+.offcanvas-class {
+    margin-top: 80px;
+}
+
+.side-menu-icons {
+    list-style-type: none;
+}
+
+.items-active-div {
+    /* margin-top: 10px;  */
+    background-color: #FFF3F4;
+    /* margin-right: 30px;  */
+    border-radius: 5px;
+    margin: 0px 20px
+}
+
+.dashboard-text-inactive {
+    color: #000000;
+}
+
+.dashboard-text-inactive:hover {
+    background-color: #def0ff;
+    color: #0084c3;
+}
+
+.sidebar-list {
+    padding: 0px !important;
+    list-style-type: none;
+}
+
+.sidebar-list li {
+    margin: unset !important;
+}
+
+.left-sidebar-options-menu {
+    list-style-type: none;
+}
+
+.search-icon-style {
+    position: absolute;
+    margin-left: -25px;
+    margin-top: 7px;
+}
+
+.search-icon-item {
+    position: absolute;
+    margin-left: -25px;
+    margin-top: 18px;
+}
+
+.offcanvas-class {
+    margin-top: 0px;
+}
+
+.table-main-div {
+    margin-right: 10px !important;
+    font-size: 15px;
+    
+}
+
+.add-user-button a {
+    font-size: 12px;
+    /* background-color: #0084c3; */
+}
+
+.pass-icon {
+    position: absolute;
+    top: 22px;
+    right: 20px;
+}
+
+.browswe-file {
+    border: 2px dashed lightgray;
+}
+
+.nav-tabs button.active {
+    border: 0px;
+    border-bottom: 1px solid #0084c3 !important;
+    color: #0084c3 !important;
+    font-weight: 600;
+}
+
+.vertical-tabs button.active {
+    border: 0px !important; 
+    color: #0084c3 !important;
+    font-weight: 600;
+}
+
+.vertical-tabs button{
+    padding-left: 0 !important;
+}
+
+@media  screen and (max-width:580px) {
+    
+}
+.tabs-div .tabs-all .nav-tabs button.active{
+    border: 0px;
+    border-bottom: 1px solid #0084c3 !important;
+    color: #0084c3 !important;
+    font-weight: 600;
+}
+
+.tab-content .nav button.active{
+    border: 0px;
+    color: #0084c3 !important;
+    font-weight: 600;
+}
+
+#demo td, 
+#demo th{
+    text-align: center;
+}
+
+.camera-img{
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    top: 22px;
+    left: 75px !important;
+    border: 1px solid #c4c4c4;
+    padding: 2px;
+}
+
+.user-profile{
+    height: 90px;
+    width: 90px;
+    border-radius: 50%;
+    top: -38px;
+}
+
+@media (max-width: 767px) {
+    .user-profile {
+        height: 70px;
+        width: 70px;
+        border-radius: 50%;
+        top: -33px;
+    }
+    .camera-img {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        top: 15px;
+        left: 57px !important;
+    }
+}
+
+.validate{
+    font-size: 14px;
+}
+
+.CategoryGet:hover {
+    cursor: pointer;
+}
+
+.CategoryGet i.fa-pen,
+.CategoryGet i.fa-trash-can {
+    opacity: 0;
+    transition: 1 0.3s ease;
+}
+
+ /* Show icons when hovering  */
+.CategoryGet:hover i.fa-pen,
+.CategoryGet:hover i.fa-trash-can {
+    opacity: 1;
+}
+
+.active-category {
+    background-color: white !important; 
+    color: #0084c3 !important;
+    font-weight: bold;
+}
+
+.active-div{
+    background-color: #def0ff;
+    color: #0084c3;
+}
+
+.change-pass-icon-1{
+    top: 100px;
+}
