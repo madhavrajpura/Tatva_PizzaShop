@@ -12,5 +12,5 @@ public interface IMenuService
     public Task<bool> DeleteCategory(long Cat_Id);
     public Task<bool> AddItem(AddItemViewModel addItemVM, long userId);
     public List<Category> GetAllCategories();
-
+    public  Task<bool> DeleteItem(long itemid);
 }

@@ -263,20 +263,21 @@ public class UserService : IUserService
     #endregion
 
     #region UserNameExists in Adding
-    public bool IsUserNameExists(string Username)
+    public async Task<bool> IsUserNameExists(string Username)
     {
-        if (_context.Users.FirstOrDefaultAsync(x => x.Username == Username) != null)
+        var IsUserNameExists = await _context.Users.FirstOrDefaultAsync(x => x.Username == Username && x.Isdelete == false);
+        if (IsUserNameExists == null)
         {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
     #endregion
 
     #region UserNameExists in Editing
     public bool IsUserNameExistsForEdit(string Username, string Email)
     {
-        List<User> duplicateUsername = _context.Users.Where(x => x.Username == Username && x.Userlogin.Email != Email).ToList();
+        List<User> duplicateUsername = _context.Users.Where(x => x.Username == Username && x.Userlogin.Email != Email && x.Isdelete == false).ToList();
         if (duplicateUsername.Count >= 1)
         {
             return true;

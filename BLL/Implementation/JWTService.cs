@@ -1,3 +1,4 @@
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -40,6 +41,28 @@ public class JWTService :IJWTService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    public string GenerateResetToken(string email, string password)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+                new Claim("email", email),
+                new Claim("password", password)
+            };
+
+        var token = new JwtSecurityToken(
+            issuer: "localhost",
+            audience: "localhost",
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(_tokenDuration),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
     public ClaimsPrincipal? GetClaimsFromToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();
@@ -56,4 +79,5 @@ public class JWTService :IJWTService
         var value = claimsPrincipal?.FindFirst(claimType)?.Value;
         return value;
     }
+
 }

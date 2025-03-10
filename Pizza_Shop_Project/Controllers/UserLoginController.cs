@@ -17,10 +17,12 @@ namespace Pizza_Shop_Project.Controllers
     public class UserLoginController : Controller
     {
         private readonly IUserLoginService _userLoginService;
+        private readonly IJWTService _jwtService;
 
-        public UserLoginController(IUserLoginService userLoginService)
+        public UserLoginController(IUserLoginService userLoginService, IJWTService jwtService)
         {
             this._userLoginService = userLoginService;
+            this._jwtService = jwtService;
         }
 
         #region VerifyUserLogin
@@ -90,12 +92,13 @@ namespace Pizza_Shop_Project.Controllers
         {
             var userLogin = new UserLoginViewModel();
             userLogin.Email = forgotpassword.Email;
+            var getpassword = _userLoginService.GetPassword(userLogin.Email);
             var isSendEmail = await _userLoginService.IsSendEmail(userLogin);
             if (ModelState.IsValid)
             {
                 if (isSendEmail)
                 {
-                    var resetLink = Url.Action("ResetPassword", "UserLogin", new { Email =_userLoginService.Base64Encode(forgotpassword.Email) }, Request.Scheme);
+                    var resetLink = Url.Action("ResetPassword", "UserLogin", new { reset_token = _jwtService.GenerateResetToken(userLogin.Email, getpassword) }, Request.Scheme);
                     var sendEmail = await _userLoginService.SendEmail(forgotpassword, resetLink);
                     if (sendEmail)
                     {
@@ -119,11 +122,21 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region ResetPassword
-        public IActionResult ResetPassword(string Email)
+        public IActionResult ResetPassword(string reset_token)
         {
-            var resetPassword = new ResetPasswordViewModel();
-            resetPassword.Email = _userLoginService.Base64Decode(Email);
-            return View("ResetPassword");
+            // var resetPassword = new ResetPasswordViewModel();
+            // resetPassword.Email = _userLoginService.Base64Decode(Email);
+
+            var reset_email = _jwtService.GetClaimValue(reset_token, "email");
+            var reset_password = _jwtService.GetClaimValue(reset_token, "password");
+            var Db_Password = _userLoginService.GetPassword(reset_email);
+
+            if (Db_Password == reset_password)
+            {
+                return View("ResetPassword");
+            }
+            TempData["ErrorMessage"] = "You have changed the Password";
+            return RedirectToAction("VerifyUserLogin","UserLogin");
         }
 
         [HttpPost]

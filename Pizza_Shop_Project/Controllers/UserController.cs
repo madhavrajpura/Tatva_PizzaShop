@@ -86,20 +86,29 @@ namespace Pizza_Shop_Project.Controllers
 
             if (user.ProfileImage != null)
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-
-                //create folder if not exist
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                string fileName = $"{Guid.NewGuid()}_{user.ProfileImage.FileName}";
-                string fileNameWithPath = Path.Combine(path, fileName);
-
-                using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                var extension = user.ProfileImage.FileName.Split(".");
+                if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
-                    user.ProfileImage.CopyTo(stream);
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+                    //create folder if not exist
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+
+                    string fileName = $"{Guid.NewGuid()}_{user.ProfileImage.FileName}";
+                    string fileNameWithPath = Path.Combine(path, fileName);
+
+                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    {
+                        user.ProfileImage.CopyTo(stream);
+                    }
+                    user.Image = $"/uploads/{fileName}";
                 }
-                user.Image = $"/uploads/{fileName}";
+                else
+                {
+                    TempData["ErrorMessage"] = "The Image format is not supported.";
+                    return RedirectToAction("AddUser", "User", new { Email = user.Email });
+                }
             }
 
             _userService.UpdateUser(user, userEmail);
@@ -199,6 +208,7 @@ namespace Pizza_Shop_Project.Controllers
             ViewBag.Countries = new SelectList(Countries, "CountryId", "CountryName");
             ViewBag.States = new SelectList(States, "StateId", "StateName");
             ViewBag.Cities = new SelectList(Cities, "CityId", "CityName");
+            ViewData["sidebar-active"] = "User";
 
             return View();
         }
@@ -222,27 +232,34 @@ namespace Pizza_Shop_Project.Controllers
             var token = Request.Cookies["AuthToken"];
             var Email = _JWTService.GetClaimValue(token, "email");
 
-
-
             if (user.ProfileImage != null)
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-
-                //create folder if not exist
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                string fileName = $"{Guid.NewGuid()}_{user.ProfileImage.FileName}";
-                string fileNameWithPath = Path.Combine(path, fileName);
-
-                using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                var extension = user.ProfileImage.FileName.Split(".");
+                if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
-                    user.ProfileImage.CopyTo(stream);
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+                    //create folder if not exist
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+
+                    string fileName = $"{Guid.NewGuid()}_{user.ProfileImage.FileName}";
+                    string fileNameWithPath = Path.Combine(path, fileName);
+
+                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    {
+                        user.ProfileImage.CopyTo(stream);
+                    }
+                    user.Image = $"/uploads/{fileName}";
                 }
-                user.Image = $"/uploads/{fileName}";
+                else
+                {
+                    TempData["ErrorMessage"] = "The Image format is not supported.";
+                    return RedirectToAction("AddUser", "User", new { Email = user.Email });
+                }
             }
 
-            if (_userService.IsUserNameExists(user.Username))
+            if (await _userService.IsUserNameExists(user.Username))
             {
                 TempData["addUserErrorMessage"] = "Username already exists";
                 return RedirectToAction("AddUser", "User");
@@ -289,9 +306,6 @@ namespace Pizza_Shop_Project.Controllers
                 mess.IsBodyHtml = true;
                 await smtp.SendMailAsync(mess);
             }
-
-
-            // _userService.AddUser(user, Email);
             TempData["SuccessMessage"] = "User added successfully.";
             return RedirectToAction("UserListData", "User");
             // return View();
@@ -310,6 +324,8 @@ namespace Pizza_Shop_Project.Controllers
             ViewBag.Countries = new SelectList(Countries, "CountryId", "CountryName");
             ViewBag.States = new SelectList(States, "StateId", "StateName");
             ViewBag.Cities = new SelectList(Cities, "CityId", "CityName");
+            ViewData["sidebar-active"] = "User";
+
             return View(user[0]);
         }
 
@@ -334,20 +350,29 @@ namespace Pizza_Shop_Project.Controllers
 
             if (adduser.ProfileImage != null)
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-
-                //create folder if not exist
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                string fileName = $"{Guid.NewGuid()}_{adduser.ProfileImage.FileName}";
-                string fileNameWithPath = Path.Combine(path, fileName);
-
-                using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                var extension = adduser.ProfileImage.FileName.Split(".");
+                if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
-                    adduser.ProfileImage.CopyTo(stream);
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+                    //create folder if not exist
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+
+                    string fileName = $"{Guid.NewGuid()}_{adduser.ProfileImage.FileName}";
+                    string fileNameWithPath = Path.Combine(path, fileName);
+
+                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    {
+                        adduser.ProfileImage.CopyTo(stream);
+                    }
+                    adduser.Image = $"/uploads/{fileName}";
                 }
-                adduser.Image = $"/uploads/{fileName}";
+                else
+                {
+                    TempData["ErrorMessage"] = "The Image format is not supported.";
+                    return RedirectToAction("EditUser", "User", new { Email = adduser.Email });
+                }
             }
 
             if (_userService.IsUserNameExistsForEdit(adduser.Username, Email))

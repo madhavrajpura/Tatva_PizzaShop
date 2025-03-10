@@ -164,5 +164,7 @@ public class UserLoginService : IUserLoginService
         return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
     }
 
-
+    public string GetPassword(string Email){
+        return _context.UserLogins.FirstOrDefault(x => x.Email == Email).Password;
+    }
 }

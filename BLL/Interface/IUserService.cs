@@ -17,7 +17,7 @@ public interface IUserService
     public List<AddUserViewModel> GetUserByEmail(string email);
     public bool EditUser(AddUserViewModel user, string Email);
     public Task<bool> DeleteUser(string Email);
-    public bool IsUserNameExists(string Username);
+    public Task<bool> IsUserNameExists(string Username);
     public bool IsUserNameExistsForEdit(string Username, string Email);
 
 }

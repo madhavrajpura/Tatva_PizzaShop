@@ -139,5 +139,55 @@ namespace Pizza_Shop_Project.Controllers
         }
         #endregion
 
+        #region Delete-Items-From-Modal
+        public async Task<IActionResult> DeleteItem(long itemid)
+        {
+            var isDeleted = await _menuService.DeleteItem(itemid);
+
+            if (!isDeleted)
+            {
+                TempData["ErrorMessage"] = "Item cannot be deleted";
+                return RedirectToAction("Menu", "Menu");
+            }
+            TempData["SuccessMessage"] = "Item deleted successfully";
+            return RedirectToAction("Menu", "Menu");
+        }
+        #endregion
+
+        // #region Edit-Items-From-Modal
+        // public async Task<IActionResult> EditItem(MenuViewModel MenuVm)
+        // {
+        //     string Email = Request.Cookies["Email"];
+        //     long userId = _userLoginService.GetUserId(Email);
+
+        //     if (MenuVm.addItems.ItemFormImage != null)
+        //     {
+        //         string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+        //         if (!Directory.Exists(path))
+        //             Directory.CreateDirectory(path);
+
+        //         string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
+        //         string fileNameWithPath = Path.Combine(path, fileName);
+
+        //         using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+        //         {
+        //             MenuVm.addItems.ItemFormImage.CopyTo(stream);
+        //         }
+        //         MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
+        //     }
+
+        //     var editItemStatus = await _menuService.EditItem(MenuVm.addItems, userId);
+
+        //     if (editItemStatus)
+        //     {
+        //         TempData["SuccessMessage"] = "Item Updated successfully";
+        //         return RedirectToAction("Menu");
+        //     }
+        //     TempData["ErrorMessage"] = "Failed to Update Item";
+        //     return RedirectToAction("Menu");
+        // }
+        // #endregion
+
     }
 }

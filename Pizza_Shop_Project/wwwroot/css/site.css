@@ -1,3 +1,4 @@
+
 /* html {
   font-size: 14px;
 }  */
@@ -406,6 +407,7 @@ form i {
     color: #0084c3;
 }
 
-.change-pass-icon-1{
-    top: 100px;
-}
+/* .change-pass-icon-1{
+    top: 1px !important;
+    left: 20px !important;
+} */
