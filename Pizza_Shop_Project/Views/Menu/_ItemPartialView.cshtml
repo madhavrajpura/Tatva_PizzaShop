@@ -14,12 +14,12 @@ else
     {
         <tr class="border border-end-0 border-start-0 border-top-0 border-bottom-1">
             <td class="text-start text-nowrap align-content-center d-flex"><input
-                    class="item-sub-checkbox form-check-input me-3 mt-2" data-checkid="@item.ItemId" onclick=CheckBoxTickManage() type="checkbox"><img
-                    src="@item.ItemImage" width="30px" alt="" class="me-2">
+                    class="item-sub-checkbox form-check-input me-3 mt-2" onclick=CheckBoxTickManage() type="checkbox" data-checkid="@item.ItemId"><img
+                    src="@item.ItemImage" width="30px" alt="" class="me-2" >
                 <p class="ms-2 mt-2">@item.ItemName</p>
             </td>
             <td class="text-center"><img src="@item.TypeImage" style="width: 25px;"></td>
-            <td class="text-center">@Convert.ToInt32(item.Rate)</td>
+            <td class="text-center">@item.Rate</td>
             <td class="text-center">@item.Quantity</td>
             <td class="text-center">
                 <div class="form-check form-switch d-flex justify-content-center">
@@ -34,7 +34,8 @@ else
                 </div>
             </td>
             <td class="text-center">
-                <i class="fa-solid fa-pen w-25" data-bs-toggle="modal" data-bs-target="#addItemModal"></i>
+                <i class="fa-solid fa-pen w-25" data-bs-toggle="modal" data-bs-target="#EditItemModal"
+                    data-id="@item.ItemId"></i>
                 <i class="fa-solid fa-trash-can ms-2 " data-bs-toggle="modal" data-bs-target="#delete-item-modal"
                     data-id="@item.ItemId"></i>
             </td>

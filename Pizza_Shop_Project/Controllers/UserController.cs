@@ -8,6 +8,7 @@ using DAL.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Net.Mail;
 using System.Net;
+using Pizza_Shop_Project.Authorization;
 
 
 namespace Pizza_Shop_Project.Controllers
@@ -15,24 +16,26 @@ namespace Pizza_Shop_Project.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-
         private readonly IUserLoginService _userLoginService;
-
         private readonly IJWTService _JWTService;
 
+        #region User Constructor
         public UserController(IUserService userService, IJWTService JWTService, IUserLoginService userLoginService)
         {
             this._userService = userService;
             this._JWTService = JWTService;
             this._userLoginService = userLoginService;
         }
+        #endregion
 
+        #region Dashboard
         [Authorize(Roles = "Admin")]
         public IActionResult Dashboard()
         {
             ViewData["sidebar-active"] = "Dashboard";
             return View();
         }
+        #endregion
 
         #region State,City
         public JsonResult GetStates(long? countryId)
@@ -182,6 +185,7 @@ namespace Pizza_Shop_Project.Controllers
 
         #region UserListData
         [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Users.View")]
         public IActionResult UserListData()
         {
             ViewData["sidebar-active"] = "User";
@@ -189,6 +193,7 @@ namespace Pizza_Shop_Project.Controllers
             return View(users);
         }
 
+        [PermissionAuthorize("Users.View")]
         public IActionResult PaginatedData(string search = "", string sortColumn = "", string sortDirection = "", int pageNumber = 1, int pageSize = 5)
         {
             ViewBag.emailid = Request.Cookies["email"];
@@ -198,6 +203,8 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region AddUser
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Users.AddEdit")]
         public IActionResult AddUser()
         {
             var Roles = _userService.GetRole();
@@ -213,6 +220,7 @@ namespace Pizza_Shop_Project.Controllers
             return View();
         }
 
+        [PermissionAuthorize("Users.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> AddUser(AddUserViewModel user)
         {
@@ -313,6 +321,8 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region EditUser
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Users.AddEdit")]
         public IActionResult EditUser(string Email)
         {
             var user = _userService.GetUserByEmail(Email);
@@ -329,9 +339,10 @@ namespace Pizza_Shop_Project.Controllers
             return View(user[0]);
         }
 
+        [PermissionAuthorize("Users.AddEdit")]
         [HttpPost]
 
-        public IActionResult EditUser(AddUserViewModel adduser)
+        public async Task<IActionResult> EditUser(AddUserViewModel adduser)
         {
             var Email = adduser.Email;
 
@@ -380,7 +391,7 @@ namespace Pizza_Shop_Project.Controllers
                 TempData["ErrorMessage"] = "UserName Already Exists. Try Another Username";
                 return RedirectToAction("EditUser", "User", new { Email = adduser.Email });
             }
-            _userService.EditUser(adduser, Email);
+            await _userService.EditUser(adduser, Email);
 
             TempData["SuccessMessage"] = "User Updated successfully";
             return RedirectToAction("UserListData", "User");
@@ -389,6 +400,8 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region DeleteUser
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Users.Delete")]
         public async Task<IActionResult> DeleteUser(string Email)
         {
             var isDeleted = await _userService.DeleteUser(Email);

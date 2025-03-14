@@ -1,14 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DAL.Models;
 using DAL.ViewModels;
-using System.Net.Mail;
-using System.Net;
 using BLL.Interface;
 using Microsoft.AspNetCore.Authorization;
 
@@ -19,11 +10,13 @@ namespace Pizza_Shop_Project.Controllers
         private readonly IUserLoginService _userLoginService;
         private readonly IJWTService _jwtService;
 
+        #region UserLogin Constructor
         public UserLoginController(IUserLoginService userLoginService, IJWTService jwtService)
         {
             this._userLoginService = userLoginService;
             this._jwtService = jwtService;
         }
+        #endregion
 
         #region VerifyUserLogin
         public IActionResult VerifyUserLogin()
@@ -31,7 +24,7 @@ namespace Pizza_Shop_Project.Controllers
 
             if (Request.Cookies.ContainsKey("email"))
             {
-                TempData["SuccessMessage"] = "Login Successfully";
+                // TempData["SuccessMessage"] = "Login Successfully";
                 return RedirectToAction("Dashboard", "User");
             }
             // ViewData["RoleId"] = new SelectList(_userLoginService.Roles, "RoleId", "RoleId");
@@ -47,7 +40,7 @@ namespace Pizza_Shop_Project.Controllers
             var verification_token = await _userLoginService.VerifyUserLogin(userLogin);
 
             CookieOptions option = new CookieOptions();
-            option.Expires = DateTime.Now.AddMinutes(10);
+            option.Expires = DateTime.Now.AddHours(30);
 
             if (verification_token != null)
             {
@@ -59,9 +52,6 @@ namespace Pizza_Shop_Project.Controllers
                 if (userLogin.Remember_me)
                 {
                     Response.Cookies.Append("email", userLogin.Email, option);
-                    TempData["SuccessMessage"] = "Login Successfully";
-                    return RedirectToAction("Dashboard", "User");
-
                 }
                 TempData["SuccessMessage"] = "Login Successfully";
                 return RedirectToAction("Dashboard", "User");
@@ -93,10 +83,10 @@ namespace Pizza_Shop_Project.Controllers
             var userLogin = new UserLoginViewModel();
             userLogin.Email = forgotpassword.Email;
             var getpassword = _userLoginService.GetPassword(userLogin.Email);
-            var isSendEmail = await _userLoginService.IsSendEmail(userLogin);
+            var CheckEmailExists =  _userLoginService.CheckEmailExist(userLogin.Email);
             if (ModelState.IsValid)
             {
-                if (isSendEmail)
+                if (CheckEmailExists)
                 {
                     var resetLink = Url.Action("ResetPassword", "UserLogin", new { reset_token = _jwtService.GenerateResetToken(userLogin.Email, getpassword) }, Request.Scheme);
                     var sendEmail = await _userLoginService.SendEmail(forgotpassword, resetLink);
@@ -133,10 +123,12 @@ namespace Pizza_Shop_Project.Controllers
 
             if (Db_Password == reset_password)
             {
-                return View("ResetPassword");
+                ResetPasswordViewModel resetPassData = new ResetPasswordViewModel();
+                resetPassData.Email = _jwtService.GetClaimValue(reset_token, "email");
+                return View(resetPassData);
             }
-            TempData["ErrorMessage"] = "You have changed the Password";
-            return RedirectToAction("VerifyUserLogin","UserLogin");
+            TempData["ErrorMessage"] = "You have already changed the Password once";
+            return RedirectToAction("VerifyUserLogin", "UserLogin");
         }
 
         [HttpPost]
@@ -144,6 +136,14 @@ namespace Pizza_Shop_Project.Controllers
         {
             if (ModelState.IsValid)
             {
+                var IsEmailExistsStatus = _userLoginService.CheckEmailExist(resetPassword.Email);
+
+                if (!IsEmailExistsStatus)
+                {
+                    TempData["ErrorMessage"] = "Email does not exist. Enter existing email to set password.";
+                    return View("ResetPassword");
+                }
+
                 if (resetPassword.Password == resetPassword.ConfirmPassword)
                 {
                     var checkresetpassword = await _userLoginService.ResetPassword(resetPassword);
@@ -154,7 +154,7 @@ namespace Pizza_Shop_Project.Controllers
                     }
                     else
                     {
-                        TempData["ErrorMessage"] = "Please try again!!!";
+                        TempData["ErrorMessage"] = "";
                         return View("ResetPassword");
                     }
                 }

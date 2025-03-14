@@ -1,28 +1,38 @@
 using BLL.Interface;
 using DAL.Models;
 using DAL.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Pizza_Shop_Project.Authorization;
 
 namespace Pizza_Shop_Project.Controllers
 {
     public class MenuController : Controller
     {
         private readonly IMenuService _menuService;
-
+        private readonly IUserService _userService;
         private readonly IUserLoginService _userLoginService;
 
-        public MenuController(IMenuService menuService, IUserLoginService userLoginService)
+        #region Menu Constructor
+        public MenuController(IMenuService menuService, IUserLoginService userLoginService, IUserService userService)
         {
             _menuService = menuService;
             _userLoginService = userLoginService;
+            _userService = userService;
         }
+        #endregion
 
         #region Main-Menu-View
-        public IActionResult Menu(long? catid, string search = "", int pageNumber = 1, int pageSize = 3)
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.View")]
+        public IActionResult Menu(long? catid, long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
         {
             MenuViewModel MenuVM = new();
             MenuVM.categoryList = _menuService.GetAllCategories();
+            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
 
+            ViewBag.modifierGroupList = new SelectList(_menuService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
             if (catid == null)
             {
                 MenuVM.PaginationForItemByCategory = _menuService.GetMenuItemsByCategory(MenuVM.categoryList[0].CategoryId, search, pageNumber, pageSize);
@@ -32,13 +42,23 @@ namespace Pizza_Shop_Project.Controllers
             {
                 MenuVM.PaginationForItemByCategory = _menuService.GetMenuItemsByCategory(catid, search, pageNumber, pageSize);
             }
+            if (modgrpid == null)
+            {
+                MenuVM.PaginationForModifiersByModGroups = _menuService.GetMenuModifiersByModGroups(MenuVM.modifierGroupList[0].ModifierGrpId, search, pageNumber, pageSize);
+            }
+            if (modgrpid != null)
+            {
+                MenuVM.PaginationForModifiersByModGroups = _menuService.GetMenuModifiersByModGroups(modgrpid, search, pageNumber, pageSize);
+            }
+
             ViewData["sidebar-active"] = "Menu";
             return View(MenuVM);
         }
         #endregion
 
         #region Pagination-Menu-Item
-
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.View")]
         public IActionResult PaginationMenuItemsByCategory(long? catid, string search = "", int pageNumber = 1, int pageSize = 3)
         {
             MenuViewModel menuData = new MenuViewModel();
@@ -53,10 +73,13 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Add-Category
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> AddCategory(Category category)
         {
-            string Email = Request.Cookies["Email"];
-            long userId = _userLoginService.GetUserId(Email);
+            string token = Request.Cookies["AuthToken"];
+            var userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
             if (await _menuService.AddCategory(category, userId))
             {
@@ -69,10 +92,13 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Edit-Category
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> EditCategoryById(Category category)
         {
-            string Email = Request.Cookies["Email"];
-            long userId = _userLoginService.GetUserId(Email);
+            string token = Request.Cookies["AuthToken"];
+            var userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
             var Cat_Id = category.CategoryId;
 
@@ -88,10 +114,11 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Delete-Category
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.Delete")]
         public async Task<IActionResult> DeleteCategory(long Cat_Id)
         {
             var categoryDeleteStatus = await _menuService.DeleteCategory(Cat_Id);
-
 
             if (categoryDeleteStatus)
             {
@@ -104,27 +131,40 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Add-Items-From-Modal
-        public async Task<IActionResult> AddItem(MenuViewModel MenuVm)
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
+        [HttpPost]
+        public async Task<IActionResult> AddItem([FromForm] MenuViewModel MenuVm)
         {
-            string Email = Request.Cookies["Email"];
-            long userId = _userLoginService.GetUserId(Email);
+            string token = Request.Cookies["AuthToken"];
+            var userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
             if (MenuVm.addItems.ItemFormImage != null)
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-
-                //create folder if not exist
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
-                string fileNameWithPath = Path.Combine(path, fileName);
-
-                using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                var extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
+                if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
-                    MenuVm.addItems.ItemFormImage.CopyTo(stream);
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+                    //create folder if not exist
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+
+                    string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
+                    string fileNameWithPath = Path.Combine(path, fileName);
+
+                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    {
+                        MenuVm.addItems.ItemFormImage.CopyTo(stream);
+                    }
+                    MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
                 }
-                MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
+                else
+                {
+                    TempData["ErrorMessage"] = "The Image format is not supported. Fill the form again !";
+                    return RedirectToAction("Menu", "Menu");
+                }
             }
 
             var addItemStatus = await _menuService.AddItem(MenuVm.addItems, userId);
@@ -132,7 +172,7 @@ namespace Pizza_Shop_Project.Controllers
             if (addItemStatus)
             {
                 TempData["SuccessMessage"] = "Item added successfully";
-                return RedirectToAction("Menu");
+                return Json(new { });
             }
             TempData["ErrorMessage"] = "Failed to add Item";
             return RedirectToAction("Menu");
@@ -140,6 +180,8 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Delete-Items-From-Modal
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.Delete")]
         public async Task<IActionResult> DeleteItem(long itemid)
         {
             var isDeleted = await _menuService.DeleteItem(itemid);
@@ -154,40 +196,177 @@ namespace Pizza_Shop_Project.Controllers
         }
         #endregion
 
-        // #region Edit-Items-From-Modal
-        // public async Task<IActionResult> EditItem(MenuViewModel MenuVm)
-        // {
-        //     string Email = Request.Cookies["Email"];
-        //     long userId = _userLoginService.GetUserId(Email);
+        #region Edit-Items-From-Modal
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
+        public IActionResult GetItemsByItemId(long itemid)
+        {
+            MenuViewModel MenuVM = new MenuViewModel();
+            MenuVM.categoryList = _menuService.GetAllCategories();
+            MenuVM.addItems = _menuService.GetItemsByItemId(itemid);
+            return PartialView("_EditItemPartial", MenuVM);
+        }
 
-        //     if (MenuVm.addItems.ItemFormImage != null)
-        //     {
-        //         string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+        [HttpPost]
+        public async Task<IActionResult> EditItem([FromForm] MenuViewModel MenuVm)
+        {
+            string token = Request.Cookies["AuthToken"];
+            var userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        //         if (!Directory.Exists(path))
-        //             Directory.CreateDirectory(path);
+            if (MenuVm.addItems.ItemFormImage != null)
+            {
+                var extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
+                if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
+                {
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
 
-        //         string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
-        //         string fileNameWithPath = Path.Combine(path, fileName);
+                    //create folder if not exist
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
 
-        //         using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
-        //         {
-        //             MenuVm.addItems.ItemFormImage.CopyTo(stream);
-        //         }
-        //         MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
-        //     }
+                    string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
+                    string fileNameWithPath = Path.Combine(path, fileName);
 
-        //     var editItemStatus = await _menuService.EditItem(MenuVm.addItems, userId);
+                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    {
+                        MenuVm.addItems.ItemFormImage.CopyTo(stream);
+                    }
+                    MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "The Image format is not supported. Fill the form again !";
+                    return RedirectToAction("Menu", "Menu");
+                }
+            }
 
-        //     if (editItemStatus)
-        //     {
-        //         TempData["SuccessMessage"] = "Item Updated successfully";
-        //         return RedirectToAction("Menu");
-        //     }
-        //     TempData["ErrorMessage"] = "Failed to Update Item";
-        //     return RedirectToAction("Menu");
-        // }
-        // #endregion
+            var editItemStatus = await _menuService.EditItem(MenuVm.addItems, userId);
+
+            if (editItemStatus)
+            {
+                // TempData["SuccessMessage"] = "Item Updated successfully";
+                return Json(new { });
+            }
+            TempData["ErrorMessage"] = "Failed to Update Item";
+            return RedirectToAction("Menu");
+        }
+        #endregion
+
+        #region Pagination-Menu-Modifier
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.View")]
+
+        public IActionResult PaginationMenuModifiersByModGroups(long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
+        {
+            try
+            {
+                MenuViewModel menuData = new MenuViewModel();
+                menuData.modifierGroupList = _menuService.GetAllModifierGroupList();
+
+                if (modgrpid != null)
+                {
+                    menuData.PaginationForModifiersByModGroups = _menuService.GetMenuModifiersByModGroups(modgrpid, search, pageNumber, pageSize);
+                }
+
+                return PartialView("_ModifierPartial", menuData.PaginationForModifiersByModGroups);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region Get All ModifierGroup List
+        public IActionResult GetAllModifierGroupList()
+        {
+            MenuViewModel MenuData = new();
+            MenuData.modifierGroupList = _menuService.GetAllModifierGroupList();
+            return PartialView("_ModifierGroupListPartial", MenuData);
+        }
+        #endregion
+
+        #region Delete-Modifiers-From-Modal
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.Delete")]
+        public async Task<IActionResult> DeleteModifier(long modid)
+        {
+            var isDeleted = await _menuService.DeleteModifier(modid);
+
+            if (!isDeleted)
+            {
+                TempData["ErrorMessage"] = "Modifier cannot be deleted";
+                return RedirectToAction("Menu", "Menu");
+            }
+            TempData["SuccessMessage"] = "Modifier deleted successfully";
+            return RedirectToAction("Menu", "Menu");
+        }
+        #endregion
+
+        #region Add Modifier Item
+
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
+        public IActionResult AddModifierItem()
+        {
+            MenuViewModel MenuVM = new MenuViewModel();
+            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
+            return PartialView("_AddModifierPartial", MenuVM);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
+        [HttpPost]
+        public async Task<IActionResult> AddModifierItem([FromForm] MenuViewModel MenuVm)
+        {
+            string token = Request.Cookies["AuthToken"];
+            var userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+            var addModifierStatus = await _menuService.AddModifierItem(MenuVm.addModifier, userId);
+
+            if (addModifierStatus)
+            {
+                // TempData["SuccessMessage"] = "Modifier added successfully";
+                return Json(new { });
+            }
+            // TempData["ErrorMessage"] = "Failed to add Modifier";
+            return RedirectToAction("Menu");
+        }
+        #endregion
+
+        #region Edit Modifier Item
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
+        public IActionResult GetModifiersByModifierId(long modid)
+        {
+            MenuViewModel MenuVM = new MenuViewModel();
+            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
+            MenuVM.addModifier = _menuService.GetModifiersByModifierId(modid);
+            return PartialView("_EditModifierPartial", MenuVM);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [PermissionAuthorize("Menu.AddEdit")]
+        [HttpPost]
+        public async Task<IActionResult> EditModifierItem([FromForm] MenuViewModel MenuVm)
+        {
+            string token = Request.Cookies["AuthToken"];
+            var userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+            var editModifierStatus = await _menuService.EditModifierItem(MenuVm.addModifier, userId);
+
+            if (editModifierStatus)
+            {
+                // TempData["SuccessMessage"] = "Modifier Updated successfully";
+                return Json(new { });
+            }
+            // TempData["ErrorMessage"] = "Failed to Update Modifier";
+            return RedirectToAction("Menu");
+        }
+        #endregion
 
     }
 }
