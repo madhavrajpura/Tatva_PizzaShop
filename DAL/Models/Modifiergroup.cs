@@ -26,4 +26,9 @@ public partial class Modifiergroup
     public virtual User? ModifiedByNavigation { get; set; }
 
     public virtual ICollection<Modifier> Modifiers { get; } = new List<Modifier>();
+
+    public static implicit operator Modifiergroup(List<Modifiergroup> v)
+    {
+        throw new NotImplementedException();
+    }
 }
