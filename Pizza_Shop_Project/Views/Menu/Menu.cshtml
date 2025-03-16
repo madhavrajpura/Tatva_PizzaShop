@@ -147,7 +147,7 @@
                 <div class="row d-flex m-1 ms-0 me-0">
 
                     @* Left-SideBar-Modifier *@
-                    <div class="left-sidebar-modifier-main-div bg-opacity-10 col-xl-2 col-lg-3 col-md-4 col-sm-12 ps-0 pe-0"
+                    <div class="left-sidebar-modifier-main-div bg-opacity-10 col-xl-2 col-lg-3 col-md-4 col-sm-12 ps-0 pe-0 pb-3"
                         style="overflow-y:scroll;">
 
                         <div class="user-text p-3 d-flex justify-content-between">
@@ -258,7 +258,7 @@
                     <div class="form-floating mb-3">
                         <input type="text" asp-for="@Model.category.CategoryName" class="form-control"
                             id="floatingInput" placeholder="First Name" required>
-                        <span asp-validation-for="@Model.category.CategoryName" class="text-danger"></span>
+                        <span asp-validation-for="@Model.category.CategoryName" class="text-danger validate"></span>
                         <label for="floatingInput" class="fs-6 text-secondary">Name</label>
                     </div>
 
@@ -291,7 +291,7 @@
                         <input type="hidden" asp-for="@Model.category.CategoryId" id="category-id">
                         <input type="text" class="form-control" id="category-name"
                             asp-for="@Model.category.CategoryName" placeholder="Name*" required>
-                        <span asp-validation-for="@Model.category.CategoryName" class="text-danger"></span>
+                        <span asp-validation-for="@Model.category.CategoryName" class="text-danger validate"></span>
 
                         <label for="category-name">Name</label>
                     </div>
@@ -419,7 +419,10 @@
                         <input type="hidden" asp-for="@Model.addModifierGroupVM.Temp_Ids" id="Temp_Ids_HiddenField">
                         <input type="text" asp-for="@Model.addModifierGroupVM.ModifierGrpName" class="form-control"
                             id="AddModifierGroupName" placeholder="Name" required>
-                        <label for="AddModifierGroupName">Name</label>
+                        <label asp-for="@Model.addModifierGroupVM.ModifierGrpName"
+                            for="AddModifierGroupName">Name</label>
+                        <span asp-validation-for="@Model.addModifierGroupVM.ModifierGrpName"
+                            class="text-danger validate"></span>
                     </div>
                     <div class="form-floating">
                         <textarea class="form-control" asp-for="@Model.addModifierGroupVM.Desciption"
@@ -435,7 +438,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn solid-btn" data-bs-dismiss="modal">save</button>
+                    <button type="submit" class="btn solid-btn">save</button>
                     <button type="button" class="btn hollow-btn" data-bs-dismiss="modal"
                         onclick="EmptyFieldsAddModifierGroup()">cancel</button>
                 </div>
@@ -520,10 +523,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body ">
-                <div class=" d-flex flex-column  align-items-center">
-                    <img class="mt-2 mb-3" src="../images/toppng.com-warning-icon-2400x2400.png" width="30px" alt="">
-                    <p class="text-secondary fw-semibold text-center mt-3 mb-3">Are you sure you want to delete this Modifier Group?</p>
-                </div>
+                <div class="d-flex justify-content-center mb-3"><img
+                        src="../images/toppng.com-warning-icon-2400x2400.png" style="width: 30px;" alt=""></div>
+                <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete this Modifier
+                    Group ?</p>
                 <form id="deleteModifierGroupForm">
                     <input type="hidden" asp-for="@Model.modifiergroup.ModifierGrpId" id="modifierGroup-id-for-Delete"
                         name="modgrpid">
@@ -540,9 +543,17 @@
 <!---------------------------------------------- Modifiers ---------------------------------------------------------------------------->
 
 <!-- Add Modifier Modal -->
-<div id="addModifierModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
+<div id="addModifierModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel"
     data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-lg" id="AddModifierModal-MainDiv">
+
+    </div>
+</div>
+
+<!-- Edit Modifier Modal -->
+<div id="EditModifierModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel"
+    data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg" id="EditModifierModal-MainDiv">
 
     </div>
 </div>
@@ -594,6 +605,13 @@
     </div>
 </div>
 
+<!------------------------------------ End Modals ---------------------------------------->
+
+
+<partial name="_ValidationScriptsPartial" />
+<partial name="_Toaster" />
+
+
 @section Scripts {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -637,7 +655,6 @@
 
         //  Get details for Delete Categories  
         function GetIdForDeleteCategory(tag) {
-            console.log(tag);
             document.getElementById("category-id-for-delete").value = tag.getAttribute("data-id");
         }
 
@@ -671,7 +688,6 @@
                     break;
                 }
             }
-
             MassDeleteItemsBtn.disabled = !anyChecked;
         }
 
@@ -822,16 +838,12 @@
         // Method to show selected existing modifier in First add Modifier Group Modal
         function Display_Names_Of_ExistingModifier() {
 
-            console.log("mod_Temp_Name-", modifierTempName);
-
             var modifier_div = document.getElementById("ExistingModifiers");
-
-            console.log("Modifier_div-", modifier_div);
 
             modifier_div.innerHTML = "";
             for (i = 0; i < modifierTempId.length; i++) {
                 modifier_div.innerHTML += `<div class="p-1 border border-1 rounded-pill ms-1 mb-2 me-2 d-inline justify-content-between align-items-center" style="max-width:fit-content;">
-                                                                                                                                                                                                ${modifierTempName[i]} <i class="fa-solid fa-xmark" style="margin-left: 0px;" onclick="RemoveFromExistingModifierList(${modifierTempId[i]},'${modifierTempName[i]}')"></i></div> `
+                                                                                                                                                                                                                                                             ${modifierTempName[i]} <i class="fa-solid fa-xmark" style="margin-left: 0px;" onclick="RemoveFromExistingModifierList(${modifierTempId[i]},'${modifierTempName[i]}')"></i></div> `
             }
         }
 
@@ -841,10 +853,7 @@
             var id = tag.getAttribute("data-checkid");
             var name = tag.parentElement.children[1].innerHTML;
 
-            @* console.log("Id-", id); *@
-                @* console.log("Name-", name); *@
-
-                                        if (tag.checked) {
+            if (tag.checked) {
                 if (modifierTempName.indexOf(name) == -1) {
                     modifierTempId.push(id);
                     modifierTempName.push(name);
@@ -939,7 +948,7 @@
             $.ajax({
                 url: "/Menu/PaginationMenuModifiersByModGroups",
                 type: "GET",
-                data: { modgrpid, searchText_mod, pageNumber: page, pageSize: pageSize_mod },
+                data: { modgrpid, search:searchText_mod, pageNumber: page, pageSize: pageSize_mod },
                 success: function (data) {
 
                     $("#modifier-list-body").html(data);
@@ -1002,6 +1011,7 @@
 
         // To show the ModifierGroup List
         function loadModifierGroupList() {
+            console.log("Modifier Group");
             $.ajax({
                 url: "/Menu/GetAllModifierGroupList",
                 type: "GET",
@@ -1076,7 +1086,12 @@
                         contentType: false,
                         processData: false,
                         data: formData,
-                        success: function (res) {
+                        success: function (data) {
+                            if (data.success) {
+                                callSuccessToaster(data.text);
+                            } else {
+                                callErrorToaster(data.text);
+                            }
                             $(".btn-close").click();
                             PaginatedItemTable(catid, searchText, currentPage, pageSize);
                             Item_Main_Checkbox_Select();
@@ -1105,12 +1120,10 @@
             // Items Mass Delete Item Modal Yes Button 
             $("#MassDeleteItemsModal_YesButton").on("click", function () {
                 var sub_checkboxes = document.getElementsByClassName("item-sub-checkbox");
-                console.log("delete all")
                 for (i = 0; i < sub_checkboxes.length; i++) {
                     if (sub_checkboxes[i].checked) {
 
                         let itemID = sub_checkboxes[i].getAttribute("data-checkid");
-                        console.log(itemID)
                         $.ajax({
                             url: `/Menu/DeleteItem?itemID=${itemID}`,
                             type: "GET",
@@ -1131,7 +1144,6 @@
                 currentPage_mod = 1;
                 PaginatedModifierTable(modgrpid, searchText_mod, currentPage_mod, pageSize_mod);
                 Modifier_Main_Checkbox_Select();
-                loadModifierGroupList();
             });
 
             // ModifierGroup click
@@ -1185,8 +1197,7 @@
             // Existing Modifier Pagination right arrow buttons
             $("#right-arrow-modifier-exists").on("click", function (e) {
                 let rightarrow_modExist = !$(this).prop("disabled");
-                @* console.log(rightarrow_modExist); *@
-                                                                                                if (rightarrow_modExist) {
+                if (rightarrow_modExist) {
                     e.preventDefault();
                     currentPage_Existmod++;
                     ExistingPaginatedModifierTable(searchText_Existmod, currentPage_Existmod, pageSize_Existmod);
@@ -1197,8 +1208,7 @@
             // Existing Modifier Pagination left arrow buttons
             $("#left-arrow-modifier-exists").on("click", function (e) {
                 let leftarrow_modExist = !$(this).prop("disabled");
-                @* console.log(leftarrow_modExist); *@
-                                                                                                if (leftarrow_modExist) {
+                if (leftarrow_modExist) {
                     e.preventDefault();
                     currentPage_Existmod--;
                     ExistingPaginatedModifierTable(searchText_Existmod, currentPage_Existmod, pageSize_Existmod);
@@ -1214,6 +1224,8 @@
                 Existing_Modifier_Main_Checkbox_Select();
             });
 
+            // -----------------------------Modifier Group ------------------------------------
+
             // Add Modifier Group POST 
             $(document).on("submit", "#AddModifierGroupForm", function (e) {
 
@@ -1221,15 +1233,11 @@
 
                 document.getElementById("Temp_Ids_HiddenField").value = modifierTempId;
 
-                @* console.log(document.getElementById("Temp_Ids_HiddenField").value); *@
-
-                    let form = $("#AddModifierGroupForm");
+                let form = $("#AddModifierGroupForm");
 
                 if (form.valid()) {
 
                     let formData = new FormData(this);
-
-                    console.log(formData);
 
                     $.ajax({
                         url: "/Menu/AddModifierGroup",
@@ -1237,12 +1245,15 @@
                         processData: false,
                         contentType: false,
                         data: formData,
-                        success: function (res) {
-
-                            console.log("response-", res);
-
+                        success: function (data) {
+                            if (data.success) {
+                                callSuccessToaster(data.text);
+                            } else {
+                                callErrorToaster(data.text);
+                            }
                             $(".btn-close").click();
-
+                            console.log("thead ne");
+                            loadModifierGroupList();
                             PaginatedModifierTable(modgrpid, searchText_mod, currentPage_mod, pageSize_mod);
                             Existing_Modifier_Main_Checkbox_Select();
                         }
@@ -1257,19 +1268,25 @@
 
                 let modgrpid = document.getElementById("modifierGroup-id-for-Delete").value;
 
-                console.log(modgrpid);
-
                 $.ajax({
                     url: `/Menu/DeleteModifierGroup`,
                     type: "POST",
                     data: { modgrpid: modgrpid },
-                    success: function (res) {
-                        console.log("response-", res);
+                    success: function (data) {
+                        if (data.success) {
+                            callSuccessToaster(data.text);
+                        } else {
+                            callErrorToaster(data.text);
+                        }
                         $(".btn-close").click();
-                        PaginatedModifierTable(modgrpid, searchText_mod, currentPage_mod, pageSize_mod);
+                        loadModifierGroupList();
+                        PaginatedModifierTable(null, searchText_mod, currentPage_mod, pageSize_mod);
+                        Existing_Modifier_Main_Checkbox_Select();
                     }
                 });
             });
+
+            // -------------------------------------Modifier-------------------------------------- -----------
 
             // Modifier To Show data in the Add modal GET Method
             $("#addModifierModalId").on('click', function () {
@@ -1282,22 +1299,41 @@
                 });
             });
 
-            // Modifier Edit Modal GET
+            // Modifier To Show data in the edit modal GET
+            $("#EditModifierModal").on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var modid = button.data("id");
+                if (modid != null) {
+                    $.ajax({
+                        url: "/Menu/GetModifiersByModifierId",
+                        type: "GET",
+                        data: { modid },
+                        success: function (data) {
+                            $("#EditModifierModal-MainDiv").html(data);
+                        }
+                    });
+                }
+            });
 
+            // Modifier Delete Modal POST
             $(document).on("submit", "#deleteModifierForm", function (e) {
-                console.log("Delete ni Ajax");
-                e.preventDefault();
-                let modid = document.getElementById("deletemodifierid").value;
 
-                console.log("m-id-", modid);
+                e.preventDefault();
+
+                let modid = document.getElementById("deletemodifierid").value;
 
                 $.ajax({
                     url: "/Menu/DeleteModifier",
                     type: "POST",
-                    data: { modid: modid, modgrpid: modgrpid },
-                    success: function (res) {
-                        console.log("Success Ajax call");
+                    data: { modid: modid },
+                    success: function (data) {
+                        if (data.success) {
+                            callSuccessToaster(data.text);
+                        } else {
+                            callErrorToaster(data.text);
+                        }
                         $(".btn-close").click();
+                        currentPage_mod = 1;
                         PaginatedModifierTable(modgrpid, searchText_mod, currentPage_mod, pageSize_mod);
                     }
                 });
@@ -1316,6 +1352,12 @@
                             url: `/Menu/DeleteModifier?modid=${modifierID}`,
                             type: "POST",
                             success: function (data) {
+                                if (data.success) {
+                                    callSuccessToaster(data.text);
+                                }
+                                else {
+                                    callErrorToaster(data.text);
+                                }
                                 $("#MassDeleteModifiersBtn").prop("disabled", true);
                                 currentPage_mod = 1;
                                 PaginatedModifierTable(modgrpid, searchText_mod, currentPage_mod, pageSize_mod);

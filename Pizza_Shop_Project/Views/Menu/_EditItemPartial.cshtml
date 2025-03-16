@@ -180,6 +180,8 @@
     </form>
 </div>
 
+<partial name="_Toaster" />
+
 <script>
 
     $("#uploadFile-edit").change(function () {
@@ -199,6 +201,11 @@
                 processData: false,
                 data: formData,
                 success: function (data) {
+                    if (data.success) {
+                        callSuccessToaster(data.text);
+                    } else {
+                        callErrorToaster(data.text);
+                    }
                     $(".btn-close").click();
                     PaginatedItemTable(catid, searchText, currentPage, pageSize);
                     Item_Main_Checkbox_Select();

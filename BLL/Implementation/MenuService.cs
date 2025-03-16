@@ -103,7 +103,8 @@ public class MenuService : IMenuService
         else
         {
             var isCategoryExistsEdit = _context.Categories.FirstOrDefault(x => x.CategoryName.ToLower() == category.CategoryName.ToLower());
-            if (isCategoryExistsEdit == null)
+            var isCategoryExistsDesc = _context.Categories.FirstOrDefault(x => x.Description.ToLower() == category.Description.ToLower());
+            if (isCategoryExistsEdit == null || isCategoryExistsDesc == null)
             {
                 Category cat = _context.Categories.FirstOrDefault(x => x.CategoryId == Cat_Id);
                 cat.CategoryName = category.CategoryName;
@@ -148,6 +149,13 @@ public class MenuService : IMenuService
         }
         else
         {
+            // Check if an item with the same name already exists
+            var existingItem = await _context.Items.FirstOrDefaultAsync(x => x.ItemName == addItemVM.ItemName && x.CategoryId == addItemVM.CategoryId && x.Isdelete == false);
+            if (existingItem != null)
+            {
+                return false;
+            }
+
             Item item = new Item();
             item.CategoryId = addItemVM.CategoryId;
             item.ItemName = addItemVM.ItemName;
@@ -204,7 +212,13 @@ public class MenuService : IMenuService
         }
         else
         {
-            var item = _context.Items.FirstOrDefault(x => x.ItemId == editItemVM.ItemId && x.Isdelete == false);
+            // Check if an item with the same name already exists
+            var existingItem = await _context.Items.FirstOrDefaultAsync(x => x.ItemName == editItemVM.ItemName && x.CategoryId == editItemVM.CategoryId && x.Isdelete == false);
+            if (existingItem != null)
+            {
+                return false;
+            }
+            var item = _context.Items.FirstOrDefault(x => x.ItemId == editItemVM.ItemId);
             item.CategoryId = editItemVM.CategoryId;
             item.ItemName = editItemVM.ItemName;
             item.ItemTypeId = editItemVM.ItemTypeId;
@@ -318,6 +332,11 @@ public class MenuService : IMenuService
         }
         else
         {
+            var existingModifier = await _context.Modifiers.FirstOrDefaultAsync(x => x.ModifierName == addModifierVM.ModifierName && x.ModifierGrpId == addModifierVM.ModifierGrpId && x.Isdelete == false);
+            if (existingModifier != null)
+            {
+                return false;
+            }
             Modifier modifier = new Modifier();
             modifier.ModifierGrpId = addModifierVM.ModifierGrpId;
             modifier.ModifierName = addModifierVM.ModifierName;
@@ -391,7 +410,7 @@ public class MenuService : IMenuService
             _context.Update(existingModifiers[i]);
             _context.SaveChanges();
         }
-
+        modifierGroupToDelete.ModifierGrpName = modifierGroupToDelete.ModifierGrpName + DateTime.Now;
         modifierGroupToDelete.Isdelete = true;
         _context.Update(modifierGroupToDelete);
         _context.SaveChanges();
@@ -417,7 +436,7 @@ public class MenuService : IMenuService
     }
     #endregion
 
-    #region Edit Item
+    #region Edit Modifier
     public async Task<bool> EditModifierItem(AddModifierViewModel editModifierVM, long userId)
     {
         if (editModifierVM.ModifierGrpId == null)
@@ -426,6 +445,11 @@ public class MenuService : IMenuService
         }
         else
         {
+            // var existingModifier = await _context.Modifiers.FirstOrDefaultAsync(x => x.ModifierName == editModifierVM.ModifierName && x.Isdelete == false);
+            // if (existingModifier != null)
+            // {
+            //     return false;
+            // }
             var modifier = _context.Modifiers.FirstOrDefault(x => x.ModifierId == editModifierVM.ModifierId && x.Isdelete == false);
             modifier.ModifierGrpId = editModifierVM.ModifierGrpId;
             modifier.ModifierName = editModifierVM.ModifierName;

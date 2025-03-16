@@ -23,7 +23,7 @@ else
             <td class="text-center">@item.Quantity</td>
             <td class="text-center">
                 <i class="fa-solid fa-pen w-25" data-bs-toggle="modal" data-bs-target="#EditModifierModal"
-                    data-id="@item.ModifierId"></i>
+                    data-id="@item.ModifierId" onclick=GetIdForDeleteModifierItem(this)></i>
                 <i class="fa-solid fa-trash-can ms-2 " data-bs-toggle="modal" data-bs-target="#delete-modifier-modal"
                     data-id="@item.ModifierId" onclick=GetIdForDeleteModifierItem(this) ></i>
             </td>

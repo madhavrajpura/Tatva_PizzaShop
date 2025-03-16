@@ -154,8 +154,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "The Image format is not supported. Fill the form again !";
-                    return RedirectToAction("Menu", "Menu");
+                    return Json(new { success = false, text = "The Image format is not supported. Fill the form again !" });
                 }
             }
 
@@ -163,11 +162,9 @@ namespace Pizza_Shop_Project.Controllers
 
             if (addItemStatus)
             {
-                TempData["SuccessMessage"] = "Item added successfully";
-                return Json(new { });
+                return Json(new { success = true, text = "Item added successfully" });
             }
-            TempData["ErrorMessage"] = "Failed to add Item";
-            return RedirectToAction("Menu");
+            return Json(new { success = false, text = "Failed to add Item" });
         }
         #endregion
 
@@ -228,8 +225,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "The Image format is not supported. Fill the form again !";
-                    return RedirectToAction("Menu", "Menu");
+                    return Json(new { success = false, text = "The Image format is not supported. Fill the form again !" });
                 }
             }
 
@@ -237,11 +233,9 @@ namespace Pizza_Shop_Project.Controllers
 
             if (editItemStatus)
             {
-                // TempData["SuccessMessage"] = "Item Updated successfully";
-                return Json(new { });
+                return Json(new { success = true, text = "Item Updated successfully" });
             }
-            TempData["ErrorMessage"] = "Failed to Update Item";
-            return RedirectToAction("Menu");
+            return Json(new { success = false, text = "Failed to Update Item" });
         }
         #endregion
 
@@ -305,9 +299,9 @@ namespace Pizza_Shop_Project.Controllers
             var addModifierGroupStatus = await _menuService.AddModifierGroup(MenuVM.addModifierGroupVM, userId);
             if (addModifierGroupStatus)
             {
-                return Json("modifier added");
+                return Json(new { success = true, text = "Modifier Group Added successfully" });
             }
-            return Json("modifier not added");
+            return Json(new { success = false, text = "Failed to Add Modifier Group" });
         }
         #endregion
 
@@ -320,9 +314,9 @@ namespace Pizza_Shop_Project.Controllers
             var deletemodifiergrpStatus = await _menuService.DeleteModifierGroup(modgrpid);
             if (deletemodifiergrpStatus)
             {
-                return Json("modifier group deleted");
+                return Json(new { success = true, text = "Modifier Group Deleted successfully" });
             }
-            return Json("modifier group not deleted");
+            return Json(new { success = false, text = "Failed to Delete Modifier Group" });
         }
         #endregion
 
@@ -342,7 +336,8 @@ namespace Pizza_Shop_Project.Controllers
         public IActionResult AddModifierItem()
         {
             MenuViewModel MenuVM = new MenuViewModel();
-            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
+            var ModifierGroupList = _menuService.GetAllModifierGroupList();
+            ViewBag.modifierGroupList = new SelectList(ModifierGroupList, "ModifierGrpId", "ModifierGrpName");
             return PartialView("_AddModifierPartial", MenuVM);
         }
 
@@ -360,10 +355,10 @@ namespace Pizza_Shop_Project.Controllers
             if (addModifierStatus)
             {
                 // TempData["SuccessMessage"] = "Modifier added successfully";
-                return Json(new { success = true, SuccessMessage = "Modifier added successfully" });
+                return Json(new { success = true, text = "Modifier Added successfully" });
             }
             // TempData["ErrorMessage"] = "Failed to add Modifier";
-            return Json(new { success = false, SuccessMessage = "Failed to add Modifier" });
+            return Json(new { success = false, text = "Failed to Add Modifier" });
         }
         #endregion
 
@@ -373,7 +368,8 @@ namespace Pizza_Shop_Project.Controllers
         public IActionResult GetModifiersByModifierId(long modid)
         {
             MenuViewModel MenuVM = new MenuViewModel();
-            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
+            var ModifierGroupList = _menuService.GetAllModifierGroupList();
+            ViewBag.modifierGroupList = new SelectList(ModifierGroupList, "ModifierGrpId", "ModifierGrpName");
             MenuVM.addModifier = _menuService.GetModifiersByModifierId(modid);
             return PartialView("_EditModifierPartial", MenuVM);
         }
@@ -392,10 +388,10 @@ namespace Pizza_Shop_Project.Controllers
             if (editModifierStatus)
             {
                 // TempData["SuccessMessage"] = "Modifier Updated successfully";
-                return Json(new { });
+                return Json(new { success = true, text = "Modifier Updated successfully" });
             }
             // TempData["ErrorMessage"] = "Failed to Update Modifier";
-            return RedirectToAction("Menu");
+            return Json(new { success = false, text = "Failed to Update Modifier" });
         }
         #endregion
 
@@ -407,13 +403,13 @@ namespace Pizza_Shop_Project.Controllers
         {
             var isDeleted = await _menuService.DeleteModifier(modid);
 
-            if (!isDeleted)
+            if (isDeleted)
             {
-                // TempData["ErrorMessage"] = "Modifier cannot be deleted";
-                return Json( new { success = false, SuccessMessage = "Failed to delete Modifier" } );
+                // TempData["SuccessMessage"] = "Modifier deleted successfully";
+                return Json(new { success = true, SuccessMessage = "Modifier Deleted Successfully" });
             }
-            // TempData["SuccessMessage"] = "Modifier deleted successfully";
-            return Json(new { success = true, SuccessMessage = "Modifier deleted successfully" });
+            // TempData["ErrorMessage"] = "Modifier cannot be deleted";
+            return Json(new { success = false, SuccessMessage = "Failed to Delete Modifier" });
         }
         #endregion
     }
