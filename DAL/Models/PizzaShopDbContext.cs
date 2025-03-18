@@ -31,6 +31,8 @@ public partial class PizzaShopDbContext : DbContext
 
     public virtual DbSet<Item> Items { get; set; }
 
+    public virtual DbSet<ItemModifierGroupMapping> ItemModifierGroupMappings { get; set; }
+
     public virtual DbSet<Itemtype> Itemtypes { get; set; }
 
     public virtual DbSet<Kot> Kots { get; set; }
@@ -363,6 +365,30 @@ public partial class PizzaShopDbContext : DbContext
             entity.HasOne(d => d.ModifiedByNavigation).WithMany(p => p.ItemModifiedByNavigations)
                 .HasForeignKey(d => d.ModifiedBy)
                 .HasConstraintName("items_modified_by_fkey");
+        });
+
+        modelBuilder.Entity<ItemModifierGroupMapping>(entity =>
+        {
+            entity.HasKey(e => e.ItemmodifiergroupmappingId).HasName("ItemModifierGroupMapping_pkey");
+
+            entity.ToTable("ItemModifierGroupMapping");
+
+            entity.Property(e => e.ItemmodifiergroupmappingId).HasColumnName("itemmodifiergroupmapping_id");
+            entity.Property(e => e.Isdelete).HasColumnName("isdelete");
+            entity.Property(e => e.ItemId).HasColumnName("item_id");
+            entity.Property(e => e.Maxmodifier).HasColumnName("maxmodifier");
+            entity.Property(e => e.Minmodifier).HasColumnName("minmodifier");
+            entity.Property(e => e.ModifierGrpId).HasColumnName("modifier_grp_id");
+
+            entity.HasOne(d => d.Item).WithMany(p => p.ItemModifierGroupMappings)
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("ItemModifierGroupMapping_item_id_fkey");
+
+            entity.HasOne(d => d.ModifierGrp).WithMany(p => p.ItemModifierGroupMappings)
+                .HasForeignKey(d => d.ModifierGrpId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("ItemModifierGroupMapping_modifier_grp_id_fkey");
         });
 
         modelBuilder.Entity<Itemtype>(entity =>

@@ -40,7 +40,7 @@ namespace Pizza_Shop_Project.Controllers
             var verification_token = await _userLoginService.VerifyUserLogin(userLogin);
 
             CookieOptions option = new CookieOptions();
-            option.Expires = DateTime.Now.AddHours(1);
+            option.Expires = DateTime.Now.AddHours(30);
 
             if (verification_token != null)
             {
