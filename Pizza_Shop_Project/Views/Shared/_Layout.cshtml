@@ -90,9 +90,9 @@
                         <!-- Table and Section -->
                         @if ((await AuthorizationService.AuthorizeAsync(User, "TableSection.View")).Succeeded)
                         {
-                            <a asp-action="Menu" asp-Controller="Menu" class="text-decoration-none dashboard-text-inactive ">
+                            <a asp-action="TableSection" asp-Controller="TableSection" class="text-decoration-none dashboard-text-inactive @((ViewData["sidebar-active"] as string) == "TableSection" ? "active-div" : "") ">
                                 <div class="dashboard-active-div d-flex p-3">
-                                    <i class="fa-solid fa-table-cells-large mt-1 "></i>
+                                    <i class="fa-solid fa-table-cells mt-1"></i>
                                     <p class="mt-1 m-0 ms-3 fw-bold text-nowrap">Table and Section</p>
                                 </div>
                             </a>
@@ -101,7 +101,7 @@
                         <!-- taxes and fees -->
                         @if ((await AuthorizationService.AuthorizeAsync(User, "TaxFees.View")).Succeeded)
                         {
-                            <a class="text-decoration-none dashboard-text-inactive ">
+                            <a asp-action="TaxFees" asp-Controller="TaxFees" class="text-decoration-none dashboard-text-inactive @((ViewData["sidebar-active"] as string) == "TaxFees" ? "active-div" : "") ">
                                 <div class="dashboard-active-div d-flex p-3">
                                     <i class="fa-solid fa-money-check-dollar mt-1 "></i>
                                     <p class=" mt-1 m-0 ms-3 fw-bold text-nowrap">Taxes and Fees</p>

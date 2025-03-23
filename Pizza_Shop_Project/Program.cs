@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using DAL.Models;
 using BLL.Implementation;
@@ -20,7 +21,8 @@ builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IJWTService,JWTService>();
 builder.Services.AddScoped<IRolePermission,RolePermissionService>();
 builder.Services.AddScoped<IMenuService,MenuService>();
-// builder.Services.AddScoped<ITableSectionService, TableSectionService>();
+builder.Services.AddScoped<ITableSectionService, TableSectionService>();
+builder.Services.AddScoped<ITaxFeesService, TaxFeesService>();
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 

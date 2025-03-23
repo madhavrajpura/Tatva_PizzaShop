@@ -874,9 +874,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.ToTable("tables");
 
-            entity.Property(e => e.TableId)
-                .ValueGeneratedNever()
-                .HasColumnName("table_id");
+            entity.Property(e => e.TableId).HasColumnName("table_id");
             entity.Property(e => e.Capacity).HasColumnName("capacity");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_DATE")
@@ -889,11 +887,9 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("modified_at");
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.SectionId).HasColumnName("section_id");
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasColumnName("status");
+            entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.TableName)
-                .HasMaxLength(20)
+                .HasMaxLength(100)
                 .HasColumnName("table_name");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.TableCreatedByNavigations)
@@ -934,7 +930,7 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("modified_at");
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.TaxName)
-                .HasMaxLength(20)
+                .HasMaxLength(100)
                 .HasColumnName("tax_name");
             entity.Property(e => e.TaxType)
                 .HasMaxLength(20)

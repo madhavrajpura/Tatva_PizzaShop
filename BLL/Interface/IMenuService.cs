@@ -44,4 +44,12 @@ public interface IMenuService
     public Task<bool> EditModifierItem(AddModifierViewModel editModifierVM, long userId);
     public Task<bool> DeleteModifier(long modid);
 
-}
+    public List<Modifier> GetModifiersByGroup(long modgrpid);
+
+    public string GetModifiersGroupName(long modgrpid);
+
+
+
+
+
+    }
