@@ -113,7 +113,6 @@ public class UserService : IUserService
     #region GetUserList
     public PaginationViewModel<User> GetUserList(string search = "", string sortColumn = "", string sortDirection = "", int pageNumber = 1, int pageSize = 5)
     {
-
         var query = _context.Users
             .Include(u => u.Userlogin)
             .ThenInclude(u => u.Role)
@@ -209,7 +208,7 @@ public class UserService : IUserService
                 Phone = x.Phone,
                 RoleId = x.Userlogin.RoleId,
                 Email = x.Userlogin.Email,
-                // ProfileImage = x.Image,
+                Image = x.ProfileImage,
                 StateId = x.StateId,
                 CityId = x.CityId,
                 Status = x.Status,
@@ -229,7 +228,10 @@ public class UserService : IUserService
         userdetails.FirstName = user.FirstName;
         userdetails.LastName = user.LastName;
         userdetails.Username = user.Username;
-        userdetails.ProfileImage = user.Image;
+        if (userdetails.ProfileImage == null)
+        {
+            userdetails.ProfileImage = user.Image;
+        }
         userdetails.Address = user.Address;
         userdetails.Phone = user.Phone;
         userdetails.Zipcode = user.Zipcode;

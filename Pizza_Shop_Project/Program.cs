@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using DAL.Models;
 using BLL.Implementation;
@@ -23,9 +22,9 @@ builder.Services.AddScoped<IRolePermission,RolePermissionService>();
 builder.Services.AddScoped<IMenuService,MenuService>();
 builder.Services.AddScoped<ITableSectionService, TableSectionService>();
 builder.Services.AddScoped<ITaxFeesService, TaxFeesService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
-
 
 builder.Services.AddControllersWithViews();
 
@@ -69,21 +68,18 @@ builder.Services.AddAuthentication(x=>{
             {
                 // Redirect to login page when unauthorized 
                 context.HandleResponse();
-                context.Response.Redirect("/UserLogin/VerifyUserLogin");
+                context.Response.Redirect("/Error/Unauthorized");
                 return Task.CompletedTask;
             },
             OnForbidden = context =>
             {
                 // Redirect to login when access is forbidden (403)
-                context.Response.Redirect("/UserLogin/VerifyUserLogin");
+                context.Response.Redirect("/Error/Forbidden");
                 return Task.CompletedTask;
             }
         };
     }
 );
-
-
-
 
 builder.Services.AddAuthorization(options =>
 {
@@ -116,11 +112,13 @@ builder.Services.AddAuthorization();
 // });
 
 
+
 builder.Services.AddSession(
     options => {
-        options.IdleTimeout = TimeSpan.FromSeconds(10);
+        options.IdleTimeout = TimeSpan.FromHours(10);
     }
 );
+
 builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
 
 var app = builder.Build();
@@ -128,10 +126,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error/InternalServerError");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();
 

@@ -1,11 +1,10 @@
 @model DAL.ViewModels.MenuViewModel
 <!-- Menu text  -->
-<div class="user-text bg-light fs-3 mt-3 fw-bold  mb-3 ps-4">Menu
-</div>
+<div class="user-text bg-light fs-3 pt-4 fw-bold  pb-3 ps-md-4">Menu</div>
 
 <div class="tabs bg-light d-flex justify-content-between">
 
-    <div class="container-fluid">
+    <div class="container-fluid ps-3 pe-3">
 
         <!-- List of Item and Modifier -->
         <div class="bg-white shadow-sm">
@@ -31,65 +30,66 @@
                 <div class="row d-flex m-1 ms-0 me-0">
 
                     @* Left-SideBar-Item *@
-                    <div class="left-sidebar-category-main-div bg-opacity-10 col-xl-2 col-lg-3 col-md-4 col-sm-12 ps-0 pe-0 pb-3 border border-primary border-bottom-0 border-end-1
-            border-start-0 border-top-0 " style="overflow-y:scroll; background-color: rgb(249, 249, 249);">
+                    <div class="left-sidebar-category-main-div bg-opacity-10 col-xl-2 col-lg-3 col-md-4 col-sm-12 ps-0 pe-0 pb-3 border border-primary border-bottom-0 border-end-1 border-start-0 border-top-0 "
+                        style=" background-color: rgb(249, 249, 249);">
 
                         <div class="user-text p-3 d-flex justify-content-between">
                             <span class="fw-bold fs-5">Category</span>
                             <i class="fa-regular fa-square-plus fs-4 user-text" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal-addCategory"></i>
+                                data-bs-target="#exampleModal-addCategory" onclick="RemoveValidation()"></i>
                         </div>
 
                         <!-- Categories -->
                         @{
                             int index = 0;
                         }
-                        @foreach (var item in Model.categoryList)
-                        {
-                            <a class="CategoryGet @(index==0 ? "active-category" : "") d-flex align-items-center justify-content-between col-12 p-2 ps-3 text-decoration-none text-secondary"
-                                data-id="@item.CategoryId" id="Cat_id">
+                        <div style="overflow-y:scroll; height:260px;">
 
-                                <div class="d-flex justify-content-start">
-                                    <i class="fa-solid fa-grip-vertical me-2 mt-1"></i>
-                                    <p class="mt-1">@item.CategoryName</p>
-                                </div>
+                            @foreach (var item in Model.categoryList)
+                            {
+                                <a class="CategoryGet @(index==0 ? "active-category" : "") d-flex align-items-center justify-content-between col-12 p-2 ps-3 text-decoration-none text-secondary"
+                                    data-id="@item.CategoryId" id="Cat_id">
 
-                                <div class="d-flex text-secondary justify-content-end">
-                                    <input type="hidden" value="@item.Description">
-                                    <i class="fa-solid fa-pen me-2 text-secondary"
-                                        onclick="GetDetailsForCategoryUpdate(this)" data-id="@item.CategoryId"
-                                        data-bs-toggle="modal" data-bs-target="#exampleModal-editCategory"></i>
-                                    <i class="fa-solid fa-trash-can text-secondary" onclick="GetIdForDeleteCategory(this)"
-                                        data-id="@item.CategoryId" data-bs-toggle="modal"
-                                        data-bs-target="#exampleModal-deleteCategory"></i>
-                                </div>
+                                    <div class="d-flex justify-content-start">
+                                        <i class="fa-solid fa-grip-vertical me-2 mt-1"></i>
+                                        <p class="mt-1">@item.CategoryName</p>
+                                    </div>
 
-                            </a>
-                            index++;
-                        }
+                                    <div class="d-flex text-secondary justify-content-end">
+                                        <input type="hidden" value="@item.Description">
+                                        <i class="fa-solid fa-pen me-2 text-secondary"
+                                            onclick="GetDetailsForCategoryUpdate(this)" data-id="@item.CategoryId"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModal-editCategory"></i>
+                                        <i class="fa-solid fa-trash-can text-secondary"
+                                            onclick="GetIdForDeleteCategory(this)" data-id="@item.CategoryId"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModal-deleteCategory"></i>
+                                    </div>
 
+                                </a>
+                                index++;
+                            }
+
+                        </div>
                     </div>
 
                     @* Right-SideBar-Item *@
-                    <div class="right-side-table-div bg-white mt-2 pt-2 com-sm-12 col-md-8 col-lg-9 col-xl-10 col-12 ">
+                    <div class="right-side-table-div bg-white pt-3 com-sm-12 col-md-8 col-lg-9 col-xl-10 col-12 ">
                         <div class="menu-text fs-3 fw-bold user-text">Items</div>
-                        <div class="search-adduser-div d-flex justify-content-end pb-2 align-items-center">
-                            <div class="search-button">
-                                <input type="text" id="searchbtn-item" placeholder="Search"
-                                    class=" p-sm-1 mt-2 border ">
+                        <div class="search-adduser-div d-flex justify-content-end pb-2 align-items-center gap-2">
+                            <div class="search-button pt-2">
+                                <input type="text" id="searchbtn-item" placeholder="Search" class=" p-sm-1 border ">
                                 <i class="fa-solid fa-magnifying-glass search-icon-item "></i>
                             </div>
 
-                            <div class="trash-button-item">
-                                <button disabled id="MassDeleteItemsBtn" class="btn mt-2 p-1 ps-2 pe-2 ms-2 border"
+                            <div class="trash-button-item pt-2">
+                                <button disabled id="MassDeleteItemsBtn" class="btn p-1 ps-2 pe-2 border"
                                     data-bs-toggle="modal" data-bs-target="#MassDeleteItemsModal"><i
                                         class="fa-solid fa-trash-can "></i></button>
                             </div>
-                            <div class="add-user-button">
-                                <button type="button"
-                                    class="addItemBtn btn solid-btn text-light p-1 mt-2 ms-2 me-sm-2 me-0"
+                            <div class="add-user-button pt-2 pe-sm-2 pe-0">
+                                <button type="button" class="addItemBtn btn solid-btn text-light p-1 "
                                     data-bs-toggle="modal" data-bs-target="#addItemModal">
-                                    + New Item
+                                    + <span class="d-none d-md-inline">New Item</span>
                                 </button>
                             </div>
                         </div>
@@ -120,9 +120,9 @@
 
                         @* Pagination Item div *@
                         <div
-                            class="pagination-main-div-item d-flex justify-content-end gap-2 p-3 pt-0 bg-white ms-3 me-2 mt-3">
+                            class="pagination-main-div-item d-flex justify-content-end gap-2 p-3 pt-3 bg-white ps-3 pe-2">
 
-                            <span class="mt-2">Items Per page:</span>
+                            <span class="pt-2">Items Per page:</span>
 
                             <select id="itemselect-item">
                                 <option value="3">3</option>
@@ -130,9 +130,9 @@
                                 <option value="10">10</option>
                             </select>
 
-                            <span class=" mt-2 ms-1" id="pagination-info-item"></span>
-                            <button id="left-arrow-item" class="btn border border-dark bg-light ms-2">&lt;</button>
-                            <button id="right-arrow-item" class="btn border border-dark bg-light ms-2">&gt;</button>
+                            <span class=" pt-2 ps-1" id="pagination-info-item"></span>
+                            <button id="left-arrow-item" class="btn border border-dark bg-light ps-2">&lt;</button>
+                            <button id="right-arrow-item" class="btn border border-dark bg-light ps-2">&gt;</button>
                         </div>
 
                     </div>
@@ -148,48 +148,46 @@
 
                     @* Left-SideBar-Modifier *@
                     <div class="left-sidebar-modifier-main-div bg-opacity-10 col-xl-2 col-lg-3 col-md-4 col-sm-12 ps-0 pe-0 pb-3 border border-primary border-bottom-0 border-end-1
-            border-start-0 border-top-0" style="overflow-y:scroll; background-color: rgb(249, 249, 249);">
+            border-start-0 border-top-0" style="background-color: rgb(249, 249, 249);">
 
                         <div class="user-text p-3 d-flex justify-content-between">
                             <span class="fw-bold fs-5">Modifier Group</span>
                             <i class="fa-regular fa-square-plus fs-4 user-text" data-bs-toggle="modal"
-                                data-bs-target="#AddModifierGroup"></i>
+                                data-bs-target="#AddModifierGroup" onclick="RemoveValidation()"></i>
                         </div>
 
                         <!-- Modifiers -->
 
                         @* for loop *@
 
-                        <div id="ModifierGroupList_Partial">
+                        <div id="ModifierGroupList_Partial" style="overflow-y:scroll; height:260px;">
 
                         </div>
                     </div>
 
                     @* Right-SideBar-Modifier *@
-                    <div class="right-side-table-div bg-white mt-2 pt-2 com-sm-12 col-md-8 col-lg-9 col-xl-10 col-12">
+                    <div class=" right-side-table-div bg-white pt-3 com-sm-12 col-md-8 col-lg-9 col-xl-10 col-12">
 
                         <div class="menu-text fs-3 fw-bold user-text">Modifiers</div>
-                        <div class="search-adduser-div d-flex justify-content-end pb-2 align-items-center">
-                            <div class="search-button">
+                        <div class="search-adduser-div d-flex justify-content-end pb-2 align-items-center gap-2">
+                            <div class="search-button pt-2">
 
                                 <input type="hidden" id="Mod_id" value="@Model.modifierGroupList[0].ModifierGrpId">
-                                <input type="text" id="searchbtn-modifier" placeholder="Search"
-                                    class=" p-sm-1 mt-2 border ">
+                                <input type="text" id="searchbtn-modifier" placeholder="Search" class=" p-sm-1 border ">
                                 <i class="fa-solid fa-magnifying-glass search-icon-item "></i>
 
                             </div>
 
-                            <div class="trash-button-modifier">
-                                <button disabled id="MassDeleteModifiersBtn" class="btn mt-2 p-1 ps-2 pe-2 ms-2 border"
+                            <div class="trash-button-modifier pt-2">
+                                <button disabled id="MassDeleteModifiersBtn" class="btn p-1 ps-2 pe-2 border"
                                     data-bs-toggle="modal" data-bs-target="#MassDeleteModifiersModal"><i
                                         class="fa-solid fa-trash-can "></i>
                                 </button>
                             </div>
-                            <div class="add-user-button">
-                                <button type="button"
-                                    class="addModifierBtn btn solid-btn text-light p-1 mt-2 ms-2 me-sm-2 me-0"
+                            <div class="add-user-button pt-2 pe-sm-2 pe-0">
+                                <button type="button" class="addModifierBtn btn solid-btn text-light p-1"
                                     data-bs-toggle="modal" data-bs-target="#addModifierModal" id="addModifierModalId">
-                                    + New Modifier
+                                    +<span class="d-none d-md-inline">New Modifier</span>
                                 </button>
                             </div>
                         </div>
@@ -215,9 +213,9 @@
                         </div>
                         @* Pagination Modifier div *@
                         <div
-                            class="pagination-main-div-modifier d-flex justify-content-end gap-2 p-3 pt-0 bg-white ms-3 me-2 mt-3">
+                            class="pagination-main-div-modifier d-flex justify-content-end gap-2 p-3 pt-3 bg-white ps-3 pe-2">
 
-                            <span class="mt-2">Items Per page:</span>
+                            <span class="pt-2">Items Per page:</span>
 
                             <select id="itemselect-modifier">
                                 <option value="3">3</option>
@@ -225,9 +223,9 @@
                                 <option value="10">10</option>
                             </select>
 
-                            <span class=" mt-2 ms-1" id="pagination-info-modifier"></span>
-                            <button id="left-arrow-modifier" class="btn border border-dark bg-light ms-2">&lt;</button>
-                            <button id="right-arrow-modifier" class="btn border border-dark bg-light ms-2">&gt;</button>
+                            <span class=" pt-2 ps-1" id="pagination-info-modifier"></span>
+                            <button id="left-arrow-modifier" class="btn border border-dark bg-light ps-2">&lt;</button>
+                            <button id="right-arrow-modifier" class="btn border border-dark bg-light ps-2">&gt;</button>
                         </div>
                     </div>
                 </div>
@@ -258,7 +256,8 @@
                     <div class="form-floating mb-3">
                         <input type="text" asp-for="@Model.category.CategoryName" class="form-control"
                             id="floatingInput" placeholder="First Name" required>
-                        <span asp-validation-for="@Model.category.CategoryName" class="text-danger validate"></span>
+                        <span asp-validation-for="@Model.category.CategoryName"
+                            class="text-danger validate RemoveValidationClass"></span>
                         <label for="floatingInput" class="fs-6 text-secondary">Name</label>
                     </div>
 
@@ -283,7 +282,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Category</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    onclick="RemoveValidation()"></button>
             </div>
             <form asp-action="EditCategoryById" asp-controller="Menu">
                 <div class="modal-body">
@@ -291,7 +291,8 @@
                         <input type="hidden" asp-for="@Model.category.CategoryId" id="category-id">
                         <input type="text" class="form-control" id="category-name"
                             asp-for="@Model.category.CategoryName" placeholder="Name*" required>
-                        <span asp-validation-for="@Model.category.CategoryName" class="text-danger validate"></span>
+                        <span asp-validation-for="@Model.category.CategoryName"
+                            class="text-danger validate RemoveValidationClass"></span>
 
                         <label for="category-name">Name</label>
                     </div>
@@ -302,8 +303,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="updatebtn" class="btn solid-btn">save</button>
-                    <button type="button" class="btn hollow-btn" data-bs-dismiss="modal">cancel</button>
+                    <button type="submit" id="updatebtn" class="btn solid-btn">Save</button>
+                    <button type="button" class="btn hollow-btn" data-bs-dismiss="modal"
+                        onclick="RemoveValidation()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -336,7 +338,7 @@
     </div>
 </div>
 
-<!------------------------------------ Itmes ---------------------------------------->
+<!------------------------------------ Items ---------------------------------------->
 
 <!-- Add Items modal-->
 <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
@@ -366,7 +368,8 @@
                 <div class="d-flex justify-content-center mb-2">
                     <img src="../images/toppng.com-warning-icon-2400x2400.png" style="width: 30px;" alt="">
                 </div>
-                <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete this Item ?</p>
+                <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete this Item ?
+                </p>
                 <form method="post" asp-action="DeleteItem" asp-controller="Menu">
                     <input type="hidden" id="deleteitemid" name="itemid" />
 
@@ -404,25 +407,24 @@
 <!-------------------------------------------- Modifiers Group ------------------------------------------------------------------------>
 
 <!-- Add Modifier Group modal  -->
-<div id="AddModifierGroup" data-bs-backdrop="static" data-bs-keyboard="false" class="modal fade" tabindex="-1"
-    aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div id="AddModifierGroup" data-bs-backdrop="static" data-bs-keyboard="false" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" id="AddModifierGroupModal-MainDiv">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fs-5 fw-bold text-secondary">Add Modifier Group</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    onclick="EmptyFieldsAddModifierGroup()"></button>
+                    onclick="EmptyFieldsAddModifierGroup(); RemoveValidation();"></button>
             </div>
             <form id="AddModifierGroupForm">
                 <div class="modal-body">
                     <div class="form-floating mb-3">
                         <input type="hidden" asp-for="@Model.addModifierGroupVM.Temp_Ids" id="Temp_Ids_HiddenField">
                         <input type="text" asp-for="@Model.addModifierGroupVM.ModifierGrpName" class="form-control"
-                            id="AddModifierGroupName" placeholder="Name" required>
+                            id="AddModifierGroupName" placeholder="Name*" required>
                         <label asp-for="@Model.addModifierGroupVM.ModifierGrpName"
-                            for="AddModifierGroupName">Name</label>
+                            for="AddModifierGroupName">Name*</label>
                         <span asp-validation-for="@Model.addModifierGroupVM.ModifierGrpName"
-                            class="text-danger validate"></span>
+                            class="text-danger validate RemoveValidationClass"></span>
                     </div>
                     <div class="form-floating">
                         <textarea class="form-control" asp-for="@Model.addModifierGroupVM.Desciption"
@@ -431,16 +433,17 @@
                     </div>
                     <div class="AddExistingModifier-Div col-5 mt-3 mb-3  d-flex justify-content-center user-text"
                         id="AddExistingModifierText-div" data-bs-toggle="modal" data-bs-target="#AddExistingModifier"
-                        onclick="ExistingPaginatedModifierTable()">+ Add Existing
+                        onclick="ExistingPaginatedModifierTable()">+ Add
+                        Existing
                         Modifiers</div>
                     <div id="ExistingModifiers" class="col-11 mx-auto d-flex row">
 
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn solid-btn">save</button>
+                    <button type="submit" class="btn solid-btn">Save</button>
                     <button type="button" class="btn hollow-btn" data-bs-dismiss="modal"
-                        onclick="EmptyFieldsAddModifierGroup()">cancel</button>
+                        onclick="EmptyFieldsAddModifierGroup(); RemoveValidation();">Cancel</button>
                 </div>
             </form>
         </div>
@@ -453,7 +456,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fs-5 fw-bold text-secondary">Add Existing Modifier</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    onclick="DiscardSelectedModifierOnCancel()"></button>
             </div>
             <form id="AddExistModifierFormID">
                 <div class="modal-body">
@@ -468,7 +472,7 @@
                     <div class="table-main-div table-responsive mt-3 bg-white mx-auto w-100 ">
                         <table class="table" id="demo">
                             <thead>
-                                <tr>
+                                <tr class="fw-bold border border-top-0 border-end-0 border-start-0 border-dark">
                                     <th class="text-start" scope="col"><input type="checkbox"
                                             id="existing-modifier-main-checkbox"
                                             onclick="Existing_Modifier_Main_Checkbox_Select();"
@@ -476,7 +480,7 @@
                                         Name</th>
                                     <th class="text-start" scope="col">Unit</th>
                                     <th class="text-start" scope="col">Rate</th>
-                                    <th class="text-start" scope="col">Quantity</th>
+                                    <th class="text-center" scope="col">Quantity</th>
                                 </tr>
                             </thead>
                             <tbody id="ExistingModifiersListBody" style="white-space: nowrap;">
@@ -508,7 +512,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn solid-btn" data-bs-dismiss="modal"
                         onclick="Display_Names_Of_ExistingModifier()">Add</button>
-                    <button type="button" class="btn hollow-btn" data-bs-dismiss="modal">cancel</button>
+                    <button type="button" class="btn hollow-btn" data-bs-dismiss="modal"
+                        onclick="DiscardSelectedModifierOnCancel()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -523,19 +528,20 @@
             <div class="modal-header">
                 <h5 class="modal-title fs-5 fw-bold text-secondary">Edit Modifier Group</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    onclick="EmptyFieldsEditModifierGroup()"></button>
+                    onclick="EmptyFieldsEditModifierGroup(); RemoveValidation();"></button>
             </div>
             <form id="EditModifierGroupForm">
                 <div class="modal-body">
                     <div class="form-floating mb-3">
-                        <input type="hidden" asp-for="@Model.addModifierGroupVM.Temp_Ids" id="EditTemp_Ids_HiddenField">
+                        @* <input type="hidden" asp-for="@Model.addModifierGroupVM.Temp_Ids"
+                        id="EditTemp_Ids_HiddenField"> *@
                         <input type="hidden" asp-for="@Model.addModifierGroupVM.ModifierGrpId" id="EditModifierGrpId">
                         <input type="text" asp-for="@Model.addModifierGroupVM.ModifierGrpName" class="form-control"
                             id="EditModifierGroupName" placeholder="Name" required>
                         <label asp-for="@Model.addModifierGroupVM.ModifierGrpName"
                             for="EditModifierGroupName">Name</label>
                         <span asp-validation-for="@Model.addModifierGroupVM.ModifierGrpName"
-                            class="text-danger validate"></span>
+                            class="text-danger validate RemoveValidationClass"></span>
                     </div>
                     <div class="form-floating">
                         <textarea class="form-control" asp-for="@Model.addModifierGroupVM.Desciption"
@@ -544,16 +550,17 @@
                     </div>
                     <div class="EditExistingModifier-Div col-5 mt-3 mb-3  d-flex justify-content-center user-text"
                         id="EditExistingModifierText-div" data-bs-toggle="modal" data-bs-target="#EditExistingModifier"
-                        onclick="EditExistingPaginatedModifierTable()">+ Add Existing
+                        onclick="EditExistingPaginatedModifierTable()">+ Add
+                        Existing
                         Modifiers</div>
                     <div id="EditExistingModifiers" class="col-11 mx-auto d-flex row">
 
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn solid-btn">save</button>
+                    <button type="submit" class="btn solid-btn">Save</button>
                     <button type="button" class="btn hollow-btn" data-bs-dismiss="modal"
-                        onclick="EmptyFieldsEditModifierGroup()">cancel</button>
+                        onclick="EmptyFieldsEditModifierGroup();  RemoveValidation();">Cancel</button>
                 </div>
             </form>
         </div>
@@ -566,7 +573,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fs-5 fw-bold text-secondary">Add Existing Modifier</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    onclick="DiscardSelectedModifierOnCancel()"></button>
             </div>
             <form id="EditExistModifierFormID">
                 <div class="modal-body">
@@ -581,7 +589,7 @@
                     <div class="table-main-div table-responsive mt-3 bg-white mx-auto w-100 ">
                         <table class="table" id="demo">
                             <thead>
-                                <tr>
+                                <tr class=" fw-bold border border-top-0 border-end-0 border-start-0 border-dark">
                                     <th class="text-start" scope="col"><input type="checkbox"
                                             id="edit-existing-modifier-main-checkbox"
                                             onclick="Edit_Existing_Modifier_Main_Checkbox_Select();"
@@ -589,7 +597,7 @@
                                         Name</th>
                                     <th class="text-start" scope="col">Unit</th>
                                     <th class="text-start" scope="col">Rate</th>
-                                    <th class="text-start" scope="col">Quantity</th>
+                                    <th class="text-center" scope="col">Quantity</th>
                                 </tr>
                             </thead>
                             <tbody id="EditExistingModifiersListBody" style="white-space: nowrap;">
@@ -621,7 +629,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn solid-btn" data-bs-dismiss="modal"
                         onclick="Edit_Display_Names_Of_ExistingModifier()">Add</button>
-                    <button type="button" class="btn hollow-btn" data-bs-dismiss="modal">cancel</button>
+                    <button type="button" class="btn hollow-btn" data-bs-dismiss="modal"
+                        onclick="DiscardSelectedModifierOnCancel()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -683,7 +692,8 @@
             <div class="modal-body ">
                 <div class="d-flex justify-content-center mb-3"><img
                         src="../images/toppng.com-warning-icon-2400x2400.png" style="width: 30px;" alt=""></div>
-                <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete this Modifier ?
+                <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete this Modifier
+                    ?
                 </p>
                 <form id="deleteModifierForm">
                     <input type="hidden" asp-for="@Model.modifiers.ModifierId" id="deletemodifierid" name="modid">
@@ -708,7 +718,8 @@
             </div>
             <div class="d-flex justify-content-center"><img src="../images/toppng.com-warning-icon-2400x2400.png"
                     style="width: 30px;" class="mt-2 mb-2" alt=""></div>
-            <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete all this Modifiers ?
+            <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete all this
+                Modifiers ?
             </p>
             <div class="modal-footer d-flex justify-content-center">
                 <button type="submit" class="btn solid-btn" id="MassDeleteModifiersModal_YesButton"
@@ -723,7 +734,6 @@
 
 <partial name="_ValidationScriptsPartial" />
 <partial name="_Toaster" />
-
 
 @section Scripts {
 
@@ -759,6 +769,13 @@
     <script>
 
         // -------------------------------Category------------------------------------------------------
+
+        function RemoveValidation() {
+            var list = document.getElementsByClassName("RemoveValidationClass");
+            for (var i = 0; i < list.length; i++) {
+                list[i].innerHTML = "";
+            }
+        }
 
         // Get details for Edit Categories
         function GetDetailsForCategoryUpdate(tag) {
@@ -953,6 +970,8 @@
         function EmptyFieldsAddModifierGroup() {
             modifierTempId = [];
             modifierTempName = [];
+            modifierTempIdCancel = [];
+            modifierTempNameCancel = [];
             document.getElementById("Temp_Ids_HiddenField").value = "";
             document.getElementById("AddModifierGroupName").value = "";
             document.getElementById("AddModifierGroupDescription").value = "";
@@ -962,12 +981,22 @@
         // Method to show selected existing modifier in First add Modifier Group Modal
         function Display_Names_Of_ExistingModifier() {
 
+            modifierTempIdCancel = [];
+            modifierTempNameCancel = [];
+
+            for (i = 0; i < modifierTempId.length; i++) {
+                if (modifierTempIdCancel.indexOf(modifierTempId[i]) == -1) {
+                    modifierTempIdCancel.push(modifierTempId[i]);
+                    modifierTempNameCancel.push(modifierTempName[i]);
+                }
+            }
+
             var modifier_div = document.getElementById("ExistingModifiers");
 
             modifier_div.innerHTML = "";
             for (i = 0; i < modifierTempId.length; i++) {
                 modifier_div.innerHTML += `<div class="p-1 border border-1 rounded-pill ms-1 mb-2 me-2 d-inline justify-content-between align-items-center" style="max-width:fit-content;">
-                                                                                                                                                                                                                                                                                                                                                             ${modifierTempName[i]} <i class="fa-solid fa-xmark" style="margin-left: 0px;" onclick="RemoveFromExistingModifierList(${modifierTempId[i]},'${modifierTempName[i]}')"></i></div> `
+                                                                                                                                                                                                                                                                                                                                                                                                                         ${modifierTempName[i]} <i class="fa-solid fa-xmark" style="margin-left: 0px;" onclick="RemoveFromExistingModifierList(${modifierTempId[i]},'${modifierTempName[i]}')"></i></div> `
             }
         }
 
@@ -992,12 +1021,12 @@
         // Method to remove selected existing modifier from list
         function RemoveFromExistingModifierList(id, name) {
 
-            console.log("remove")
-            console.log("remove-id-", id)
-            console.log("remove-name-", name);
-
             modifierTempId.splice(modifierTempId.indexOf(id), 1);
             modifierTempName.splice(modifierTempName.indexOf(name), 1);
+
+            modifierTempIdCancel.splice(modifierTempIdCancel.indexOf(id), 1);
+            modifierTempNameCancel.splice(modifierTempNameCancel.indexOf(name), 1);
+
             Display_Names_Of_ExistingModifier();
         }
 
@@ -1028,7 +1057,8 @@
             modifierTempId = [];
             modifierTempName = [];
             editmodifierTempId = [];
-            document.getElementById("EditTemp_Ids_HiddenField").value = "";
+            modifierTempIdCancel = [];
+            modifierTempNameCancel = [];
             document.getElementById("EditModifierGroupName").value = "";
             document.getElementById("EditModifierGroupDescription").value = "";
             document.getElementById("EditExistingModifiers").innerHTML = "";
@@ -1037,13 +1067,23 @@
         // Method to show selected existing modifier in First add Modifier Group Modal
         function Edit_Display_Names_Of_ExistingModifier() {
 
+            modifierTempIdCancel = [];
+            modifierTempNameCancel = [];
+
+            for (i = 0; i < modifierTempId.length; i++) {
+                if (modifierTempIdCancel.indexOf(modifierTempId[i]) == -1) {
+                    modifierTempIdCancel.push(modifierTempId[i]);
+                    modifierTempNameCancel.push(modifierTempName[i]);
+                }
+            }
+
             var edit_modifier_div = document.getElementById("EditExistingModifiers");
 
             edit_modifier_div.innerHTML = "";
 
             for (i = 0; i < modifierTempId.length; i++) {
                 edit_modifier_div.innerHTML += `<div class="p-1 border border-1 rounded-pill ms-1 mb-2 me-2 d-inline justify-content-between align-items-center" style="max-width:fit-content;">
-                                                                                            ${modifierTempName[i]} <i class="fa-solid fa-xmark" style="margin-left: 0px;" onclick="EditRemoveFromExistingModifierList(\`${modifierTempId[i]}\`,\`${modifierTempName[i]}\`)"></i></div> `
+                                                                                                                                                        ${modifierTempName[i]} <i class="fa-solid fa-xmark" style="margin-left: 0px;" onclick="EditRemoveFromExistingModifierList(\`${modifierTempId[i]}\`,\`${modifierTempName[i]}\`)"></i></div> `
             }
 
         }
@@ -1051,12 +1091,11 @@
         // Method to remove selected existing modifier from list
         function EditRemoveFromExistingModifierList(id, name) {
 
-            console.log("edit-remove");
-            console.log("edit-remove-id-", id);
-            console.log("edit-remove-name-", name);
-
             modifierTempId.splice(editmodifierTempId.indexOf(parseInt(id)), 1);
             modifierTempName.splice(modifierTempName.indexOf(name), 1);
+
+            modifierTempIdCancel.splice(modifierTempIdCancel.indexOf(id), 1);
+            modifierTempNameCancel.splice(modifierTempNameCancel.indexOf(name), 1);
 
             Edit_Display_Names_Of_ExistingModifier();
         }
@@ -1076,7 +1115,6 @@
         let searchText_mod = "";
         let pageSize_mod = $("#itemselect-modifier").val();
         let modgrpid = $("#Mod_id").val();
-        console.log(modgrpid, "Modgrpid");
 
         // All Data for Add Existing Modifiers
         let currentPage_Existmod = 1;
@@ -1092,6 +1130,8 @@
         let modifierTempId = [];
         let modifierTempName = [];
         let editmodifierTempId = [];
+        let modifierTempIdCancel = [];
+        let modifierTempNameCancel = [];
 
         // Items Pagination function
         function PaginatedItemTable(catid, search = "", page = 1, pageSize = 3) {
@@ -1122,11 +1162,11 @@
         }
 
         // Modifiers Pagination function
-        function PaginatedModifierTable(modgrpid, searchText_mod = "", page = 1, pageSize_mod = 3) {
+        function PaginatedModifierTable(modgrpid, search = "", page = 1, pageSize = 3) {
             $.ajax({
                 url: "/Menu/PaginationMenuModifiersByModGroups",
                 type: "GET",
-                data: { modgrpid, search: searchText_mod, pageNumber: page, pageSize: pageSize_mod },
+                data: { modgrpid, search, pageNumber: page, pageSize },
                 success: function (data) {
 
                     $("#modifier-list-body").html(data);
@@ -1149,11 +1189,13 @@
         }
 
         // Existing Modifiers Pagination function
-        function ExistingPaginatedModifierTable(searchText_Existmod = "", page = 1, pageSize_Existmod = 5) {
+        function ExistingPaginatedModifierTable(search = "", page = 1, pageSize = 5) {
+            pageSize = parseInt(pageSize_Existmod);
+            console.log(pageSize, "PageSize adsddddd");
             $.ajax({
                 url: "/Menu/ExistingPaginationMenuModifiersByModGroups",
                 type: "GET",
-                data: { search: searchText_Existmod, pageNumber: page, pageSize: pageSize_Existmod },
+                data: { search, pageNumber: page, pageSize },
                 success: function (data) {
 
                     document.getElementById("existing-modifier-main-checkbox").checked = false;
@@ -1188,11 +1230,15 @@
         }
 
         // Edit Existing Modifiers Pagination function
-        function EditExistingPaginatedModifierTable(searchText_Existmodedit = "", page = 1, pageSize_Existmodedit = 5) {
+        function EditExistingPaginatedModifierTable(search = "", page = 1, pageSize = 5) {
+
+            pageSize = parseInt(pageSize_Existmodedit);
+            console.log(pageSize, "PageSize");
+
             $.ajax({
-                url: "/Menu/EditExistingPaginationMenuModifiersByModGroups",
+                url: "/Menu/ExistingPaginationMenuModifiersByModGroups",
                 type: "GET",
-                data: { search: searchText_Existmodedit, pageNumber: page, pageSize: pageSize_Existmodedit },
+                data: { search, pageNumber: page, pageSize },
                 success: function (data) {
                     console.log("Edit Existing Modifier");
                     document.getElementById("existing-modifier-main-checkbox").checked = false;
@@ -1235,12 +1281,12 @@
                 type: "GET",
                 success: function (data) {
 
-
                     data.modifiers.forEach(x => {
                         modifierTempId.push(x.modifierId);
                         modifierTempName.push(x.modifierName);
                         editmodifierTempId.push(x.modifierId);
                     });
+
                     document.getElementById("EditModifierGrpId").value = data.modifierGroup.modifierGrpId;
                     document.getElementById("EditModifierGroupName").value = data.modifierGroup.modifierGrpName;
                     document.getElementById("EditModifierGroupDescription").value = data.modifierGroup.desciption;
@@ -1267,7 +1313,15 @@
             })
         }
 
-
+        // Discard changes on Cancel
+        function DiscardSelectedModifierOnCancel() {
+            modifierTempId = [];
+            modifierTempName = [];
+            for (i = 0; i < modifierTempIdCancel.length; i++) {
+                modifierTempId.push(modifierTempIdCancel[i]);
+                modifierTempName.push(modifierTempNameCancel[i]);
+            }
+        }
 
         $(document).ready(function () {
 
@@ -1322,16 +1376,14 @@
                 Item_Main_Checkbox_Select();
             });
 
+            // -----------------------------Items Call Function--------------------------------
+
             // Items To Fill data in the Add modal 
             $("#AddItemForm").on("submit", function (e) {
 
                 e.preventDefault();
 
-        @* let form = $("#AddItemForm"); *@
-
-        @* if (form.valid()) { *@
-
-                    let formData = new FormData(this);
+                let formData = new FormData(this);
                 console.log("iNITIAL", formData);
                 console.log(JSON.stringify(itemData));
 
@@ -1356,8 +1408,7 @@
                         Item_Main_Checkbox_Select();
                     }
                 });
-        @* } *@
-                    });
+            });
 
             // Items To Show data in the edit modal
             $("#EditItemModal").on('show.bs.modal', function (event) {
@@ -1443,7 +1494,7 @@
                 Modifier_Main_Checkbox_Select();
             });
 
-            // Existing Modifier
+            // -=----------------------------------------------Existing Modifier-------------------
 
             // Existing Modifier search-button
             $("#searchbtn-existingMod").on("keyup", function () {
@@ -1515,6 +1566,8 @@
                 EditExistingPaginatedModifierTable(searchText_Existmodedit, currentPage_Existmodedit, pageSize_Existmodedit);
             });
 
+            //  Modifier Group CAll Function
+
             // Add Modifier Group POST 
             $(document).on("submit", "#AddModifierGroupForm", function (e) {
 
@@ -1551,84 +1604,81 @@
             });
 
             //Edit modifier group post method
-            /* $(document).on("submit", "#EditModifierGroupForm", function (e) {
+            $(document).on("submit", "#EditModifierGroupForm", function (e) {
+
+                console.log("chale che?")
 
                 e.preventDefault();
 
-    console.log(document.getElementById("EditModifierGrpIdForEdit").value); 
 
-    let form = $("#EditModifierGroupForm");
 
-    if (form.valid()) {
+                let formData = new FormData(this);
 
-    let formData = new FormData(this);
 
-    console.log(formData);
+                $.ajax({
+                    url: `/Menu/EditModifierGroup`,
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    success: function (data) {
 
-    $.ajax({
-    url: `/Menu/EditModifierGroup`,
-    type: "POST",
-    contentType: false,
-    processData: false,
-    data: formData,
-    success: function (data) {
+                        console.log(data);
 
-    console.log(data);
+                        console.log("edit data saved");
 
-    console.log("edit data saved");
+                        for (i = 0; i < editmodifierTempId.length; i++) {
 
-    for (i = 0; i < editmodifierTempId.length; i++) {
+                            if (modifierTempId.indexOf(editmodifierTempId[i]) == -1) {
 
-    if (modifierTempId.indexOf(editmodifierTempId[i]) == -1) {
+                                //deleteModifierFromModGrpAfterEdit(modGrpID,editModTempId[i]);
+                                console.log("delete existing modifier")
 
-    //deleteModifierFromModGrpAfterEdit(modGrpID,editModTempId[i]);
-    console.log("delete existing modifier")
+                                $.ajax({
+                                    url: `/Menu/DeleteModToModifierGrpAfterEdit?modgrpid=${data.grpId}&modid=${editmodifierTempId[i]}`,
+                                    type: "Post",
+                                    success: function () {
+                                        console.log("deleted external modifierGroup form modGrpID addModifierToModGrpAfterEdit edit");
+                                    }
+                                });
 
-    $.ajax({
-    url: `/Menu/DeleteModToModifierGrpAfterEdit?modGrpID=${data.grpId}&modifierID=${editmodifierTempId[i]}`,
-    type: "Post",
-    success: function () {
-    console.log("deleted external modifierGroup form modGrpID addModifierToModGrpAfterEdit edit");
-    }
-    });
+                            }
+                        }
 
-    }
-    }
-    for (i = 0; i < modifierTempId.length; i++) {
+                        for (i = 0; i < modifierTempId.length; i++) {
 
-    if (editmodifierTempId.indexOf(modifierTempId[i]) == -1) {
+                            if (editmodifierTempId.indexOf(modifierTempId[i]) == -1) {
 
-    //addModifierToModGrpAfterEdit(modGrpID,modTempID[i]);
-    console.log("add existing mod");
+                                //addModifierToModGrpAfterEdit(modGrpID,modTempID[i]);
+                                console.log("add existing mod");
 
-    $.ajax({
-    url: `/Menu/AddModToModifierGrpAfterEdit?modGrpID=${data.grpId}&modifierID=${modifierTempId[i]}`,
-    type: "post",
-    success: function () {
-    console.log("added external modifierGroup form modGrpID addModifierToModGrpAfterEdit ");
-    }
-    });
-    }
-    }
+                                $.ajax({
+                                    url: `/Menu/AddModToModifierGrpAfterEdit?modgrpid=${data.grpId}&modid=${modifierTempId[i]}`,
+                                    type: "post",
+                                    success: function () {
+                                        console.log("added external modifierGroup form modGrpID addModifierToModGrpAfterEdit ");
+                                    }
+                                });
+                            }
+                        }
 
-    if (data.success) {
-    successToaster(data.text);
-    } else {
-    errorToaster(data.text);
-    }
-    $(".btn-close").click();
+                        if (data.success) {
+                            callSuccessToaster(data.text);
+                        } else {
+                            callErrorToaster(data.text);
+                        }
+                        $(".btn-close").click();
 
-    PaginatedModifierTable(data.grpId, searchText_mod, currentPage_mod, pageSize_mod);
-    loadModifierGroupList();
-    Existing_Modifier_Main_Checkbox_Select();
-    modifierTempId = [];
-    editmodifierTempId = [];
-    modifierTempName = [];
-    }
-    });
-    }
-    });
-            */
+                        PaginatedModifierTable(data.grpId, searchText_mod, currentPage_mod, pageSize_mod);
+                        loadModifierGroupList();
+                        Existing_Modifier_Main_Checkbox_Select();
+                        modifierTempId = [];
+                        editmodifierTempId = [];
+                        modifierTempName = [];
+                    }
+                });
+            });
+
 
             // Delete modifier Group POST
             $(document).on("submit", "#deleteModifierGroupForm", function (e) {
@@ -1739,8 +1789,6 @@
             // end of Ready
         });
     </script>
-
-
 
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

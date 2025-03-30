@@ -8,6 +8,7 @@ using Pizza_Shop_Project.Authorization;
 
 namespace Pizza_Shop_Project.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class TableSectionController : Controller
 {
     private readonly ITableSectionService _tableSectionService;
@@ -24,6 +25,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Main Table Section View
+    [PermissionAuthorize("TableSection.View")]
     public IActionResult TableSection(long? sectionid, string search = "", int pageNumber = 1, int pageSize = 3)
     {
 
@@ -43,6 +45,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Pagination Table
+    [PermissionAuthorize("TableSection.View")]
     public IActionResult PaginationForTable(long? sectionid, string search = "", int pageNumber = 1, int pageSize = 3)
     {
         try
@@ -65,14 +68,15 @@ public class TableSectionController : Controller
     #endregion
 
     #region Add Section
-
+    // [PermissionAuthorize("TableSection.AddEdit")]
     public IActionResult AddSection()
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
         return PartialView("_AddSectionPartial", tableSectionVM);
     }
 
-    [HttpPost]
+    [PermissionAuthorize("TableSection.AddEdit")]
+    [HttpPost]      
     public async Task<IActionResult> AddSection(TableSectionViewModel tableSectionVM)
     {
         string token = Request.Cookies["AuthToken"];
@@ -89,6 +93,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Edit Section
+    // [PermissionAuthorize("TableSection.AddEdit")]
     public IActionResult GetSectionById(long sectionId)
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
@@ -96,6 +101,7 @@ public class TableSectionController : Controller
         return PartialView("_EditSectionPartial", tableSectionVM);
     }
 
+    [PermissionAuthorize("TableSection.AddEdit")]
     [HttpPost]
     public async Task<IActionResult> EditSection(TableSectionViewModel tableSectionVM)
     {
@@ -113,6 +119,8 @@ public class TableSectionController : Controller
     #endregion
 
     #region Delete Section
+    [PermissionAuthorize("TableSection.Delete")]
+    // [HttpPost]
     public async Task<IActionResult> DeleteSection(long sectionid)
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
@@ -123,13 +131,14 @@ public class TableSectionController : Controller
 
         if (deleteSectionStatus)
         {
-            return Json(new { sectionid=tableSectionVM.SectionList[0].SectionId, success = true, text = "Section Deleted successfully" });
+            return Json(new { sectionid = tableSectionVM.SectionList[0].SectionId, success = true, text = "Section Deleted successfully" });
         }
         return Json(new { success = false, text = "Failed to Delete Section" });
     }
     #endregion
 
     #region Get All Section List
+    [PermissionAuthorize("TableSection.View")]
     public IActionResult GetAllSections()
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
@@ -139,6 +148,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Add Table
+    [PermissionAuthorize("TableSection.AddEdit")]
     public IActionResult AddTable(long sectionid)
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
@@ -166,6 +176,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Edit Table
+    [PermissionAuthorize("TableSection.AddEdit")]
     public async Task<IActionResult> GetTableById(long tableId, long sectionId)
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
@@ -175,6 +186,7 @@ public class TableSectionController : Controller
         return PartialView("_EditTablePartial", tableSectionVM);
     }
 
+    [PermissionAuthorize("TableSection.AddEdit")]
     [HttpPost]
     public async Task<IActionResult> EditTable([FromForm] TableSectionViewModel tableSectionVM)
     {
@@ -192,7 +204,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Delete Table
-
+    [PermissionAuthorize("TableSection.Delete")]
     [HttpPost]
     public async Task<IActionResult> DeleteTable(long tableid)
     {

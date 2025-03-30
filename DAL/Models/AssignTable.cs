@@ -21,11 +21,17 @@ public partial class AssignTable
 
     public long TableId { get; set; }
 
+    public long OrderId { get; set; }
+
+    public int NoOfPerson { get; set; }
+
     public virtual User? CreatedByNavigation { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual User? ModifiedByNavigation { get; set; }
+
+    public virtual Order Order { get; set; } = null!;
 
     public virtual Table Table { get; set; } = null!;
 }
