@@ -141,7 +141,6 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
                     context.Succeed(requirement);
                 break;
             default:
-                // httpContext.Response.Redirect("/Error/Forbidden");
                 context.Fail();
                 break;
         }

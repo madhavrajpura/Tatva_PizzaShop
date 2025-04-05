@@ -1,3 +1,4 @@
+using BLL.common;
 using BLL.Interface;
 using DAL.Models;
 using DAL.ViewModels;
@@ -11,40 +12,45 @@ namespace Pizza_Shop_Project.Controllers
 {
     public class MenuController : Controller
     {
-        private readonly IMenuService _menuService;
+        private readonly ICategoryService _categoryService;
+        private readonly IItemService _itemService;
+        private readonly IModifierGroupService _modifierGroupService;
+        private readonly IModifierItemService _modifierItemService;
         private readonly IUserService _userService;
         private readonly IUserLoginService _userLoginService;
 
         #region Menu Constructor
-        public MenuController(IMenuService menuService, IUserLoginService userLoginService, IUserService userService)
+        public MenuController(IUserLoginService userLoginService, IUserService userService, ICategoryService categoryService, IItemService itemService, IModifierGroupService modifierGroupService, IModifierItemService modifierItemService)
         {
-            _menuService = menuService;
             _userLoginService = userLoginService;
             _userService = userService;
+            _categoryService = categoryService;
+            _itemService = itemService;
+            _modifierGroupService = modifierGroupService;
+            _modifierItemService = modifierItemService;
         }
         #endregion
 
         #region Main-Menu-View
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.View")]
-        public IActionResult Menu(long? catid, long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
+        public async Task<IActionResult> Menu(long? catid, long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
         {
             MenuViewModel MenuVM = new();
-            MenuVM.categoryList = _menuService.GetAllCategories();
-            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
-            ViewBag.categoryList = new SelectList(_menuService.GetAllCategories(), "CategoryId", "CategoryName");
+            MenuVM.categoryList = await _categoryService.GetAllCategories();
+            MenuVM.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
+            ViewBag.categoryList = new SelectList(await _categoryService.GetAllCategories(), "CategoryId", "CategoryName");
 
 
-            ViewBag.modifierGroupList = new SelectList(_menuService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
+            ViewBag.modifierGroupList = new SelectList(await _modifierGroupService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
 
             if (catid == null)
             {
-                MenuVM.PaginationForItemByCategory = _menuService.GetMenuItemsByCategory(MenuVM.categoryList[0].CategoryId, search, pageNumber, pageSize);
+                MenuVM.PaginationForItemByCategory = _itemService.GetMenuItemsByCategory(MenuVM.categoryList[0].CategoryId, search, pageNumber, pageSize);
             }
 
             if (modgrpid == null)
             {
-                MenuVM.PaginationForModifiersByModGroups = _menuService.GetMenuModifiersByModGroups(MenuVM.modifierGroupList[0].ModifierGrpId, search, pageNumber, pageSize);
+                MenuVM.PaginationForModifiersByModGroups = _modifierGroupService.GetMenuModifiersByModGroups(MenuVM.modifierGroupList[0].ModifierGrpId, search, pageNumber, pageSize);
             }
 
             ViewData["sidebar-active"] = "Menu";
@@ -53,83 +59,114 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Pagination-Menu-Item
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.View")]
-        public IActionResult PaginationMenuItemsByCategory(long? catid, string search = "", int pageNumber = 1, int pageSize = 3)
+        public async Task<IActionResult> PaginationMenuItemsByCategory(long? catid, string search = "", int pageNumber = 1, int pageSize = 3)
         {
             MenuViewModel menuData = new MenuViewModel();
-            menuData.categoryList = _menuService.GetAllCategories();
+            menuData.categoryList = await _categoryService.GetAllCategories();
 
             if (catid != null)
             {
-                menuData.PaginationForItemByCategory = _menuService.GetMenuItemsByCategory(catid, search, pageNumber, pageSize);
+                menuData.PaginationForItemByCategory = _itemService.GetMenuItemsByCategory(catid, search, pageNumber, pageSize);
             }
             return PartialView("_ItemPartialView", menuData.PaginationForItemByCategory);
         }
         #endregion
 
+        #region Category CRUD
+
         #region Add-Category
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> AddCategory(Category category)
         {
-            string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
-            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
-
-            if (await _menuService.AddCategory(category, userId))
+            bool IsCategoryNameExists = _categoryService.IsCategoryExistForAdd(category);
+            if (IsCategoryNameExists)
             {
-                TempData["SuccessMessage"] = "Category added successfully";
+                TempData["ErrorMessage"] = NotificationMessage.AlreadyExists.Replace("{0}", "Category");
                 return RedirectToAction("Menu");
             }
-            TempData["ErrorMessage"] = "Failed to add category";
+
+            string token = Request.Cookies["AuthToken"];
+            List<User>? userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+            if (await _categoryService.AddCategory(category, userId))
+            {
+                TempData["SuccessMessage"] = NotificationMessage.EntityCreated.Replace("{0}", "Category");
+                return RedirectToAction("Menu");
+            }
+            TempData["ErrorMessage"] = NotificationMessage.EntityCreatedFailed.Replace("{0}", "Category");
             return RedirectToAction("Menu");
         }
         #endregion
 
         #region Edit-Category
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> EditCategoryById(Category category)
         {
-            string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
-            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
-
-            var Cat_Id = category.CategoryId;
-
-            if (await _menuService.EditCategoryById(category, Cat_Id, userId))
+            bool IsCategoryNameExists = _categoryService.IsCategoryExistForEdit(category);
+            if (IsCategoryNameExists)
             {
-                //change
-                TempData["SuccessMessage"] = "Category Updated successfully";
+                TempData["ErrorMessage"] = NotificationMessage.AlreadyExists.Replace("{0}", "Category");
                 return RedirectToAction("Menu");
             }
-            TempData["ErrorMessage"] = "Failed to Update category, Check if Category already exists?";
+
+            string token = Request.Cookies["AuthToken"];
+            List<User>? userData = _userService.getUserFromEmail(token);
+            long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+            long Cat_Id = category.CategoryId;
+
+            if (await _categoryService.EditCategory(category, Cat_Id, userId))
+            {
+                TempData["SuccessMessage"] = NotificationMessage.EntityUpdated.Replace("{0}", "Category");
+                return RedirectToAction("Menu");
+            }
+            TempData["ErrorMessage"] = NotificationMessage.EntityUpdatedFailed.Replace("{0}", "Category");
             return RedirectToAction("Menu");
         }
         #endregion
 
         #region Delete-Category
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.Delete")]
         public async Task<IActionResult> DeleteCategory(long Cat_Id)
         {
-            var categoryDeleteStatus = await _menuService.DeleteCategory(Cat_Id);
-
-            if (categoryDeleteStatus)
+            if (Cat_Id == null)
             {
-                TempData["SuccessMessage"] = "Category deleted successfully";
+                TempData["ErrorMessage"] = NotificationMessage.DoesNotExists.Replace("{0}", "Category");
                 return RedirectToAction("Menu", "Menu");
             }
-            TempData["ErrorMessage"] = "Failed to delete category";
+
+            if (await _categoryService.DeleteCategory(Cat_Id))
+            {
+                TempData["SuccessMessage"] = NotificationMessage.EntityDeleted.Replace("{0}", "Category");
+                return RedirectToAction("Menu", "Menu");
+            }
+            TempData["ErrorMessage"] = NotificationMessage.EntityDeletedFailed.Replace("{0}", "Category");
             return RedirectToAction("Menu", "Menu");
         }
         #endregion
 
-        #region Add-Items-From-Modal
+        #endregion
 
+        #region Item CRUD
+
+        #region Add-Items-From-Modal
+        // Get the Add item Modal 
         [PermissionAuthorize("Menu.AddEdit")]
-        public IActionResult GetModifiersByGroup(string data)
+        public async Task<IActionResult> GetItems()
+        {
+            MenuViewModel MenuVM = new MenuViewModel();
+            MenuVM.categoryList = await _categoryService.GetAllCategories();
+            MenuVM.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
+            ViewBag.categoryList = new SelectList(await _categoryService.GetAllCategories(), "CategoryId", "CategoryName");
+            ViewBag.modifierGroupList = new SelectList(await _modifierGroupService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
+            return PartialView("_AddItemPartial", MenuVM);
+        }
+
+        // Get the Modifiers by Group in Add Item
+        [PermissionAuthorize("Menu.AddEdit")]
+        public async Task<IActionResult> GetModifiersByGroup(string data)
         {
             MenuViewModel MenuVM = new MenuViewModel();
 
@@ -140,31 +177,39 @@ namespace Pizza_Shop_Project.Controllers
                 MenuVM.addItems = MenuVM.addItems ?? new AddItemViewModel();
                 MenuVM.addItems.itemModifiersVM = MenuVM.addItems.itemModifiersVM ?? new List<ItemModifierViewModel>();
 
-                var i = 0;
+                int i = 0;
 
                 foreach (ItemModifierViewModel deItems in deserializedData)
                 {
                     MenuVM.addItems.itemModifiersVM.Add(deItems);
-                    MenuVM.addItems.itemModifiersVM[i].modifiersList = _menuService.GetModifiersByGroup(deItems.ModifierGrpId);
-                    MenuVM.addItems.itemModifiersVM[i].ModifierGrpName = _menuService.GetModifiersGroupName(deItems.ModifierGrpId);
+                    MenuVM.addItems.itemModifiersVM[i].modifiersList = await _modifierGroupService.GetModifiersByGroup(deItems.ModifierGrpId);
+                    MenuVM.addItems.itemModifiersVM[i].ModifierGrpName = _modifierGroupService.GetModifiersGroupName(deItems.ModifierGrpId);
                     i++;
                 }
             }
 
-            MenuVM.categoryList = _menuService.GetAllCategories();
-            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
+            MenuVM.categoryList = await _categoryService.GetAllCategories();
+            MenuVM.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
 
-            ViewBag.categoryList = new SelectList(_menuService.GetAllCategories(), "CategoryId", "CategoryName");
-            ViewBag.modifierGroupList = new SelectList(_menuService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
+            ViewBag.categoryList = new SelectList(await _categoryService.GetAllCategories(), "CategoryId", "CategoryName");
+            ViewBag.modifierGroupList = new SelectList(await _modifierGroupService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
 
             return PartialView("_ModifierByGroup", MenuVM);
         }
 
+        // Add Item Post
+        [PermissionAuthorize("Menu.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> AddItem([FromForm] MenuViewModel MenuVm)
         {
+            bool IsItemNameExists = _itemService.IsItemExistForAdd(MenuVm.addItems);
+            if (IsItemNameExists)
+            {
+                return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Item") });
+            }
+
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
             List<ItemModifierViewModel> deserializedData = JsonConvert.DeserializeObject<List<ItemModifierViewModel>>(MenuVm.itemData);
@@ -183,7 +228,7 @@ namespace Pizza_Shop_Project.Controllers
             // Code For image upload
             if (MenuVm.addItems.ItemFormImage != null)
             {
-                var extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
+                string[]? extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
@@ -195,7 +240,7 @@ namespace Pizza_Shop_Project.Controllers
                     string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
                     string fileNameWithPath = Path.Combine(path, fileName);
 
-                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    using (FileStream stream = new FileStream(fileNameWithPath, FileMode.Create))
                     {
                         MenuVm.addItems.ItemFormImage.CopyTo(stream);
                     }
@@ -203,55 +248,36 @@ namespace Pizza_Shop_Project.Controllers
                 }
                 else
                 {
-                    return Json(new { success = false, text = "The Image format is not supported. Fill the form again !" });
+                    return Json(new { success = false, text = NotificationMessage.ImageFormat });
                 }
             }
 
-            var addItemStatus = await _menuService.AddItem(MenuVm.addItems, userId);
+            bool addItemStatus = await _itemService.AddItem(MenuVm.addItems, userId);
 
             if (addItemStatus)
             {
-                return Json(new { success = true, text = "Item added successfully" });
+                return Json(new { success = true, text = NotificationMessage.EntityCreated.Replace("{0}", "Item") });
             }
-            return Json(new { success = false, text = "Failed to add Item" });
-        }
-
-
-        #endregion
-
-        #region Delete-Items-From-Modal
-        [Authorize(Roles = "Admin")]
-        [PermissionAuthorize("Menu.Delete")]
-        public async Task<IActionResult> DeleteItem(long itemid)
-        {
-            var isDeleted = await _menuService.DeleteItem(itemid);
-
-            if (!isDeleted)
-            {
-                TempData["ErrorMessage"] = "Item cannot be deleted";
-                return RedirectToAction("Menu", "Menu");
-            }
-            TempData["SuccessMessage"] = "Item deleted successfully";
-            return RedirectToAction("Menu", "Menu");
+            return Json(new { success = false, text = NotificationMessage.EntityCreatedFailed.Replace("{0}", "Item") });
         }
         #endregion
 
         #region Edit-Items-From-Modal
 
         [PermissionAuthorize("Menu.AddEdit")]
-        public IActionResult GetItemsByItemId(long itemid)
+        public async Task<IActionResult> GetItemsByItemId(long itemid)
         {
             MenuViewModel MenuVM = new MenuViewModel();
-            MenuVM.categoryList = _menuService.GetAllCategories();
-            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
-            ViewBag.categoryList = new SelectList(_menuService.GetAllCategories(), "CategoryId", "CategoryName");
-            ViewBag.modifierGroupList = new SelectList(_menuService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
-            MenuVM.addItems = _menuService.GetItemsByItemId(itemid);
+            MenuVM.categoryList = await _categoryService.GetAllCategories();
+            MenuVM.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
+            ViewBag.categoryList = new SelectList(await _categoryService.GetAllCategories(), "CategoryId", "CategoryName");
+            ViewBag.modifierGroupList = new SelectList(await _modifierGroupService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
+            MenuVM.addItems = _itemService.GetItemsByItemId(itemid);
             return PartialView("_EditItemPartial", MenuVM);
         }
 
         [PermissionAuthorize("Menu.AddEdit")]
-        public IActionResult EditModifiersByGroup(string data)
+        public async Task<IActionResult> EditModifiersByGroup(string data)
         {
             MenuViewModel MenuVM = new MenuViewModel();
             List<ItemModifierViewModel> deserializedData = JsonConvert.DeserializeObject<List<ItemModifierViewModel>>(data);
@@ -260,20 +286,20 @@ namespace Pizza_Shop_Project.Controllers
             {
                 MenuVM.addItems = MenuVM.addItems ?? new AddItemViewModel();
                 MenuVM.addItems.itemModifiersVM = MenuVM.addItems.itemModifiersVM ?? new List<ItemModifierViewModel>();
-                var i = 0;
+                int i = 0;
                 foreach (ItemModifierViewModel deItems in deserializedData)
                 {
                     MenuVM.addItems.itemModifiersVM.Add(deItems);
-                    MenuVM.addItems.itemModifiersVM[i].modifiersList = _menuService.GetModifiersByGroup(deItems.ModifierGrpId);
-                    MenuVM.addItems.itemModifiersVM[i].ModifierGrpName = _menuService.GetModifiersGroupName(deItems.ModifierGrpId);
+                    MenuVM.addItems.itemModifiersVM[i].modifiersList = await _modifierGroupService.GetModifiersByGroup(deItems.ModifierGrpId);
+                    MenuVM.addItems.itemModifiersVM[i].ModifierGrpName = _modifierGroupService.GetModifiersGroupName(deItems.ModifierGrpId);
                     i++;
                 }
             }
 
-            MenuVM.categoryList = _menuService.GetAllCategories();
-            MenuVM.modifierGroupList = _menuService.GetAllModifierGroupList();
-            ViewBag.categoryList = new SelectList(_menuService.GetAllCategories(), "CategoryId", "CategoryName");
-            ViewBag.modifierGroupList = new SelectList(_menuService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
+            MenuVM.categoryList = await _categoryService.GetAllCategories();
+            MenuVM.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
+            ViewBag.categoryList = new SelectList(await _categoryService.GetAllCategories(), "CategoryId", "CategoryName");
+            ViewBag.modifierGroupList = new SelectList(await _modifierGroupService.GetAllModifierGroupList(), "ModifierGrpId", "ModifierGrpName");
 
             return PartialView("_EditModifierByGroup", MenuVM);
         }
@@ -282,8 +308,14 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> EditItem([FromForm] MenuViewModel MenuVm)
         {
+            bool IsItemNameExists = _itemService.IsItemExistForEdit(MenuVm.addItems);
+            if (IsItemNameExists)
+            {
+                return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Item") });
+            }
+
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
             List<ItemModifierViewModel> deserializedData = JsonConvert.DeserializeObject<List<ItemModifierViewModel>>(MenuVm.itemData);
@@ -301,7 +333,7 @@ namespace Pizza_Shop_Project.Controllers
 
             if (MenuVm.addItems.ItemFormImage != null)
             {
-                var extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
+                string[]? extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
@@ -313,7 +345,7 @@ namespace Pizza_Shop_Project.Controllers
                     string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
                     string fileNameWithPath = Path.Combine(path, fileName);
 
-                    using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                    using (FileStream stream = new FileStream(fileNameWithPath, FileMode.Create))
                     {
                         MenuVm.addItems.ItemFormImage.CopyTo(stream);
                     }
@@ -321,34 +353,53 @@ namespace Pizza_Shop_Project.Controllers
                 }
                 else
                 {
-                    return Json(new { success = false, text = "The Image format is not supported. Fill the form again !" });
+                    return Json(new { success = false, text = NotificationMessage.ImageFormat });
                 }
             }
 
-            var editItemStatus = await _menuService.EditItem(MenuVm.addItems, userId);
+            bool editItemStatus = await _itemService.EditItem(MenuVm.addItems, userId);
 
             if (editItemStatus)
             {
-                return Json(new { success = true, text = "Item Updated successfully" });
+                return Json(new { success = true, text = NotificationMessage.EntityUpdated.Replace("{0}", "Item") });
             }
-            return Json(new { success = false, text = "Failed to Update Item" });
+            return Json(new { success = false, text = NotificationMessage.EntityUpdatedFailed.Replace("{0}", "Item") });
         }
         #endregion
 
+        #region Delete-Items-From-Modal
+        [PermissionAuthorize("Menu.Delete")]
+        public async Task<IActionResult> DeleteItem(long itemid)
+        {
+            if (itemid == null)
+            {
+                return Json(new { success = false, text = NotificationMessage.DoesNotExists.Replace("{0}", "Item") });
+            }
+
+            if (await _itemService.DeleteItem(itemid))
+            {
+                return Json(new { success = true, text = NotificationMessage.EntityDeleted.Replace("{0}", "Item") });
+            }
+            return Json(new { success = false, text = NotificationMessage.EntityDeletedFailed.Replace("{0}", "Item") });
+
+        }
+        #endregion
+
+        #endregion
+
         #region Pagination-Menu-Modifier
-        // [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.View")]
 
-        public IActionResult PaginationMenuModifiersByModGroups(long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
+        public async Task<IActionResult> PaginationMenuModifiersByModGroups(long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
         {
             try
             {
                 MenuViewModel menuData = new MenuViewModel();
-                menuData.modifierGroupList = _menuService.GetAllModifierGroupList();
+                menuData.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
 
                 if (modgrpid != null)
                 {
-                    menuData.PaginationForModifiersByModGroups = _menuService.GetMenuModifiersByModGroups(modgrpid, search, pageNumber, pageSize);
+                    menuData.PaginationForModifiersByModGroups = _modifierGroupService.GetMenuModifiersByModGroups(modgrpid, search, pageNumber, pageSize);
                 }
 
                 return PartialView("_ModifierPartial", menuData.PaginationForModifiersByModGroups);
@@ -361,17 +412,16 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Existing-Pagination-Menu-Modifier
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.View")]
 
-        public IActionResult ExistingPaginationMenuModifiersByModGroups(string search = "", int pageNumber = 1, int pageSize = 3)
+        public async Task<IActionResult> ExistingPaginationMenuModifiersByModGroups(string search = "", int pageNumber = 1, int pageSize = 3)
         {
             try
             {
                 MenuViewModel menuData = new MenuViewModel();
-                menuData.modifierGroupList = _menuService.GetAllModifierGroupList();
+                menuData.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
 
-                menuData.PaginationForModifiersByModGroups = _menuService.ExistingGetMenuModifiersByModGroups(search, pageNumber, pageSize);
+                menuData.PaginationForModifiersByModGroups = _modifierGroupService.ExistingGetMenuModifiersByModGroups(search, pageNumber, pageSize);
 
                 return PartialView("_ExistingModifierPartial", menuData.PaginationForModifiersByModGroups);
             }
@@ -382,32 +432,40 @@ namespace Pizza_Shop_Project.Controllers
         }
         #endregion
 
+        #region Modifier Group CRUD
+
         #region Add Modifier Group POST
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> AddModifierGroup(MenuViewModel MenuVM)
         {
+            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExistForAdd(MenuVM.addModifierGroupVM);
+
+            if (IsModifierGrpExists)
+            {
+                return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Modifier Group") });
+            }
+
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-            var addModifierGroupStatus = await _menuService.AddModifierGroup(MenuVM.addModifierGroupVM, userId);
+            bool addModifierGroupStatus = await _modifierGroupService.AddModifierGroup(MenuVM.addModifierGroupVM, userId);
             if (addModifierGroupStatus)
             {
-                return Json(new { success = true, text = "Modifier Group Added successfully" });
+                return Json(new { success = true, text = NotificationMessage.EntityCreated.Replace("{0}", "Modifier Group") });
             }
-            return Json(new { success = false, text = "Failed to Add Modifier Group" });
+            return Json(new { success = false, text = NotificationMessage.EntityCreatedFailed.Replace("{0}", "Modifier Group") });
         }
         #endregion
 
         #region Edit Modifier Group 
 
         [PermissionAuthorize("Menu.AddEdit")]
-        public IActionResult GetModifierGroupByModifierGroupId(long modgrpid)
+        public async Task<IActionResult> GetModifierGroupByModifierGroupId(long modgrpid)
         {
-            var modifiers = _menuService.GetModifiersByModifierGroupId(modgrpid);
-            var modifierGroup = _menuService.GetModifierGroupByModifierGroupId(modgrpid);
+            List<ModifiersViewModel>? modifiers = await _modifierGroupService.GetModifiersByModifierGroupId(modgrpid);
+            Modifiergroup? modifierGroup = await _modifierGroupService.GetModifierGroupByModifierGroupId(modgrpid);
             return Json(new { modifiers, modifierGroup });
         }
 
@@ -416,154 +474,172 @@ namespace Pizza_Shop_Project.Controllers
         public async Task<IActionResult> AddModToModifierGrpAfterEdit(long modgrpid, long modid)
         {
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-            var addModToModifierGrpStatus = await _menuService.AddModToModifierGrpAfterEdit(modgrpid, modid, userId);
+            bool addModToModifierGrpStatus = await _modifierGroupService.AddModToModifierGrpAfterEdit(modgrpid, modid, userId);
             if (addModToModifierGrpStatus)
             {
-                return Json(new { success = true, text = "Modifier Added to Modifier Group successfully" });
+                return Json(new { });
             }
-            return Json(new { success = false, text = "Failed to Add Modifier to Modifier Group" });
+            return Json(new { });
         }
 
         [PermissionAuthorize("Menu.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> DeleteModToModifierGrpAfterEdit(long modid, long modgrpid)
         {
-            var deleteModToModifierGrpStatus = await _menuService.DeleteModToModifierGrpAfterEdit(modid, modgrpid);
+            bool deleteModToModifierGrpStatus = await _modifierGroupService.DeleteModToModifierGrpAfterEdit(modid, modgrpid);
             if (deleteModToModifierGrpStatus)
             {
-                return Json(new { success = true, text = "Modifier Deleted from Modifier Group successfully" });
+                return Json(new { });
             }
-            return Json(new { success = false, text = "Failed to Delete Modifier from Modifier Group" });
+            return Json(new { });
         }
 
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> EditModifierGroup(MenuViewModel MenuVM)
         {
+            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExistForEdit(MenuVM.addModifierGroupVM);
+
+            if (IsModifierGrpExists)
+            {
+                return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Modifier Group") });
+            }
+
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-            var editModifierGroupStatus = await _menuService.EditModifierGroup(MenuVM.addModifierGroupVM, userId);
+            bool editModifierGroupStatus = await _modifierGroupService.EditModifierGroup(MenuVM.addModifierGroupVM, userId);
             if (editModifierGroupStatus)
             {
-                return Json(new {grpId = MenuVM.addModifierGroupVM.ModifierGrpId, success = true, text = "Modifier Group Updated successfully" });
+                return Json(new { grpId = MenuVM.addModifierGroupVM.ModifierGrpId, success = true, text = NotificationMessage.EntityUpdated.Replace("{0}", "Modifier Group") });
             }
-            return Json(new { success = false, text = "Failed to Update Modifier Group" });
+            return Json(new { success = false, text = NotificationMessage.EntityUpdatedFailed.Replace("{0}", "Modifier Group") });
         }
 
         #endregion
 
         #region Delete Modifier Group POST
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.Delete")]
         [HttpPost]
         public async Task<IActionResult> DeleteModifierGroup(long modgrpid)
         {
-            var deletemodifiergrpStatus = await _menuService.DeleteModifierGroup(modgrpid);
-            if (deletemodifiergrpStatus)
+            if (modgrpid == null)
             {
-                return Json(new { success = true, text = "Modifier Group Deleted successfully" });
+                return Json(new { success = false, text = NotificationMessage.DoesNotExists.Replace("{0}", "Modifier Group") });
             }
-            return Json(new { success = false, text = "Failed to Delete Modifier Group" });
+
+            if (await _modifierGroupService.DeleteModifierGroup(modgrpid))
+            {
+                return Json(new { success = true, text = NotificationMessage.EntityDeleted.Replace("{0}", "Modifier Group") });
+            }
+            return Json(new { success = false, text = NotificationMessage.EntityDeletedFailed.Replace("{0}", "Modifier Group") });
         }
         #endregion
 
+        #endregion
+
         #region Get All ModifierGroup List
-        public IActionResult GetAllModifierGroupList()
+        [PermissionAuthorize("Menu.View")]
+        public async Task<IActionResult> GetAllModifierGroupList()
         {
             MenuViewModel MenuData = new();
-            MenuData.modifierGroupList = _menuService.GetAllModifierGroupList();
+            MenuData.modifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
             return PartialView("_ModifierGroupPartial", MenuData);
         }
         #endregion
 
+        #region Modifier CRUD
+
         #region Add Modifier Item
 
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
-        public IActionResult AddModifierItem()
+        public async Task<IActionResult> AddModifierItem()
         {
             MenuViewModel MenuVM = new MenuViewModel();
-            var ModifierGroupList = _menuService.GetAllModifierGroupList();
+            List<Modifiergroup>? ModifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
             ViewBag.modifierGroupList = new SelectList(ModifierGroupList, "ModifierGrpId", "ModifierGrpName");
             return PartialView("_AddModifierPartial", MenuVM);
         }
 
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> AddModifierItem([FromForm] MenuViewModel MenuVm)
         {
+            bool IsModifierNameExists = _modifierItemService.IsModifierExistForAdd(MenuVm.addModifier);
+
+            if (IsModifierNameExists)
+            {
+                return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Modifier") });
+            }
+
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-            var addModifierStatus = await _menuService.AddModifierItem(MenuVm.addModifier, userId);
-
-            if (addModifierStatus)
+            if (await _modifierItemService.AddModifierItem(MenuVm.addModifier, userId))
             {
-                // TempData["SuccessMessage"] = "Modifier added successfully";
-                return Json(new { success = true, text = "Modifier Added successfully" });
+                return Json(new { success = true, text = NotificationMessage.EntityCreated.Replace("{0}", "Modifier") });
             }
-            // TempData["ErrorMessage"] = "Failed to add Modifier";
-            return Json(new { success = false, text = "Failed to Add Modifier" });
+            return Json(new { success = false, text = NotificationMessage.EntityCreatedFailed.Replace("{0}", "Modifier") });
         }
         #endregion
 
         #region Edit Modifier Item
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
-        public IActionResult GetModifiersByModifierId(long modid)
+        public async Task<IActionResult> GetModifiersByModifierId(long modid)
         {
             MenuViewModel MenuVM = new MenuViewModel();
-            var ModifierGroupList = _menuService.GetAllModifierGroupList();
+            List<Modifiergroup>? ModifierGroupList = await _modifierGroupService.GetAllModifierGroupList();
             ViewBag.modifierGroupList = new SelectList(ModifierGroupList, "ModifierGrpId", "ModifierGrpName");
-            MenuVM.addModifier = _menuService.GetModifiersByModifierId(modid);
+            MenuVM.addModifier = _modifierItemService.GetModifiersByModifierId(modid);
             return PartialView("_EditModifierPartial", MenuVM);
         }
 
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.AddEdit")]
         [HttpPost]
         public async Task<IActionResult> EditModifierItem([FromForm] MenuViewModel MenuVm)
         {
+            bool IsModifierNameExists = _modifierItemService.IsModifierExistForEdit(MenuVm.addModifier);
+            if (IsModifierNameExists)
+            {
+                return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Modifier") });
+            }
+
             string token = Request.Cookies["AuthToken"];
-            var userData = _userService.getUserFromEmail(token);
+            List<User>? userData = _userService.getUserFromEmail(token);
             long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-            var editModifierStatus = await _menuService.EditModifierItem(MenuVm.addModifier, userId);
-
-            if (editModifierStatus)
+            if (await _modifierItemService.EditModifierItem(MenuVm.addModifier, userId))
             {
-                // TempData["SuccessMessage"] = "Modifier Updated successfully";
-                return Json(new { success = true, text = "Modifier Updated successfully" });
+                return Json(new { success = true, text = NotificationMessage.EntityUpdated.Replace("{0}", "Modifier") });
             }
-            // TempData["ErrorMessage"] = "Failed to Update Modifier";
-            return Json(new { success = false, text = "Failed to Update Modifier" });
+            return Json(new { success = false, text = NotificationMessage.EntityUpdatedFailed.Replace("{0}", "Modifier") });
         }
         #endregion
 
         #region Delete Modifiers From Modal
-        [Authorize(Roles = "Admin")]
         [PermissionAuthorize("Menu.Delete")]
         [HttpPost]
         public async Task<IActionResult> DeleteModifier(long modid)
         {
-            var isDeleted = await _menuService.DeleteModifier(modid);
-
-            if (isDeleted)
+            if (modid == null)
             {
-                // TempData["SuccessMessage"] = "Modifier deleted successfully";
-                return Json(new { success = true, text = "Modifier Deleted Successfully" });
+                return Json(new { success = false, text = NotificationMessage.DoesNotExists.Replace("{0}", "Modifier") });
             }
-            // TempData["ErrorMessage"] = "Modifier cannot be deleted";
-            return Json(new { success = false, text = "Failed to Delete Modifier" });
+
+            if (await _modifierItemService.DeleteModifier(modid))
+            {
+                return Json(new { success = true, text = NotificationMessage.EntityDeleted.Replace("{0}", "Modifier") });
+            }
+            return Json(new { success = false, text = NotificationMessage.EntityDeletedFailed.Replace("{0}", "Modifier") });
         }
         #endregion
+
+        #endregion
+
     }
 }

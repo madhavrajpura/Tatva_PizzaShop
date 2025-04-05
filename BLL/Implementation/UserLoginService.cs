@@ -5,6 +5,8 @@ using DAL.Models;
 using DAL.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using BLL.Interface;
+using BLL.common;
+using Microsoft.Extensions.Configuration;
 
 namespace BLL.Implementation;
 
@@ -12,12 +14,15 @@ public class UserLoginService : IUserLoginService
 {
     private readonly PizzaShopDbContext _context;
     private readonly IJWTService _jwtService;
+    private readonly IConfiguration _configuration;
 
     #region User Login Constructor
-    public UserLoginService(PizzaShopDbContext context, IJWTService jwtService)
+    public UserLoginService(PizzaShopDbContext context, IJWTService jwtService, IConfiguration configuration)
     {
         _context = context;
         _jwtService = jwtService;
+        _configuration = configuration;
+
     }
     #endregion
 
@@ -47,14 +52,14 @@ public class UserLoginService : IUserLoginService
     public async Task<string> VerifyUserLogin(UserLoginViewModel userLogin)
     {
         // var user = _context.UserLogins.FirstOrDefault(e => e.Email == userLogin.Email && e.Password == EncryptPassword(userLogin.Password));
-        var user = _context.UserLogins.Where(e => e.Email == userLogin.Email).FirstOrDefault();
+        UserLogin? user = await _context.UserLogins.FirstOrDefaultAsync(e => e.Email == userLogin.Email);
 
         if (user != null && user.Isdelete == false)
         {
             if (user.Password == EncryptPassword(userLogin.Password))
             {
-                var roleObj = _context.Roles.FirstOrDefault(e => e.RoleId == user.RoleId);
-                var token = _jwtService.GenerateToken(userLogin.Email, roleObj.RoleName);
+                Role? roleObj = _context.Roles.SingleOrDefault(e => e.RoleId == user.RoleId);
+                string token = _jwtService.GenerateToken(userLogin.Email, roleObj.RoleName);
                 return token;
             }
             return null;
@@ -67,38 +72,23 @@ public class UserLoginService : IUserLoginService
     //  Used to Send Email
     public async Task<bool> SendEmail(ForgotPasswordViewModel forgotpassword, string resetLink)
     {
-        var user = forgotpassword.Email;
-        if (user != null)
+        string email = forgotpassword.Email;
+        if (email != null)
         {
             try
             {
-                var senderEmail = new MailAddress("tatvasoft.pca106@outlook.com", "sender");
-                var receiverEmail = new MailAddress(forgotpassword.Email, "reciever");
-                var password = "P}N^{z-]7Ilp";
-                var sub = "Forgot Password";
-                var body = $@"
-                <div style='max-width: 500px; font-family: Arial, sans-serif; border: 1px solid #ddd;'>
-                <div style='background: #006CAC; padding: 10px; text-align: center; height:90px; max-width:100%; display: flex; justify-content: center; align-items: center;'>
-                    <img src='https://images.vexels.com/media/users/3/128437/isolated/preview/2dd809b7c15968cb7cc577b2cb49c84f-pizza-food-restaurant-logo.png' style='max-width: 50px;' />
-                    <span style='color: #fff; font-size: 24px; margin-left: 10px; font-weight: 600;'>PIZZASHOP</span>
-                </div>
-                <div style='padding: 20px 5px; background-color: #e8e8e8;'>
-                    <p>Pizza shop,</p>
-                    <p>Please click <a href='{resetLink}' style='color: #1a73e8; text-decoration: none; font-weight: bold;'>here</a>
-                        to reset your account password.</p>
-                    <p>If you encounter any issues or have any questions, please do not hesitate to contact our support team.</p>
-                    <p><strong style='color: orange;'>Important Note:</strong> For security reasons, the link will expire in 24 hours.
-                        If you did not request a password reset, please ignore this email or contact our support team immediately.
-                    </p>
-                </div>
-                </div>";
-                var smtp = new SmtpClient
+                MailAddress senderEmail = new MailAddress("tatvasoft.pca155@outlook.com", "sender");
+                MailAddress receiverEmail = new MailAddress(forgotpassword.Email, "reciever");
+                string password = "P}N^{z-]7Ilp";
+                string sub = "Forgot Password";
+                string body = EmailTemplate.ResetPasswordEmail(resetLink);
+                SmtpClient smtp = new SmtpClient
                 {
-                    Host = "mail.etatvasoft.com",
-                    Port = 587,
-                    EnableSsl = true,
+                    Host = _configuration["smtp:Host"],
+                    Port = int.Parse(_configuration["smtp:Port"]),
+                    EnableSsl = bool.Parse(_configuration["smtp:EnableSsl"]),
                     DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
+                    UseDefaultCredentials = bool.Parse(_configuration["smtp:UseDefaultCredentials"]),
                     Credentials = new NetworkCredential(senderEmail.Address, password)
                 };
                 using (var mess = new MailMessage(senderEmail, receiverEmail))
@@ -109,7 +99,7 @@ public class UserLoginService : IUserLoginService
                     await smtp.SendMailAsync(mess);
                 }
             }
-            catch (Exception e)
+            catch (Exception exp)
             {
                 return false;
             }
@@ -121,12 +111,17 @@ public class UserLoginService : IUserLoginService
     #endregion
 
     #region Reset Password
-    // Used to If email exists and will update the encrypted password in the DB. 
+    // Used to find If email exists and will update the encrypted password in the DB. 
     public async Task<bool> ResetPassword(ResetPasswordViewModel resetPassword)
     {
-        var data = _context.UserLogins.FirstOrDefault(e => e.Email == resetPassword.Email && e.Isdelete == false);
-        if (data != null && data.Isdelete == false)
+        UserLogin? data = _context.UserLogins.FirstOrDefault(e => e.Email == resetPassword.Email && !e.Isdelete);
+        if (data != null && !data.Isdelete)
         {
+            // Check if the new password is the same as the old password
+            if (data.Password == EncryptPassword(resetPassword.Password))
+            {
+                return false;
+            }
             data.Password = EncryptPassword(resetPassword.Password);
             _context.Update(data);
             await _context.SaveChangesAsync();
@@ -167,11 +162,7 @@ public class UserLoginService : IUserLoginService
     #region Check Email Exists
     public bool CheckEmailExist(string email)
     {
-        if (_context.UserLogins.FirstOrDefault(e => e.Email == email && e.Isdelete == false) != null)
-        {
-            return true;
-        }
-        return false;
+        return _context.UserLogins.Any(e => e.Email == email && !e.Isdelete);
     }
     #endregion
 

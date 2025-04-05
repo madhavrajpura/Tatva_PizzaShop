@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DAL.ViewModels;
 
 public class ModifiersViewModel
@@ -10,6 +12,7 @@ public class ModifiersViewModel
 
     public string? Unit { get; set; }
 
+    [Range(0, 999, ErrorMessage = "Rate should be Positive and cannot exceed 3 digit")]
     public decimal? Rate { get; set; }
 
     public int Quantity { get; set; }

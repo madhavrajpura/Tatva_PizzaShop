@@ -26,7 +26,7 @@ public class RolePermissionService : IRolePermission
     #region Edit Permission Mapping
     public bool EditPermissionMapping(RolesPermissionViewModel rolepermissionmapping)
     {
-        var data = _context.Rolepermissionmappings.FirstOrDefault(x => x.RolepermissionmappingId == rolepermissionmapping.RolepermissionmappingId);
+        Rolepermissionmapping? data = _context.Rolepermissionmappings.FirstOrDefault(x => x.RolepermissionmappingId == rolepermissionmapping.RolepermissionmappingId);
         if (data == null)
         {
             return false;
@@ -34,7 +34,7 @@ public class RolePermissionService : IRolePermission
         data.Canview = rolepermissionmapping.Canview;
         data.Canaddedit = rolepermissionmapping.Canaddedit;
         data.Candelete = rolepermissionmapping.Candelete;
-        data.Permissioncheck = rolepermissionmapping.Permissioncheck;
+        // data.Permissioncheck = rolepermissionmapping.Permissioncheck;
         _context.Update(data);
         _context.SaveChanges();
         return true;
@@ -58,7 +58,7 @@ public class RolePermissionService : IRolePermission
             obj.Canview = data[i].Canview;
             obj.Canaddedit = data[i].Canaddedit;
             obj.Candelete = data[i].Candelete;
-            obj.Permissioncheck = data[i].Permissioncheck;
+            // obj.Permissioncheck = data[i].Permissioncheck;
             permissions.Add(obj);
         }
         return permissions;

@@ -1,5 +1,6 @@
 using BLL.Interface;
 using DAL.ViewModels;
+using DAL.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Pizza_Shop_Project.Controllers;
@@ -31,11 +32,13 @@ public class TaxFeesController : Controller
     public IActionResult PaginationForTax(int pageNumber = 1, string search = "", int pageSize = 3)
     {
 
-        var taxList = _taxFeesService.GetTaxList(pageNumber, search, pageSize);
+        PaginationViewModel<TaxViewModel>? taxList = _taxFeesService.GetTaxList(pageNumber, search, pageSize);
 
         return PartialView("_TaxListDataPartial", taxList);
     }
     #endregion
+
+    #region Tax CRUD
 
     #region Add Edit Tax GET
     public IActionResult AddEditTax(long taxid)
@@ -57,31 +60,44 @@ public class TaxFeesController : Controller
 
     #region Add Edit Tax POST
 
+    // [HttpPost]
+    // public async Task<IActionResult> AddEditTax([FromForm] TaxFeesViewModel taxFeesVM)
+    // {
+    //     string? token = Request.Cookies["AuthToken"];
+    //     List<User>? userData = _userService.getUserFromEmail(token);
+    //     long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+    //     if (taxFeesVM.taxVM.TaxId == 0)
+    //     {
+    //         bool addTaxStatus = await _taxFeesService.AddTax(taxFeesVM.taxVM, userId);
+    //         if (addTaxStatus)
+    //         {
+    //             return Json(new { success = true, text = "Tax Added successfully" });
+    //         }
+    //         return Json(new { success = false, text = "Failed to Add Tax, Check If already exists!" });
+    //     }
+    //     else
+    //     {
+    //         bool editTaxStatus = await _taxFeesService.EditTax(taxFeesVM.taxVM, userId);
+    //         if (editTaxStatus)
+    //         {
+    //             return Json(new { success = true, text = "Tax Updated successfully" });
+    //         }
+    //         return Json(new { success = false, text = "Failed to Update Tax, Check If already exists!" });
+    //     }
+    // }
+
     [HttpPost]
     public async Task<IActionResult> AddEditTax([FromForm] TaxFeesViewModel taxFeesVM)
     {
-        string token = Request.Cookies["AuthToken"];
-        var userData = _userService.getUserFromEmail(token);
+        string? token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        if (taxFeesVM.taxVM.TaxId == 0)
-        {
-            var addTaxStatus = await _taxFeesService.AddTax(taxFeesVM.taxVM, userId);
-            if (addTaxStatus)
-            {
-                return Json(new { success = true, text = "Tax Added successfully" });
-            }
-            return Json(new { success = false, text = "Failed to Add Tax, Check If already exists!" });
-        }
-        else
-        {
-            var editTaxStatus = await _taxFeesService.EditTax(taxFeesVM.taxVM, userId);
-            if (editTaxStatus)
-            {
-                return Json(new { success = true, text = "Tax Updated successfully" });
-            }
-            return Json(new { success = false, text = "Failed to Update Tax, Check If already exists!" });
-        }
+        bool taxStatus = await _taxFeesService.AddEditTax(taxFeesVM.taxVM, userId);
+        return Json(taxStatus
+            ? new { success = true, text = taxFeesVM.taxVM.TaxId == 0 ? "Tax Added successfully" : "Tax Updated successfully" }
+            : new { success = false, text = $"Failed to {(taxFeesVM.taxVM.TaxId == 0 ? "Add" : "Update")} Tax, Check If already exists!" });
     }
     #endregion
 
@@ -89,7 +105,7 @@ public class TaxFeesController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteTaxAsync(long taxid)
     {
-        var deleteTaxStatus = await _taxFeesService.DeleteTax(taxid);
+        bool deleteTaxStatus = await _taxFeesService.DeleteTax(taxid);
         if (deleteTaxStatus)
         {
             return Json(new { success = true, text = "Tax Deleted successfully" });
@@ -97,4 +113,7 @@ public class TaxFeesController : Controller
         return Json(new { success = false, text = "Failed to Delete Tax" });
     }
     #endregion
+
+    #endregion
+
 }

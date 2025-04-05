@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using DAL.ViewModels;
 using BLL.Interface;
 using Microsoft.AspNetCore.Authorization;
+using BLL.common;
 
 namespace Pizza_Shop_Project.Controllers
 {
@@ -24,7 +25,6 @@ namespace Pizza_Shop_Project.Controllers
 
             if (Request.Cookies.ContainsKey("email"))
             {
-                // TempData["SuccessMessage"] = "Login Successfully";
                 return RedirectToAction("Dashboard", "User");
             }
             // ViewData["RoleId"] = new SelectList(_userLoginService.Roles, "RoleId", "RoleId");
@@ -37,7 +37,7 @@ namespace Pizza_Shop_Project.Controllers
         public async Task<IActionResult> VerifyUserLogin(UserLoginViewModel userLogin)
         {
 
-            var verification_token = await _userLoginService.VerifyUserLogin(userLogin);
+            string? verification_token = await _userLoginService.VerifyUserLogin(userLogin);
 
             CookieOptions option = new CookieOptions();
             option.Expires = DateTime.Now.AddHours(30);
@@ -53,12 +53,15 @@ namespace Pizza_Shop_Project.Controllers
                 {
                     Response.Cookies.Append("email", userLogin.Email, option);
                 }
-                TempData["SuccessMessage"] = "Login Successfully";
+
+                TempData["SuccessMessage"] = NotificationMessage.LoginSuccess;
                 return RedirectToAction("Dashboard", "User");
             }
-            TempData["ErrorMessage"] = "Please enter valid credentials";
+
+            TempData["ErrorMessage"] = NotificationMessage.InvalidCredentials;
             return RedirectToAction("VerifyUserLogin", "UserLogin");
         }
+
         #endregion
 
         #region GetEmail
@@ -80,30 +83,30 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel forgotpassword)
         {
-            var userLogin = new UserLoginViewModel();
+            UserLoginViewModel? userLogin = new UserLoginViewModel();
             userLogin.Email = forgotpassword.Email;
-            var getpassword = _userLoginService.GetPassword(userLogin.Email);
-            var CheckEmailExists =  _userLoginService.CheckEmailExist(userLogin.Email);
+            string? getpassword = _userLoginService.GetPassword(userLogin.Email);
+            bool CheckEmailExists = _userLoginService.CheckEmailExist(userLogin.Email);
             if (ModelState.IsValid)
             {
                 if (CheckEmailExists)
                 {
-                    var resetLink = Url.Action("ResetPassword", "UserLogin", new { reset_token = _jwtService.GenerateResetToken(userLogin.Email, getpassword) }, Request.Scheme);
-                    var sendEmail = await _userLoginService.SendEmail(forgotpassword, resetLink);
+                    string? resetLink = Url.Action("ResetPassword", "UserLogin", new { reset_token = _jwtService.GenerateResetToken(userLogin.Email, getpassword) }, Request.Scheme);
+                    bool sendEmail = await _userLoginService.SendEmail(forgotpassword, resetLink);
                     if (sendEmail)
                     {
-                        TempData["SuccessMessage"] = "Reset password link sent successfully";
+                        TempData["SuccessMessage"] = NotificationMessage.EmailSentSuccessfully;
                         return View("VerifyUserLogin");
                     }
                     else
                     {
-                        TempData["ErrorMessage"] = "Email Server Error.Please try again!";
+                        TempData["ErrorMessage"] = NotificationMessage.EmailSendingFailed;
                         return View("ForgotPassword");
                     }
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Email does not exists";
+                    TempData["ErrorMessage"] = NotificationMessage.DoesNotExists.Replace("{0}", "Email");
                     return View("ForgotPassword");
                 }
             }
@@ -117,9 +120,9 @@ namespace Pizza_Shop_Project.Controllers
             // var resetPassword = new ResetPasswordViewModel();
             // resetPassword.Email = _userLoginService.Base64Decode(Email);
 
-            var reset_email = _jwtService.GetClaimValue(reset_token, "email");
-            var reset_password = _jwtService.GetClaimValue(reset_token, "password");
-            var Db_Password = _userLoginService.GetPassword(reset_email);
+            string? reset_email = _jwtService.GetClaimValue(reset_token, "email");
+            string? reset_password = _jwtService.GetClaimValue(reset_token, "password");
+            string? Db_Password = _userLoginService.GetPassword(reset_email);
 
             if (Db_Password == reset_password)
             {
@@ -127,7 +130,7 @@ namespace Pizza_Shop_Project.Controllers
                 resetPassData.Email = _jwtService.GetClaimValue(reset_token, "email");
                 return View(resetPassData);
             }
-            TempData["ErrorMessage"] = "You have already changed the Password once";
+            TempData["ErrorMessage"] = NotificationMessage.ResetPasswordChangedError;
             return RedirectToAction("VerifyUserLogin", "UserLogin");
         }
 
@@ -136,31 +139,31 @@ namespace Pizza_Shop_Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                var IsEmailExistsStatus = _userLoginService.CheckEmailExist(resetPassword.Email);
+                bool IsEmailExistsStatus = _userLoginService.CheckEmailExist(resetPassword.Email);
 
                 if (!IsEmailExistsStatus)
                 {
-                    TempData["ErrorMessage"] = "Email does not exist. Enter existing email to set password.";
+                    TempData["ErrorMessage"] = NotificationMessage.DoesNotExists.Replace("{0}", "Email");
                     return View("ResetPassword");
                 }
 
                 if (resetPassword.Password == resetPassword.ConfirmPassword)
                 {
-                    var checkresetpassword = await _userLoginService.ResetPassword(resetPassword);
+                    bool checkresetpassword = await _userLoginService.ResetPassword(resetPassword);
                     if (checkresetpassword)
                     {
-                        TempData["SuccessMessage"] = "Password Reset Successfully";
+                        TempData["SuccessMessage"] = NotificationMessage.PasswordChanged;
                         return RedirectToAction("VerifyUserLogin");
                     }
                     else
                     {
-                        TempData["ErrorMessage"] = "";
+                        TempData["ErrorMessage"] = NotificationMessage.PasswordChangeFailed;
                         return View("ResetPassword");
                     }
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Password and Confirm Password should be same";
+                    TempData["ErrorMessage"] = NotificationMessage.PasswordCheck;
                     return View("ResetPassword");
                 }
             }

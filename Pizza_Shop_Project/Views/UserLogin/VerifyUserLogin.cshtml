@@ -14,7 +14,6 @@
 
         </div>
 
-
         <!-- Login Section -->
         <div
             class="login-main-div col-md-6 text-center text-md-start d-flex flex-column align-content-center justify-content-center   " style="height:inherit;">
@@ -67,10 +66,8 @@
 
 @section Scripts {
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 @* Toggle Password Script  *@
     <script>
@@ -90,26 +87,6 @@
         }
 
 
-    </script>
-
-@* Toaster Script  *@
-    <script>
-        $(document).ready(function () {
-            var successMessage = '@TempData["SuccessMessage"]';
-            var errorMessage = '@TempData["ErrorMessage"]';
-            console.log("successMessage", successMessage);
-            toastr.options = {
-                "closeButton": true,
-                "progressBar": true,
-                "timeOut": "2000"
-            };
-            if (successMessage) {
-                toastr.success(successMessage);
-            }
-            if (errorMessage) {
-                toastr.error(errorMessage);
-            }
-        });
     </script>
 
 @* ForgotPassword script  *@

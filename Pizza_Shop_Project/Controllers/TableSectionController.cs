@@ -1,3 +1,4 @@
+
 using BLL.Interface;
 using DAL.Models;
 using DAL.ViewModels;
@@ -67,6 +68,8 @@ public class TableSectionController : Controller
     }
     #endregion
 
+    #region Section CRUD
+
     #region Add Section
     // [PermissionAuthorize("TableSection.AddEdit")]
     public IActionResult AddSection()
@@ -76,14 +79,14 @@ public class TableSectionController : Controller
     }
 
     [PermissionAuthorize("TableSection.AddEdit")]
-    [HttpPost]      
+    [HttpPost]
     public async Task<IActionResult> AddSection(TableSectionViewModel tableSectionVM)
     {
         string token = Request.Cookies["AuthToken"];
-        var userData = _userService.getUserFromEmail(token);
+        List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        var addSectionStatus = await _tableSectionService.AddSection(tableSectionVM.sectionVM, userId);
+        bool addSectionStatus = await _tableSectionService.AddSection(tableSectionVM.sectionVM, userId);
         if (addSectionStatus)
         {
             return Json(new { success = true, text = "Section Added successfully" });
@@ -93,7 +96,7 @@ public class TableSectionController : Controller
     #endregion
 
     #region Edit Section
-    // [PermissionAuthorize("TableSection.AddEdit")]
+    [PermissionAuthorize("TableSection.AddEdit")]
     public IActionResult GetSectionById(long sectionId)
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
@@ -106,10 +109,10 @@ public class TableSectionController : Controller
     public async Task<IActionResult> EditSection(TableSectionViewModel tableSectionVM)
     {
         string token = Request.Cookies["AuthToken"];
-        var userData = _userService.getUserFromEmail(token);
+        List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        var editSectionStatus = await _tableSectionService.EditSection(tableSectionVM.sectionVM, userId);
+        bool editSectionStatus = await _tableSectionService.EditSection(tableSectionVM.sectionVM, userId);
         if (editSectionStatus)
         {
             return Json(new { success = true, text = "Section Updated successfully" });
@@ -125,9 +128,16 @@ public class TableSectionController : Controller
     {
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
 
-        var deleteSectionStatus = await _tableSectionService.DeleteSection(sectionid);
 
         tableSectionVM.SectionList = _tableSectionService.GetAllSections();
+
+        bool occupiedTableInSection = await _tableSectionService.IsTableOccupiedinSection(sectionid);
+        if (occupiedTableInSection)
+        {
+            return Json(new { success = false, text = "Section Cannot be deleted where Table is Occupied" });
+        }
+        
+        bool deleteSectionStatus = await _tableSectionService.DeleteSection(sectionid);
 
         if (deleteSectionStatus)
         {
@@ -135,6 +145,8 @@ public class TableSectionController : Controller
         }
         return Json(new { success = false, text = "Failed to Delete Section" });
     }
+    #endregion
+
     #endregion
 
     #region Get All Section List
@@ -146,6 +158,8 @@ public class TableSectionController : Controller
         return PartialView("_SectionListPartial", tableSectionVM);
     }
     #endregion
+
+    #region Table CRUD
 
     #region Add Table
     [PermissionAuthorize("TableSection.AddEdit")]
@@ -159,14 +173,15 @@ public class TableSectionController : Controller
         return PartialView("_AddTablePartial", tableSectionVM);
     }
 
+    [PermissionAuthorize("TableSection.AddEdit")]
     [HttpPost]
     public async Task<IActionResult> AddTable([FromForm] TableSectionViewModel tableSectionVM)
     {
         string token = Request.Cookies["AuthToken"];
-        var userData = _userService.getUserFromEmail(token);
+        List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        var addTableStatus = await _tableSectionService.AddTable(tableSectionVM.tablesVM, userId);
+        bool addTableStatus = await _tableSectionService.AddTable(tableSectionVM.tablesVM, userId);
         if (addTableStatus)
         {
             return Json(new { success = true, text = "Table Added successfully" });
@@ -191,10 +206,10 @@ public class TableSectionController : Controller
     public async Task<IActionResult> EditTable([FromForm] TableSectionViewModel tableSectionVM)
     {
         string token = Request.Cookies["AuthToken"];
-        var userData = _userService.getUserFromEmail(token);
+        List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        var editTableStatus = await _tableSectionService.EditTable(tableSectionVM.tablesVM, userId);
+        bool editTableStatus = await _tableSectionService.EditTable(tableSectionVM.tablesVM, userId);
         if (editTableStatus)
         {
             return Json(new { success = true, text = "Table Updated successfully" });
@@ -208,13 +223,21 @@ public class TableSectionController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteTable(long tableid)
     {
-        var deleteTableStatus = await _tableSectionService.DeleteTable(tableid);
+        bool occupiedTable = await _tableSectionService.IsTableOccupied(tableid);
+        if (occupiedTable)
+        {
+            return Json(new { success = false, text = "Occupied Table Cannot be Deleted" });
+        }
+
+        bool deleteTableStatus = await _tableSectionService.DeleteTable(tableid);
         if (deleteTableStatus)
         {
             return Json(new { success = true, text = "Table Deleted successfully" });
         }
         return Json(new { success = false, text = "Failed to Delete Table" });
     }
+    #endregion
+
     #endregion
 
 }
