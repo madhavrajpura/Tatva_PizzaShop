@@ -29,6 +29,8 @@ builder.Services.AddScoped<ITableSectionService, TableSectionService>();
 builder.Services.AddScoped<ITaxFeesService, TaxFeesService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICustomerService,CustomerService>();
+builder.Services.AddScoped<IOrderAppKOTService,OrderAppKOTService>();
+builder.Services.AddScoped<IOrderAppTableService,OrderAppTableService>();
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
@@ -97,7 +99,8 @@ builder.Services.AddAuthorization(options =>
         "TableSection.View", "TableSection.AddEdit", "TableSection.Delete",
         "TaxFees.View", "TaxFees.AddEdit", "TaxFees.Delete",
         "Orders.View", "Orders.AddEdit", "Orders.Delete",
-        "Customers.View", "Customers.AddEdit", "Customers.Delete"
+        "Customers.View", "Customers.AddEdit", "Customers.Delete",
+        "AccountManager", "Chef","KOT"  
     };
 
     foreach (var permission in permissions)

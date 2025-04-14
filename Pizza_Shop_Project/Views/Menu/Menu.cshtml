@@ -748,25 +748,6 @@
         });
     </script>
 
-    @* Toaster Message *@
-    <script>
-        $(document).ready(function () {
-            var successMessage = '@TempData["SuccessMessage"]';
-            var errorMessage = '@TempData["ErrorMessage"]';
-            toastr.options = {
-                "closeButton": true,
-                "progressBar": true,
-                "timeOut": "2000"
-            };
-            if (successMessage) {
-                toastr.success(successMessage);
-            }
-            if (errorMessage) {
-                toastr.error(errorMessage);
-            }
-        });
-    </script>
-
     <script>
 
         // -------------------------------Category------------------------------------------------------
@@ -1389,32 +1370,6 @@
                     }
                 });
             });
-
-            // Items To Fill data in the Add modal 
-            @* $("#AddItemForm").on("submit", function (e) {
-                console.log("elaaaa a1");
-                e.preventDefault();
-                console.log("elaaaa a2");
-
-                let formData = new FormData(this);
-                formData.append('itemData', JSON.stringify(itemData));
-
-                $.ajax({
-                    url: "/Menu/AddItem",
-                    type: "POST",
-                    data: formData,
-                    success: function (data) {
-                        if (data.success) {
-                            callSuccessToaster(data.text);
-                        } else {
-                            callErrorToaster(data.text);
-                        }
-                        $(".btn-close").click();
-                        PaginatedItemTable(catid, searchText, currentPage, pageSize);
-                        Item_Main_Checkbox_Select();
-                    }
-                });
-            }); *@
 
             // Items To Show data in the edit modal
             $("#EditItemModal").on('show.bs.modal', function (event) {

@@ -431,7 +431,10 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Isdelete).HasColumnName("isdelete");
-            entity.Property(e => e.Isready).HasColumnName("isready");
+            entity.Property(e => e.Isready)
+                .HasDefaultValueSql("false")
+                .HasColumnType("character varying")
+                .HasColumnName("isready");
             entity.Property(e => e.ModifiedAt)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("modified_at");
@@ -602,6 +605,9 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.ExtraInstruction)
+                .HasColumnType("character varying")
+                .HasColumnName("extra_instruction");
             entity.Property(e => e.Isdelete).HasColumnName("isdelete");
             entity.Property(e => e.ModifiedAt)
                 .HasColumnType("timestamp without time zone")
@@ -685,6 +691,7 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.ReadyQuantity).HasColumnName("readyQuantity");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
@@ -901,7 +908,10 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("modified_at");
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.SectionId).HasColumnName("section_id");
-            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Status)
+                .HasDefaultValueSql("false")
+                .HasColumnType("character varying")
+                .HasColumnName("status");
             entity.Property(e => e.TableName)
                 .HasMaxLength(100)
                 .HasColumnName("table_name");

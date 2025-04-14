@@ -25,9 +25,12 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Dashboard
-        [Authorize(Roles = "Admin")]
         public IActionResult Dashboard()
         {
+            if (User.IsInRole("Chef"))
+            {
+                return RedirectToAction("OrderAppKOT", "OrderAppKOT");
+            }
             ViewData["sidebar-active"] = "Dashboard";
             return View();
         }
@@ -49,7 +52,6 @@ namespace Pizza_Shop_Project.Controllers
 
         #region UserProfile
 
-        // [Authorize(Roles = "Admin")]
         public IActionResult UserProfile()
         {
             string? cookieSavedToken = Request.Cookies["AuthToken"];
@@ -60,6 +62,7 @@ namespace Pizza_Shop_Project.Controllers
             ViewBag.Countries = new SelectList(Countries, "CountryId", "CountryName");
             ViewBag.States = new SelectList(States, "StateId", "StateName");
             ViewBag.Cities = new SelectList(Cities, "CityId", "CityName");
+            ViewBag.Role = data[0].RoleId;
             return View(data[0]);
         }
 
@@ -110,6 +113,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
             }
 
+
             _userService.UpdateUserProfile(user, userEmail);
 
             CookieOptions options = new CookieOptions();
@@ -120,7 +124,12 @@ namespace Pizza_Shop_Project.Controllers
             }
             Response.Cookies.Append("username", user.Username, options);
 
+            string roleName = _JWTService.GetClaimValue(token, "role");
             TempData["SuccessMessage"] = NotificationMessage.ProfileUpdated;
+            if (roleName == "Chef")
+            {
+                return RedirectToAction("OrderAppKOT", "OrderAppKOT");
+            }
             return RedirectToAction("UserListData", "User");
         }
         #endregion
@@ -156,8 +165,13 @@ namespace Pizza_Shop_Project.Controllers
                 bool password_verify = _userService.UserChangePassword(changepassword, userEmail);
                 if (password_verify)
                 {
+                    string roleName = _JWTService.GetClaimValue(token, "role");
                     TempData["SuccessMessage"] = NotificationMessage.PasswordChanged;
-                    return RedirectToAction("UserProfile", "User");
+                    if (roleName == "Chef")
+                    {
+                        return RedirectToAction("OrderAppKOT", "OrderAppKOT");
+                    }
+                    return RedirectToAction("UserListData", "User");
                 }
                 else
                 {
@@ -173,6 +187,8 @@ namespace Pizza_Shop_Project.Controllers
         {
             Response.Cookies.Delete("AuthToken");
             Response.Cookies.Delete("email");
+            Response.Cookies.Delete("profileImage");
+            Response.Cookies.Delete("username");
             TempData["SuccessMessage"] = NotificationMessage.LogoutSuccess;
             return RedirectToAction("VerifyUserLogin", "UserLogin");
         }
