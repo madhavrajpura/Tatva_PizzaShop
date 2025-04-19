@@ -19,10 +19,10 @@ public class CustomerService : ICustomerService
     }
     #endregion
 
-    #region Pagination - Get Order List
-    public PaginationViewModel<CustomerViewModel> GetCustomerList(string search = "", string sortColumn = "", string sortDirection = "", int pageNumber = 1, int pageSize = 5, string fromDate = "", string toDate = "", string selectRange = "")
+    #region Get Data
+    public IQueryable<CustomerViewModel> GetAllCustomers()
     {
-        IQueryable<CustomerViewModel>? query = _context.Customers
+        return _context.Customers
             .Include(u => u.Orders)
             .Where(u => !u.Isdelete).OrderBy(u => u.CustomerId)
             .Select(u => new CustomerViewModel
@@ -35,6 +35,13 @@ public class CustomerService : ICustomerService
                 totalOrder = u.Orders.Count()
             })
             .AsQueryable();
+    }
+    #endregion
+
+    #region Pagination - Get Order List
+    public PaginationViewModel<CustomerViewModel> GetCustomerList(string search = "", string sortColumn = "", string sortDirection = "", int pageNumber = 1, int pageSize = 5, string fromDate = "", string toDate = "", string selectRange = "")
+    {
+        var query = GetAllCustomers();
 
         // IQueryable<CustomerViewModel>? query2 = from c in _context.Customers.Where(i => !i.Isdelete)
         //                                         join o in _context.Orders.Where(i => !i.Isdelete)
@@ -119,19 +126,7 @@ public class CustomerService : ICustomerService
     #region Export Order Data To Excel
     public Task<byte[]> ExportData(string search = "", string fromDate = "", string toDate = "", string selectRange = "")
     {
-        IQueryable<CustomerViewModel>? query = _context.Customers
-            .Include(u => u.Orders)
-            .Where(u => u.Isdelete == false).OrderBy(u => u.CustomerId)
-            .Select(u => new CustomerViewModel
-            {
-                CustomerId = u.CustomerId,
-                CustomerName = u.CustomerName,
-                Email = u.Email,
-                PhoneNo = u.PhoneNo,
-                CreatedAt = System.DateOnly.FromDateTime((DateTime)u.CreatedAt),
-                totalOrder = u.Orders.Count()
-            })
-            .AsQueryable();
+        var query = GetAllCustomers();
 
         // Apply search 
         if (!string.IsNullOrEmpty(search))
@@ -413,36 +408,171 @@ public class CustomerService : ICustomerService
         }
     }
     #endregion
+
+    #region Customer History
     public CustomerHistoryViewModel GetCustomerHistory(long customerid)
     {
-        CustomerHistoryViewModel? customerDetails = _context.Customers.
-        Include(x => x.Orders).
-        ThenInclude(x => x.Orderdetails).
-        ThenInclude(x => x.Order.PaymentStatus).
-        Where(x => x.CustomerId == customerid).
-        Select(x => new CustomerHistoryViewModel
-        {
-            // Customer Details
+        // Get customer details
+        // var customer = _context.Customers.
+        // Include(x => x.Orders).
+        // ThenInclude(x => x.Orderdetails).
+        // ThenInclude(x => x.Order.PaymentStatus).
+        // Where(x => x.CustomerId == customerid && !x.Isdelete);
 
-            CustomerId = x.CustomerId,
-            CustomerName = x.CustomerName,
-            PhoneNo = (long)x.PhoneNo,
-            CreatedAt = (DateTime)x.CreatedAt,
-            visits = x.Orders.Count(),
-            MaxOrder = x.Orders.Max(x => x.TotalAmount),
-            AvgBill = Math.Round(x.Orders.Average(x => x.TotalAmount),2),
-            orderList = x.Orders.Select(x => new OrderListViewModel
+        // var customerDetails = customer.
+        // Select(x => new CustomerHistoryViewModel
+        // {
+        //     // Customer Details
+        //     CustomerId = x.CustomerId,
+        //     CustomerName = x.CustomerName,
+        //     PhoneNo = (long)x.PhoneNo,
+        //     CreatedAt = (DateTime)x.CreatedAt,
+        //     visits = x.Orders.Count(),
+        //     MaxOrder = x.Orders.Max(x => x.TotalAmount),
+        //     AvgBill = Math.Round(x.Orders.Average(x => x.TotalAmount), 2),
+        //     orderList = x.Orders.Select(x => new OrderListViewModel
+        //     {
+        //         OrderDate = DateOnly.FromDateTime(x.OrderDate),
+        //         OrderType = x.OrderType,
+        //         Paymentstatus = x.PaymentStatus.PaymentStatus,
+        //         NoOfItems = x.Orderdetails.Count(),
+        //         TotalAmount = x.TotalAmount
+        //     }).ToList()
+        // }).FirstOrDefault();
+        try
+        {
+
+            var customersDetail = _context.Customers.
+            Include(x => x.Orders).
+            ThenInclude(x => x.Orderdetails).
+            ThenInclude(x => x.Order.PaymentStatus).
+            FirstOrDefault(x => x.CustomerId == customerid && !x.Isdelete);
+
+            if (customersDetail == null)
+            {
+                return null;
+            }
+
+            CustomerHistoryViewModel customerHistoryVM = new();
+
+            customerHistoryVM.CustomerId = customersDetail.CustomerId;
+            customerHistoryVM.CustomerName = customersDetail.CustomerName;
+            customerHistoryVM.PhoneNo = (long)customersDetail.PhoneNo;
+            customerHistoryVM.CreatedAt = (DateTime)customersDetail.CreatedAt;
+
+            if (customersDetail.Orders.Count() == 0)
+            {
+                customerHistoryVM.visits = 0;
+                customerHistoryVM.MaxOrder = 0;
+                customerHistoryVM.AvgBill = 0;
+                return customerHistoryVM;
+            }
+
+            customerHistoryVM.visits = customersDetail.Orders.Count();
+            customerHistoryVM.MaxOrder = customersDetail.Orders.Max(x => x.TotalAmount);
+            customerHistoryVM.AvgBill = Math.Round(customersDetail.Orders.Average(x => x.TotalAmount), 2);
+            customerHistoryVM.orderList = customersDetail.Orders.Select(x => new OrderListViewModel
             {
                 OrderDate = DateOnly.FromDateTime(x.OrderDate),
                 OrderType = x.OrderType,
                 Paymentstatus = x.PaymentStatus.PaymentStatus,
                 NoOfItems = x.Orderdetails.Count(),
                 TotalAmount = x.TotalAmount
-            }).ToList()
-        }).FirstOrDefault();
+            }).ToList();
 
-        return customerDetails;
+            return customerHistoryVM;
+        }
+        catch (Exception ex)
+        {
+            return null;
+            // throw new Exception("An error occurred while retrieving customer history.", ex);
+        }
     }
+    #endregion
+
+    #region IsCustomerPresent
+    public long IsCustomerPresent(string Email)
+    {
+        try
+        {
+            Customer customer = _context.Customers.FirstOrDefault(x => x.Email == Email && !x.Isdelete);
+            if (customer != null) return customer.CustomerId;
+            else return 0;
+        }
+        catch (Exception ex)
+        {
+            return 0;
+        }
+    }
+    #endregion
+
+    #region IsCustomerPresentInWaiting
+    public async Task<bool> IsCustomerPresentInWaiting(string Email)
+    {
+        return await _context.Waitinglists.AnyAsync(x => x.Isassign == false && !x.Isdelete && x.Customer.Email == Email);
+    }
+    #endregion
+
+    #region Get Customer Email
+    public List<CustomerViewModel> GetCustomerEmail(string searchTerm)
+    {
+        try
+        {
+            List<CustomerViewModel>? Emails = _context.Customers
+            .Where(c => c.Email.Contains(searchTerm.Trim()) && !c.Isdelete)
+            .Select(c => new CustomerViewModel
+            {
+                Email = c.Email,
+                CustomerName = c.CustomerName ?? "",
+                PhoneNo = c.PhoneNo
+            })
+            .Take(10)
+            .ToList();
+
+            return Emails;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+    #endregion
+
+    #region AddCustomer
+    public async Task<bool> SaveCustomer(WaitingTokenDetailViewModel waitingTokenVM, long userId)
+    {
+        try
+        {
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == waitingTokenVM.Email && !c.Isdelete);
+
+            if (existingCustomer != null)
+            {
+                // Update existing customer
+                existingCustomer.CustomerName = waitingTokenVM.CustomerName;
+                existingCustomer.Email = waitingTokenVM.Email;
+                existingCustomer.PhoneNo = waitingTokenVM.PhoneNo;
+                existingCustomer.ModifiedBy = userId;
+                existingCustomer.ModifiedAt = DateTime.Now;
+                _context.Update(existingCustomer);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            Customer customer = new();
+            customer.CustomerName = waitingTokenVM.CustomerName;
+            customer.Email = waitingTokenVM.Email;
+            customer.PhoneNo = waitingTokenVM.PhoneNo;
+            customer.CreatedBy = userId;
+            await _context.AddAsync(customer);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+    #endregion
 
 
 }

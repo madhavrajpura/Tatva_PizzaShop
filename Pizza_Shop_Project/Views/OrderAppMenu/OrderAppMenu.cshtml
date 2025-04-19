@@ -1,7 +1,34 @@
-
 @{
     ViewData["Title"] = "Order App Menu";
     Layout = "~/Views/Shared/_OrderAppLayout.cshtml";
 }
 
-<strong class="p-2">Menu</strong>
+<div class="overlay-category" onclick="toggleSidebarCategory()"></div>
+<div class="bg-white category-toggle-active category-toggle" id="maindivsidebar"
+    style="min-height: 887px; width:250px !important;">a</div>
+<div class="btn d-md-none" onclick="toggleSidebarCategory()"><i class="fa-solid fa-bars-staggered"></i></div>
+
+@section scripts {
+    <script>
+
+        function toggleSidebarCategory() {
+            document.getElementsByClassName("overlay-category")[0].classList.toggle("overlay-category-active");
+            document.getElementsByClassName("category-toggle")[0].classList.toggle("category-toggle-active")
+            document.getElementsByClassName("category-toggle")[0].classList.toggle("category-toggle-position")
+
+
+        }
+
+        $(document).ready(function (x) {
+            var maindivsidebar = document.getElementById("maindivsidebar")
+
+            maindivsidebar.parentElement.classList.remove("pb-3")
+            maindivsidebar.parentElement.classList.remove("ps-lg-5")
+            maindivsidebar.parentElement.classList.remove("pt-3")
+            maindivsidebar.parentElement.classList.remove("ps-md-4")
+            maindivsidebar.parentElement.classList.remove("pe-md-4")
+            maindivsidebar.parentElement.classList.remove("pe-lg-5")
+            maindivsidebar.parentElement.classList.add("p-0")
+        })
+    </script>
+}

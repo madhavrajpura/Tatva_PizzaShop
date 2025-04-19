@@ -58,46 +58,106 @@ public class ItemService : IItemService
     #endregion
 
     #region Add Item
-    public async Task<bool> AddItem(AddItemViewModel addItemVM, long userId)
+    public async Task<bool> SaveItem(AddItemViewModel ItemVM, long userId)
     {
-        if (addItemVM == null)
+        try
+        {
+            if (ItemVM == null)
+            {
+                return false;
+            }
+            if (ItemVM.ItemId == 0)
+            {
+                Item item = new Item();
+                item.CategoryId = ItemVM.CategoryId;
+                item.ItemName = ItemVM.ItemName;
+                item.ItemTypeId = ItemVM.ItemTypeId;
+                item.Rate = ItemVM.Rate;
+                item.Quantity = ItemVM.Quantity;
+                item.Unit = ItemVM.Unit;
+                item.Isavailable = ItemVM.Isavailable;
+                item.Isdefaulttax = ItemVM.Isdefaulttax;
+                item.TaxValue = ItemVM.TaxValue;
+                item.Description = ItemVM.Description;
+                item.ItemImage = ItemVM.ItemImage;
+                item.ShortCode = ItemVM.ShortCode;
+                item.CreatedBy = userId;
+
+                await _context.Items.AddAsync(item);
+                await _context.SaveChangesAsync();
+
+                foreach (var modifier in ItemVM.itemModifiersVM)
+                {
+                    ItemModifierGroupMapping itemModifierMapping = new ItemModifierGroupMapping
+                    {
+                        ItemId = item.ItemId,
+                        ModifierGrpId = modifier.ModifierGrpId,
+                        Minmodifier = modifier.Minmodifier,
+                        Maxmodifier = modifier.Maxmodifier
+                    };
+                    _context.ItemModifierGroupMappings.Add(itemModifierMapping);
+                }
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            else
+            {
+                Item? item = await _context.Items.FirstOrDefaultAsync(x => x.ItemId == ItemVM.ItemId && !x.Isdelete);
+
+                if (item == null)
+                {
+                    return false;
+                }
+
+                item.CategoryId = ItemVM.CategoryId;
+                item.ItemName = ItemVM.ItemName;
+                item.ItemTypeId = ItemVM.ItemTypeId;
+                item.Rate = ItemVM.Rate;
+                item.Quantity = ItemVM.Quantity;
+                item.Unit = ItemVM.Unit;
+                item.Isavailable = ItemVM.Isavailable;
+                item.Isdefaulttax = ItemVM.Isdefaulttax;
+                item.TaxValue = ItemVM.TaxValue;
+                item.Description = ItemVM.Description;
+                if (item.ItemImage == null)
+                {
+                    item.ItemImage = ItemVM.ItemImage;
+                }
+                item.ShortCode = ItemVM.ShortCode;
+                item.ModifiedAt = DateTime.Now;
+                item.ModifiedBy = userId;
+
+                _context.Items.Update(item);
+                await _context.SaveChangesAsync();
+
+                List<ItemModifierGroupMapping>? itemModifier = _context.ItemModifierGroupMappings.Where(x => x.ItemId == item.ItemId && !x.Isdelete).ToList();
+
+                foreach (var itemMod in itemModifier)
+                {
+                    _context.ItemModifierGroupMappings.Remove(itemMod);
+                }
+
+                foreach (var modifier in ItemVM.itemModifiersVM)
+                {
+                    ItemModifierGroupMapping itemModifierMapping = new ItemModifierGroupMapping
+                    {
+                        ItemId = item.ItemId,
+                        ModifierGrpId = modifier.ModifierGrpId,
+                        Minmodifier = modifier.Minmodifier,
+                        Maxmodifier = modifier.Maxmodifier
+                    };
+                    _context.ItemModifierGroupMappings.Add(itemModifierMapping);
+                }
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+        }
+        catch (Exception ex)
         {
             return false;
         }
-
-        Item item = new Item();
-        item.CategoryId = addItemVM.CategoryId;
-        item.ItemName = addItemVM.ItemName;
-        item.ItemTypeId = addItemVM.ItemTypeId;
-        item.Rate = addItemVM.Rate;
-        item.Quantity = addItemVM.Quantity;
-        item.Unit = addItemVM.Unit;
-        item.Isavailable = addItemVM.Isavailable;
-        item.Isdefaulttax = addItemVM.Isdefaulttax;
-        item.TaxValue = addItemVM.TaxValue;
-        item.Description = addItemVM.Description;
-        item.ItemImage = addItemVM.ItemImage;
-        item.ShortCode = addItemVM.ShortCode;
-        item.CreatedBy = userId;
-
-        await _context.Items.AddAsync(item);
-        await _context.SaveChangesAsync();
-
-        foreach (var modifier in addItemVM.itemModifiersVM)
-        {
-            ItemModifierGroupMapping itemModifierMapping = new ItemModifierGroupMapping
-            {
-                ItemId = item.ItemId,
-                ModifierGrpId = modifier.ModifierGrpId,
-                Minmodifier = modifier.Minmodifier,
-                Maxmodifier = modifier.Maxmodifier
-            };
-            _context.ItemModifierGroupMappings.Add(itemModifierMapping);
-        }
-        await _context.SaveChangesAsync();
-
-        return true;
-
     }
 
     #endregion
@@ -105,136 +165,160 @@ public class ItemService : IItemService
     #region Get Items By ItemId
     public AddItemViewModel GetItemsByItemId(long itemid)
     {
-        Item? item = _context.Items.FirstOrDefault(x => x.ItemId == itemid && !x.Isdelete);
-
-        // if(item == null){
-        //     return null;
-        // }
-
-        AddItemViewModel edititemVM = new();
+        try
         {
-            edititemVM.CategoryId = item.CategoryId;
-            edititemVM.ItemId = item.ItemId;
-            edititemVM.ItemName = item.ItemName;
-            edititemVM.Description = item.Description;
-            edititemVM.Isavailable = (bool)item.Isavailable;
-            edititemVM.Isdefaulttax = (bool)item.Isdefaulttax;
-            edititemVM.ItemImage = item.ItemImage;
-            edititemVM.ItemTypeId = item.ItemTypeId;
-            edititemVM.Quantity = (int)item.Quantity;
-            edititemVM.Rate = item.Rate;
-            edititemVM.ShortCode = item.ShortCode;
-            edititemVM.TaxValue = (decimal)item.TaxValue;
-            edititemVM.Unit = item.Unit;
-        }
+            Item? item = _context.Items.FirstOrDefault(x => x.ItemId == itemid && !x.Isdelete);
 
-        List<ItemModifierViewModel>? data = _context.ItemModifierGroupMappings.Where(e => e.ItemId == itemid && !e.Isdelete)
-       .Select(x => new ItemModifierViewModel
-       {
-           ModifierGrpId = x.ModifierGrpId,
-           Minmodifier = x.Minmodifier,
-           Maxmodifier = x.Maxmodifier,
-           modifiersList = _context.Modifiers.Where(e => e.ModifierGrpId == x.ModifierGrpId && !x.Isdelete).ToList(),
-           ModifierGrpName = _context.Modifiergroups.FirstOrDefault(e => e.ModifierGrpId == x.ModifierGrpId && !x.Isdelete).ModifierGrpName
-       }).ToList();
+            // if(item == null){
+            //     return null;
+            // }
 
-        edititemVM.itemModifiersVM = data;
-
-        return edititemVM;
-    }
-    #endregion
-
-    #region Edit Item
-    public async Task<bool> EditItem(AddItemViewModel editItemVM, long userId)
-    {
-        Item? item = await _context.Items.FirstOrDefaultAsync(x => x.ItemId == editItemVM.ItemId && !x.Isdelete);
-
-        if (item == null)
-        {
-            return false;
-        }
-
-        item.CategoryId = editItemVM.CategoryId;
-        item.ItemName = editItemVM.ItemName;
-        item.ItemTypeId = editItemVM.ItemTypeId;
-        item.Rate = editItemVM.Rate;
-        item.Quantity = editItemVM.Quantity;
-        item.Unit = editItemVM.Unit;
-        item.Isavailable = editItemVM.Isavailable;
-        item.Isdefaulttax = editItemVM.Isdefaulttax;
-        item.TaxValue = editItemVM.TaxValue;
-        item.Description = editItemVM.Description;
-        if (item.ItemImage == null)
-        {
-            item.ItemImage = editItemVM.ItemImage;
-        }
-        item.ShortCode = editItemVM.ShortCode;
-        item.ModifiedAt = DateTime.Now;
-        item.ModifiedBy = userId;
-
-        _context.Items.Update(item);
-        await _context.SaveChangesAsync();
-
-        List<ItemModifierGroupMapping>? itemModifier = _context.ItemModifierGroupMappings.Where(x => x.ItemId == item.ItemId && !x.Isdelete).ToList();
-
-        foreach (var itemMod in itemModifier)
-        {
-            _context.ItemModifierGroupMappings.Remove(itemMod);
-        }
-
-        foreach (var modifier in editItemVM.itemModifiersVM)
-        {
-            ItemModifierGroupMapping itemModifierMapping = new ItemModifierGroupMapping
+            AddItemViewModel edititemVM = new();
             {
-                ItemId = item.ItemId,
-                ModifierGrpId = modifier.ModifierGrpId,
-                Minmodifier = modifier.Minmodifier,
-                Maxmodifier = modifier.Maxmodifier
-            };
-            _context.ItemModifierGroupMappings.Add(itemModifierMapping);
-        }
-        await _context.SaveChangesAsync();
+                edititemVM.CategoryId = item.CategoryId;
+                edititemVM.ItemId = item.ItemId;
+                edititemVM.ItemName = item.ItemName;
+                edititemVM.Description = item.Description;
+                edititemVM.Isavailable = (bool)item.Isavailable;
+                edititemVM.Isdefaulttax = (bool)item.Isdefaulttax;
+                edititemVM.ItemImage = item.ItemImage;
+                edititemVM.ItemTypeId = item.ItemTypeId;
+                edititemVM.Quantity = (int)item.Quantity;
+                edititemVM.Rate = item.Rate;
+                edititemVM.ShortCode = item.ShortCode;
+                edititemVM.TaxValue = (decimal)item.TaxValue;
+                edititemVM.Unit = item.Unit;
+            }
 
-        return true;
+            List<ItemModifierViewModel>? data = _context.ItemModifierGroupMappings.Where(e => e.ItemId == itemid && !e.Isdelete)
+           .Select(x => new ItemModifierViewModel
+           {
+               ModifierGrpId = x.ModifierGrpId,
+               Minmodifier = x.Minmodifier,
+               Maxmodifier = x.Maxmodifier,
+               modifiersList = _context.Modifiers.Where(e => e.ModifierGrpId == x.ModifierGrpId && !x.Isdelete).ToList(),
+               ModifierGrpName = _context.Modifiergroups.FirstOrDefault(e => e.ModifierGrpId == x.ModifierGrpId && !x.Isdelete).ModifierGrpName
+           }).ToList();
+
+            edititemVM.itemModifiersVM = data;
+
+            return edititemVM;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
     }
     #endregion
+
+    // #region Edit Item
+    // public async Task<bool> EditItem(AddItemViewModel ItemVM, long userId)
+    // {
+    //     Item? item = await _context.Items.FirstOrDefaultAsync(x => x.ItemId == ItemVM.ItemId && !x.Isdelete);
+
+    //     if (item == null)
+    //     {
+    //         return false;
+    //     }
+
+    //     item.CategoryId = ItemVM.CategoryId;
+    //     item.ItemName = ItemVM.ItemName;
+    //     item.ItemTypeId = ItemVM.ItemTypeId;
+    //     item.Rate = ItemVM.Rate;
+    //     item.Quantity = ItemVM.Quantity;
+    //     item.Unit = ItemVM.Unit;
+    //     item.Isavailable = ItemVM.Isavailable;
+    //     item.Isdefaulttax = ItemVM.Isdefaulttax;
+    //     item.TaxValue = ItemVM.TaxValue;
+    //     item.Description = ItemVM.Description;
+    //     if (item.ItemImage == null)
+    //     {
+    //         item.ItemImage = ItemVM.ItemImage;
+    //     }
+    //     item.ShortCode = ItemVM.ShortCode;
+    //     item.ModifiedAt = DateTime.Now;
+    //     item.ModifiedBy = userId;
+
+    //     _context.Items.Update(item);
+    //     await _context.SaveChangesAsync();
+
+    //     List<ItemModifierGroupMapping>? itemModifier = _context.ItemModifierGroupMappings.Where(x => x.ItemId == item.ItemId && !x.Isdelete).ToList();
+
+    //     foreach (var itemMod in itemModifier)
+    //     {
+    //         _context.ItemModifierGroupMappings.Remove(itemMod);
+    //     }
+
+    //     foreach (var modifier in ItemVM.itemModifiersVM)
+    //     {
+    //         ItemModifierGroupMapping itemModifierMapping = new ItemModifierGroupMapping
+    //         {
+    //             ItemId = item.ItemId,
+    //             ModifierGrpId = modifier.ModifierGrpId,
+    //             Minmodifier = modifier.Minmodifier,
+    //             Maxmodifier = modifier.Maxmodifier
+    //         };
+    //         _context.ItemModifierGroupMappings.Add(itemModifierMapping);
+    //     }
+    //     await _context.SaveChangesAsync();
+
+    //     return true;
+    // }
+    // #endregion
 
     #region Delete Item
     public async Task<bool> DeleteItem(long itemid)
     {
-        List<ItemModifierGroupMapping> itemModifierGroupMappings = await _context.ItemModifierGroupMappings.Where(x => x.ItemId == itemid && !x.Isdelete).ToListAsync();
-
-        for (int i = 0; i < itemModifierGroupMappings.Count; i++)
+        try
         {
-            itemModifierGroupMappings[i].Isdelete = true;
-            _context.ItemModifierGroupMappings.Update(itemModifierGroupMappings[i]);
+            List<ItemModifierGroupMapping> itemModifierGroupMappings = await _context.ItemModifierGroupMappings.Where(x => x.ItemId == itemid && !x.Isdelete).ToListAsync();
+
+            for (int i = 0; i < itemModifierGroupMappings.Count; i++)
+            {
+                itemModifierGroupMappings[i].Isdelete = true;
+                _context.ItemModifierGroupMappings.Update(itemModifierGroupMappings[i]);
+                await _context.SaveChangesAsync();
+            }
+
+            Item? itemToDelete = await _context.Items.SingleOrDefaultAsync(x => x.ItemId == itemid && !x.Isdelete);
+
+            if (itemToDelete == null)
+            {
+                return false;
+            }
+
+            itemToDelete.Isdelete = true;
+            itemToDelete.ModifiedAt = DateTime.Now;
+            _context.Update(itemToDelete);
             await _context.SaveChangesAsync();
+            return true;
         }
-
-        Item? itemToDelete = await _context.Items.SingleOrDefaultAsync(x => x.ItemId == itemid && !x.Isdelete);
-
-        if (itemToDelete == null)
+        catch (Exception ex)
         {
             return false;
         }
-
-        itemToDelete.Isdelete = true;
-        itemToDelete.ModifiedAt = DateTime.Now;
-        _context.Update(itemToDelete);
-        await _context.SaveChangesAsync();
-        return true;
     }
     #endregion
 
     #region Check Item Exist
-    public bool IsItemExistForAdd(AddItemViewModel addItemVM)
+    public bool IsItemExist(AddItemViewModel ItemVM)
     {
-        return _context.Items.Any(x => x.ItemName.ToLower().Trim() == addItemVM.ItemName.ToLower().Trim() && !x.Isdelete);
-    }
-    public bool IsItemExistForEdit(AddItemViewModel editItemVM)
-    {
-        return _context.Items.Any(x => x.ItemId != editItemVM.ItemId && x.ItemName.ToLower().Trim() == editItemVM.ItemName.ToLower().Trim() && !x.Isdelete);
+        try
+        {
+            if (ItemVM.ItemId == 0)
+            {
+                return _context.Items.Any(x => x.ItemName.ToLower().Trim() == ItemVM.ItemName.ToLower().Trim() && !x.Isdelete);
+            }
+            else
+            {
+                return _context.Items.Any(x => x.ItemId != ItemVM.ItemId && x.ItemName.ToLower().Trim() == ItemVM.ItemName.ToLower().Trim() && !x.Isdelete);
+            }
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
     }
     #endregion
 
-}    
+}

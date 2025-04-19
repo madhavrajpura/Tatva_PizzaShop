@@ -119,13 +119,13 @@ public class ModifierGroupService : IModifierGroupService
         }
 
         Modifiergroup modifiergroup = new();
-        modifiergroup.ModifierGrpId = addModifierGroupVM.ModifierGrpId;
+        // modifiergroup.ModifierGrpId = addModifierGroupVM.ModifierGrpId;
         modifiergroup.ModifierGrpName = addModifierGroupVM.ModifierGrpName;
         modifiergroup.Desciption = addModifierGroupVM.Desciption;
         modifiergroup.CreatedBy = userId;
 
         await _context.AddAsync(modifiergroup);
-        // await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         if (addModifierGroupVM.Temp_Ids != null)
         {
@@ -283,13 +283,16 @@ public class ModifierGroupService : IModifierGroupService
 
     #region Check Modifier Group Exist
 
-    public bool IsModifierGroupExistForAdd(AddModifierGroupViewModel modifierGrpVM)
+    public bool IsModifierGroupExist(AddModifierGroupViewModel modifierGrpVM)
     {
-        return _context.Modifiergroups.Any(x => x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
-    }
-    public bool IsModifierGroupExistForEdit(AddModifierGroupViewModel modifierGrpVM)
-    {
-        return _context.Modifiergroups.Any(x => x.ModifierGrpId != modifierGrpVM.ModifierGrpId && x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
+        if (modifierGrpVM.ModifierGrpId == 0)
+        {
+            return _context.Modifiergroups.Any(x => x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
+        }
+        else
+        {
+            return _context.Modifiergroups.Any(x => x.ModifierGrpId != modifierGrpVM.ModifierGrpId && x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
+        }
     }
 
     #endregion

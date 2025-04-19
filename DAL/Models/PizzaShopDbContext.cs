@@ -120,7 +120,6 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.HasOne(d => d.Order).WithMany(p => p.AssignTables)
                 .HasForeignKey(d => d.OrderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("assignTable_order_id_fkey");
 
             entity.HasOne(d => d.Table).WithMany(p => p.AssignTables)
@@ -691,7 +690,9 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.ReadyQuantity).HasColumnName("readyQuantity");
+            entity.Property(e => e.ReadyQuantity)
+                .HasDefaultValueSql("0")
+                .HasColumnName("readyQuantity");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
@@ -909,7 +910,6 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.SectionId).HasColumnName("section_id");
             entity.Property(e => e.Status)
-                .HasDefaultValueSql("false")
                 .HasColumnType("character varying")
                 .HasColumnName("status");
             entity.Property(e => e.TableName)
@@ -1104,6 +1104,7 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("modified_at");
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.NoOfPerson).HasColumnName("no_of_person");
+            entity.Property(e => e.SectionId).HasColumnName("section_id");
             entity.Property(e => e.TableId).HasColumnName("table_id");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.WaitinglistCreatedByNavigations)
@@ -1119,9 +1120,13 @@ public partial class PizzaShopDbContext : DbContext
                 .HasForeignKey(d => d.ModifiedBy)
                 .HasConstraintName("waitinglist_modified_by_fkey");
 
+            entity.HasOne(d => d.Section).WithMany(p => p.Waitinglists)
+                .HasForeignKey(d => d.SectionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("waitinglist_section_id_fkey");
+
             entity.HasOne(d => d.Table).WithMany(p => p.Waitinglists)
                 .HasForeignKey(d => d.TableId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("waitinglist_table_id_fkey");
         });
 

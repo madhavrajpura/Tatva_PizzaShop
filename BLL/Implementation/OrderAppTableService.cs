@@ -8,99 +8,251 @@ namespace BLL.Implementation;
 public class OrderAppTableService : IOrderAppTableService
 {
     private readonly PizzaShopDbContext _context;
+    private readonly ICustomerService _customerService;
 
     #region Constructor
-    public OrderAppTableService(PizzaShopDbContext context)
+    public OrderAppTableService(PizzaShopDbContext context, ICustomerService customerService)
     {
         _context = context;
+        _customerService = customerService;
     }
     #endregion
 
+    #region Get Section List
     public List<OrderAppSectionVM> GetAllSectionList()
     {
         List<OrderAppSectionVM> sectionList = _context.Sections
-            .Where(x => !x.Isdelete).OrderBy(x => x.SectionId)
-            .Select(x => new OrderAppSectionVM
+            .Where(sec => !sec.Isdelete).OrderBy(sec => sec.SectionId)
+            .Select(sec => new OrderAppSectionVM
             {
-                SectionId = x.SectionId,
-                SectionName = x.SectionName,
-                AvailableCount = x.Tables.Count(y => y.Status == "Available"),
-                AssignedCount = x.Tables.Count(y => y.Status == "Assigned"),
-                RunningCount = x.Tables.Count(y => y.Status == "Running"),
+                SectionId = sec.SectionId,
+                SectionName = sec.SectionName,
+                AvailableCount = sec.Tables.Count(table => table.Status == "Available" && !table.Isdelete),
+                AssignedCount = sec.Tables.Count(table => table.Status == "Assigned" || table.Status == "Occupied" && !table.Isdelete),
+                RunningCount = sec.Tables.Count(table => table.Status == "Running" && !table.Isdelete),
+                WaitingCount = sec.Waitinglists.Count(w => w.SectionId == sec.SectionId && !w.Isdelete && !w.Isassign),
             }).ToList();
 
-            if(sectionList == null){
-                return null;
-            }
+        if (sectionList == null)
+        {
+            return null;
+        }
 
         return sectionList;
     }
+    #endregion
 
+    #region Get Table List
     public List<OrderAppTableVM> GetTablesBySection(long SectionId)
     {
-        List<OrderAppTableVM>? tableListVM = _context.Tables.Where(x => x.Section.SectionId == SectionId && !x.Isdelete)
-        .Select(y => new OrderAppTableVM
+        List<OrderAppTableVM>? tableListVM = _context.Tables.Include(table => table.AssignTables).ThenInclude(At => At.Order).Where(table => table.Section.SectionId == SectionId && !table.Isdelete)
+        .Select(table => new OrderAppTableVM
         {
-            TableId = y.TableId,
-            SectionId = y.SectionId,
-            TableName = y.TableName,
-            Capacity = y.Capacity,
-            Status = y.Status,
-            TableTime = (DateTime)y.CreatedAt,
-            OrderAmount = (decimal)205.00
-            //  _context.Orders
-            //     .Where(o => o.SectionId == x.SectionId && o.TableId == y.TableId && !o.Isdelete)
-            //     .Sum(o => o.Orderdetails.Sum(od => od.Quantity * od.Item.Rate))
+            TableId = table.TableId,
+            SectionId = table.SectionId,
+            TableName = table.TableName,
+            Capacity = table.Capacity,
+            Status = table.Status,
+            TableTime = (DateTime)((table.AssignTables.FirstOrDefault() != null) ? table.AssignTables.FirstOrDefault().CreatedAt : DateTime.Now),
+            OrderAmount = (table.AssignTables.FirstOrDefault() != null) ? table.AssignTables.FirstOrDefault().Order.TotalAmount : 0
         }).ToList();
 
-        if(tableListVM == null)
+        if (tableListVM == null)
         {
             return null;
         }
 
         return tableListVM;
     }
+    #endregion
+
+    #region AddCustomerToWaitingList
+    public async Task<bool> AddEditCustomerToWaitingList(WaitingTokenDetailViewModel waitingTokenVM, long userId)
+    {
+        try
+        {
+            long customerId = _customerService.IsCustomerPresent(waitingTokenVM.Email);
+
+            if (waitingTokenVM.WaitingId == 0)
+            {
+                Waitinglist waitinglist = new();
+
+                // Waitinglist? CustomerPresent = _context.Waitinglists.FirstOrDefault(waiting => waiting.CustomerId == customerId);
+
+                // if (CustomerPresent != null)
+                // {
+                //     CustomerPresent.NoOfPerson += waitingTokenVM.NoOfPerson;
+                //     _context.Waitinglists.Update(CustomerPresent);
+                // }
+                // else
+                // {
+                waitinglist.CustomerId = customerId;
+                waitinglist.NoOfPerson = waitingTokenVM.NoOfPerson;
+                waitinglist.SectionId = waitingTokenVM.SectionId;
+                waitinglist.CreatedAt = DateTime.Now;
+                await _context.Waitinglists.AddAsync(waitinglist);
+                // }
 
 
-//  #region IsCustomerPresent
-//     public long IsCustomerPresent(string Email)
-//     {
-//         return _context.Customers.FirstOrDefault(x => x.Email == Email && x.Isdelete == false).CustomerId;
-//     }
-//     #endregion
+            }
+            else
+            {
+                Waitinglist? waitinglist = await _context.Waitinglists.FirstOrDefaultAsync(w => w.WaitingId == waitingTokenVM.WaitingId && !w.Isdelete && !w.Isassign);
+                if (waitinglist != null)
+                {
+                    waitinglist.CustomerId = customerId;
+                    waitinglist.NoOfPerson = waitingTokenVM.NoOfPerson;
+                    waitinglist.SectionId = waitingTokenVM.SectionId;
+                    waitinglist.ModifiedAt = DateTime.Now;
+                    waitinglist.ModifiedBy = userId;
+                    _context.Update(waitinglist);
+                }
+            }
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            return false;
+        }
+    }
 
-// #region AddCustomer
-//     public async Task<bool> AddCustomer(WaitingTokenDetailsViewModel waitingTokenvm, long userId)
-//     {
-//         Customer customer = new();
-//         customer.CustomerName = waitingTokenvm.Name;
-//         customer.Email = waitingTokenvm.Email;
-//         customer.Phoneno = waitingTokenvm.Mobileno;
-//         customer.CreatedBy = userId;
-//         await _context.AddAsync(customer);
-//         await _context.SaveChangesAsync();
-//         return true;
-//     }
-//     #endregion
+    #endregion
 
-//     #region AddCustomerToWaitingList
-//     public async Task<bool> AddCustomerToWaitingList(WaitingTokenDetailsViewModel waitingTokenvm, long userId)
-//     {
-//         try{
-//             long customerId = IsCustomerPresent(waitingTokenvm.Email);
+    #region Get Waiting Customer List
+    public async Task<List<WaitingTokenDetailViewModel>> GetWaitingCustomerList(long sectionid)
+    {
+        List<WaitingTokenDetailViewModel>? WaitingCustomer = await _context.Waitinglists.Include(w => w.Customer).Include(c => c.Section)
+        .Where(w => !w.Isdelete && w.SectionId == sectionid && !w.Isassign)
+        .Select(w => new WaitingTokenDetailViewModel
+        {
+            WaitingId = w.WaitingId,
+            CustomerName = w.Customer.CustomerName,
+            PhoneNo = w.Customer.PhoneNo,
+            Email = w.Customer.Email,
+            NoOfPerson = w.NoOfPerson,
+            SectionId = w.Section.SectionId,
+            SectionName = w.Section.SectionName
+        }).ToListAsync();
 
-//         Waitinglist waitinglist = new();
-//         waitinglist.CustomerId = customerId;
-//         waitinglist.NoOfPerson = waitingTokenvm.NoOfPerson;
-//         waitinglist.SectionId = waitingTokenvm.SectionID;
-//         await _context.AddAsync(waitinglist);
-//         await _context.SaveChangesAsync();
-//         return true;
+        if (WaitingCustomer != null)
+        {
+            return WaitingCustomer;
+        }
 
-//         }catch(Exception e){
-//             return false;
-//         }
-//     }
+        return null;
+    }
 
-//     #endregion
+    #endregion
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// #region Assigntable
+// public async Task<bool> Assigntable(string Email, int[] TableIds, long userId)
+// {
+//     try{
+//         Waitinglist waitinglist = await _context.Waitinglists.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Customer.Email == Email && x.Isdelete == false && x.Isassign == false);
+//     if (waitinglist == null) { return false; }
+//     waitinglist.Isassign = true;
+//     waitinglist.AssignedAt = DateTime.Now;
+//     waitinglist.ModifiedAt= DateTime.Now;
+//     waitinglist.ModifiedBy = userId;
+
+//     for (int i = 0; i < TableIds.Length; i++)
+//     {
+//         Assigntable assigntable = new();
+//         assigntable.CustomerId = waitinglist.CustomerId;
+//         assigntable.TableId = TableIds[i];
+//         assigntable.NoOfPerson = waitinglist.NoOfPerson;
+//         await _context.AddAsync(assigntable);
+
+//         Table table =await _context.Tables.FirstOrDefaultAsync(x => x.TableId == TableIds[i] && x.Isdelete==false);
+//         table.Status = "Assigned";
+//         table.ModifiedAt = DateTime.Now;
+//         table.ModifiedBy = userId;
+//         _context.Update(table);
+//         await _context.SaveChangesAsync();
+//     }
+
+//     _context.Update(waitinglist);
+//     await _context.SaveChangesAsync();
+
+//     return true;
+//     }catch(Exception e){
+//         return false;
+//     }
+// }

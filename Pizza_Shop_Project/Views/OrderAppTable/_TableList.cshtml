@@ -9,28 +9,52 @@ else
 {
     @foreach (var table in Model)
     {
-        <div class="table-card  card border border-1 rounded-2 " style="width: 270px;" onclick="SelectTable(this,@table.Status)">
-            <div class=" card-body rounded-1  d-flex flex-column bg-light text-secondary @(table.Status == "Assigned" || table.Status == "Occupied" ? "tableassigned": table.Status == "Running"? "tableRunning" : "tableAvailable")" >
+        <div class="table-card card border border-1 rounded-2 " style="width: 270px;" data-sec="@table.SectionId" @(table.Status
+    == "Available" ? "onclick=SelectTable(this)" : "")>
+            <div class="d-none">@table.TableId</div>
+            <div class="d-none">@table.SectionId</div>
+            <div
+                class=" card-body rounded-1  d-flex flex-column bg-light text-secondary @(table.Status == "Assigned" || table.Status == "Occupied" ? "table-Assigned": table.Status == "Running"? "table-Running" : "table-Available")">
                 <div class="d-flex justify-content-between align-items-center mx-1">
-                    <div class="fs-4 fw-bold @(table.Status == "Assigned" || table.Status == "Occupied" ? "text-success": table.Status == "Running"? "text-primary" : "text-secondary")" >@table.TableName</div>
-                    @if(table.OrderAmount > 0){
-                        <div>₹@table.OrderAmount</div>
+                    <div
+                        class="fs-5 fw-bold pe-2 pb-2 @(table.Status == "Assigned" || table.Status == "Occupied" ? "text-Assigned": table.Status == "Running"? "text-Running" : "text-Available")">
+                        @table.TableName</div>
+                    @if (table.Status == "Running")
+                    {
+                        @if (table.OrderAmount > 0)
+                        {
+                            <div>₹@table.OrderAmount</div>
+                        }
+                        else
+                        {
+                            <div>₹ 0</div>
+                        }
                     }
                 </div>
-                
-                <div class="d-flex justify-content-between align-items-center mx-1">
-                    <div class="d-flex flex-column align-items-center flex-column">
-                        <div><i class="bi bi-people"></i></div>
-                        <div>@table.Capacity</div>
+
+                <div class="d-flex justify-content-between align-items-center mx-1 pt-2">
+                    <div class="d-flex flex-column align-items-center flex-column pt-2">
+                        <div><i class="bi bi-people pb-2"></i></div>
+                        <div class="pt-2">@table.Capacity</div>
                         <div>&nbsp;</div>
                     </div>
                     <div class="d-flex flex-column align-items-center ">
                         <div><i class="bi bi-stopwatch"></i></div>
-                        <div>@table.TableTime</div>
-                        <div>min</div>
+                        @if (table.Status == "Running" || table.Status == "Assigned" || table.Status == "Occupied")
+                        {
+                            <div class="pt-2">@table.TableTime</div>
+                        }
+                        else
+                        {
+                            <div class="text-center pt-2">0 <br> min</div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     }
 }
+
+<script>
+    var IsEnable = 0;
+</script>

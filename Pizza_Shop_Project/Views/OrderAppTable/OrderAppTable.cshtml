@@ -6,8 +6,8 @@
     Layout = "~/Views/Shared/_OrderAppLayout.cshtml";
 }
 
-<div class="d-flex flex-column flex-sm-row justify-content-between gap-3">
-    <p class="fs-2 fw-bold user-text">Table View</p>
+<div class="d-flex flex-column flex-sm-row justify-content-between gap-3 pb-3">
+    <p class="fs-2 fw-bold user-text text-nowrap">Table View</p>
     <div class="d-flex justify-content-sm-end justify-content-between gap-3 flex-wrap">
         <div class="d-flex align-items-center justify-content-center gap-2">
             <div class="rounded-circle bg-available" style="width: 10px; height: 10px;"></div>
@@ -28,128 +28,13 @@
     </div>
 </div>
 
-<!------------ aaccodians -------------->
+<!------------ accodions -------------->
 
-<div class="accordion " id="accordianmain">
-    @foreach (var sec in Model.sectionListVM)
-    {
-        <div class="accordion-item mb-3 rounded-0">
-            <div class="accordion">
-                <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
-                    <div class="d-flex align-items-center w-100 me-4 me-sm-0">
-                        @* accordian button  *@
-                        <button class="accordion-button col-auto w-auto collapsed" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#SectionMainDiv-@sec.SectionId" aria-expanded="false"
-                            aria-controls="#SectionMainDiv-@sec.SectionId" onclick="ViewTableDetailsBySection(this)">
-                        </button>
-                        @* accordian button  *@
-                        <div class="d-flex justify-content-between flex-wrap w-100">
-                            <div class="text-primary fs-4 ">@sec.SectionName</div>
-                            @* right side of accordian   *@
-                            <div class="d-flex gap-3 justify-content-center align-items-center mx-3 mb-2 mb-sm-0">
-
-                                <div class="d-flex align-items-center justify-content-center gap-1 ">
-                                    <div class="rounded-circle bg-secondary" style="width: 10px; height: 10px;">
-                                    </div>
-                                    @sec.AvailableCount
-                                </div>
-                                <div class="d-flex align-items-center justify-content-center gap-1 ">
-                                    <div class="rounded-circle border border-1  border-success bg-light"
-                                        style="width: 10px; height: 10px;">
-                                    </div>2
-                                </div>
-
-                                <div class="d-flex align-items-center justify-content-center gap-1">
-                                    <div class="rounded-circle bg-success" style="width: 10px; height: 10px;">
-                                    </div>
-                                    @sec.AssignedCount
-                                </div>
-                                <div class="d-flex align-items-center justify-content-center gap-1">
-                                    <div class="rounded-circle bg-info" style="width: 10px; height: 10px;"></div>
-                                    @sec.RunningCount
-                                </div>
-                                <div class="btn btn-outline-primary" data-bs-toggle="modal"
-                                    data-bs-target="#WaitingListModal" onclick="fillDetailOfModal(this,@sec.SectionId)">
-                                    + <span class="d-sm-inline d-none">Wating Token</span>
-                                    <div class="d-none">@sec.SectionName</div>
-                                </div>
-                            </div>
-                            @*  right side of accordian   *@
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="SectionMainDiv-@sec.SectionId" class="accordion-collapse collapse my-3"
-                data-bs-parent="#accordianmain">
-                <div class="d-flex flex-wrap justify-content-center gap-3" id="TablesToDisplayDiv-@sec.SectionId">
-                </div>
-                <div class="d-flex justify-content-end me-3 mt-3">
-                    <button class="btn btn-primary active-btn" disabled>Assign</button>
-                </div>
-            </div>
-        </div>
-    }
+<div class="accordion" id="accordianmain">
 
 </div>
 
-<!----------------------- modal-------------------->
-@* <div id="WaitingListModal" class="modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Tax</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="waitingListFormId">
-                <div class="modal-body row">
-                    <div class="form-floating  col-12 mb-3">
-                        <input type="text" class="form-control" id="Email"
-                            asp-for="@Model.waitingTokenDetailsViewModel.Email" placeholder="Email*">
-                        <span asp-validation-for="@Model.waitingTokenDetailsViewModel.Email" class="text-danger "
-                            id="RemoveValidations"></span>
-                        <label for="Email"> &nbsp; Email*</label>
-                    </div>
-                    <div class="form-floating  col-12 mb-3">
-                        <input type="text" class="form-control" id="Name"
-                            asp-for="@Model.waitingTokenDetailsViewModel.Name" placeholder="Name*">
-                        <span asp-validation-for="@Model.waitingTokenDetailsViewModel.Name" class="text-danger "
-                            id="RemoveValidations"></span>
-                        <label for="Name"> &nbsp; Name*</label>
-                    </div>
-                    <div class="form-floating  col-12 mb-3">
-                        <input type="text" class="form-control" id="mobile"
-                            asp-for="@Model.waitingTokenDetailsViewModel.Mobileno" placeholder="Mobile Number*">
-                        <span asp-validation-for="@Model.waitingTokenDetailsViewModel.Mobileno" class="text-danger "
-                            id="RemoveValidations"></span>
-                        <label for="Mobile"> &nbsp; Mobile Number*</label>
-                    </div>
-                    <div class="form-floating  col-md-6 col-12 mb-3">
-                        <input type="text" class="form-control" id="persons"
-                            asp-for="@Model.waitingTokenDetailsViewModel.NoOfPerson" placeholder="Mobile Number*">
-                        <span asp-validation-for="@Model.waitingTokenDetailsViewModel.NoOfPerson" class="text-danger "
-                            id="RemoveValidations"></span>
-                        <label for="persons"> &nbsp; No Of persons*</label>
-                    </div>
-                    <div class="form-floating  col-md-6 col-12 mb-3">
-                        <input type="hidden" id="sectionId" asp-for="@Model.waitingTokenDetailsViewModel.SectionID">
-                        <input type="text" class="form-control" id="sectionName"
-                            asp-for="@Model.waitingTokenDetailsViewModel.SectionName" placeholder="Section*" disabled>
-                        <span asp-validation-for="@Model.waitingTokenDetailsViewModel.SectionName" class="text-danger "
-                            id="RemoveValidations"></span>
-                        <label for="sectionName"> &nbsp; Section*</label>
-                    </div>
 
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">save</button>
-                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div> *@
 
 
 @section scripts {
@@ -158,63 +43,22 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        function ViewTableDetailsBySection(tag) {
-            isexpand = tag.getAttribute("aria-expanded");
-            console.log(isexpand);
-            var sec_id_div = tag.getAttribute("aria-controls");
-            console.log(sec_id_div);
-            var SectionId = parseInt(sec_id_div.split("-")[1])
-            console.log(SectionId,"hi")
-            if (isexpand) {
-                $.ajax({
-                    url: "/OrderAppTable/GetTablesBySection",
-                    type: "GET",
-                    data:  {SectionId : SectionId },
-                    success: function (data) {
-                        console.log(data);
-                        $(`#TablesToDisplayDiv-${SectionId}`).html(data);
-                    }
-                })
-            }
+
+        function DisplaySections() {
+            $.ajax({
+                url: "/OrderAppTable/GetAllSectionList",
+                type: "GET",
+                success: function (data) {
+                    $("#accordianmain").html(data);
+                }
+            })
         }
 
-        @* $(document).on("submit", "#waitingListFormId", function (e) {
-            e.preventDefault();
-            let form = $("#waitingListFormId");
-            if (form.valid()) {
-                let formData = new FormData(this);
-                $.ajax({
-                    url: "/OrderAppTable/WaitingTokenDetails",
-                    type: "Post",
-                    contentType: false,
-                    processData: false,
-                    data: formData,
-                    success: function (res) {
-                        if (res.success) {
-                            successToaster(res.text);
-                        } else {
-                            errorToaster(res.text);
-                        }
-                        $(".btn-close").click();
-                    }
-                })
-            }
-        })
 
-        function fillDetailOfModal(tag, secId) {
-            console.log(tag.children[1].innerText);
-            document.getElementById("sectionName").value = tag.children[1].innerText;
-            document.getElementById("sectionId").value = secId;
-            document.getElementById("Email").value = "";
-            document.getElementById("Name").value = "";
-            document.getElementById("mobile").value = "";
-            document.getElementById("persons").value = "";
-        }
+        $(document).ready(function () {
+            DisplaySections();
+        });
 
-        function SelectTable(tag) {
-            console.log(tablestatus);
-        } *@
-
-
+        
     </script>
 }

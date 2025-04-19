@@ -79,7 +79,7 @@ namespace Pizza_Shop_Project.Controllers
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> AddCategory(Category category)
         {
-            bool IsCategoryNameExists = _categoryService.IsCategoryExistForAdd(category);
+            bool IsCategoryNameExists = _categoryService.IsCategoryExist(category);
             if (IsCategoryNameExists)
             {
                 TempData["ErrorMessage"] = NotificationMessage.AlreadyExists.Replace("{0}", "Category");
@@ -104,7 +104,7 @@ namespace Pizza_Shop_Project.Controllers
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> EditCategoryById(Category category)
         {
-            bool IsCategoryNameExists = _categoryService.IsCategoryExistForEdit(category);
+            bool IsCategoryNameExists = _categoryService.IsCategoryExist(category);
             if (IsCategoryNameExists)
             {
                 TempData["ErrorMessage"] = NotificationMessage.AlreadyExists.Replace("{0}", "Category");
@@ -202,7 +202,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddItem([FromForm] MenuViewModel MenuVm)
         {
-            bool IsItemNameExists = _itemService.IsItemExistForAdd(MenuVm.addItems);
+            bool IsItemNameExists = _itemService.IsItemExist(MenuVm.addItems);
             if (IsItemNameExists)
             {
                 return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Item") });
@@ -226,24 +226,14 @@ namespace Pizza_Shop_Project.Controllers
             }
 
             // Code For image upload
+
             if (MenuVm.addItems.ItemFormImage != null)
             {
                 string[]? extension = MenuVm.addItems.ItemFormImage.FileName.Split(".");
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-
-                    //create folder if not exist
-                    if (!Directory.Exists(path))
-                        Directory.CreateDirectory(path);
-
-                    string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
-                    string fileNameWithPath = Path.Combine(path, fileName);
-
-                    using (FileStream stream = new FileStream(fileNameWithPath, FileMode.Create))
-                    {
-                        MenuVm.addItems.ItemFormImage.CopyTo(stream);
-                    }
+                    string fileName = ImageTemplate.UploadImage(MenuVm.addItems.ItemFormImage, path);
                     MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
                 }
                 else
@@ -252,7 +242,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
             }
 
-            bool addItemStatus = await _itemService.AddItem(MenuVm.addItems, userId);
+            bool addItemStatus = await _itemService.SaveItem(MenuVm.addItems, userId);
 
             if (addItemStatus)
             {
@@ -308,7 +298,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> EditItem([FromForm] MenuViewModel MenuVm)
         {
-            bool IsItemNameExists = _itemService.IsItemExistForEdit(MenuVm.addItems);
+            bool IsItemNameExists = _itemService.IsItemExist(MenuVm.addItems);
             if (IsItemNameExists)
             {
                 return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Item") });
@@ -337,18 +327,7 @@ namespace Pizza_Shop_Project.Controllers
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-
-                    //create folder if not exist
-                    if (!Directory.Exists(path))
-                        Directory.CreateDirectory(path);
-
-                    string fileName = $"{Guid.NewGuid()}_{MenuVm.addItems.ItemFormImage.FileName}";
-                    string fileNameWithPath = Path.Combine(path, fileName);
-
-                    using (FileStream stream = new FileStream(fileNameWithPath, FileMode.Create))
-                    {
-                        MenuVm.addItems.ItemFormImage.CopyTo(stream);
-                    }
+                    string fileName = ImageTemplate.UploadImage(MenuVm.addItems.ItemFormImage, path);
                     MenuVm.addItems.ItemImage = $"/uploads/{fileName}";
                 }
                 else
@@ -357,7 +336,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
             }
 
-            bool editItemStatus = await _itemService.EditItem(MenuVm.addItems, userId);
+            bool editItemStatus = await _itemService.SaveItem(MenuVm.addItems, userId);
 
             if (editItemStatus)
             {
@@ -373,14 +352,20 @@ namespace Pizza_Shop_Project.Controllers
         {
             if (itemid == null)
             {
-                return Json(new { success = false, text = NotificationMessage.DoesNotExists.Replace("{0}", "Item") });
+                TempData["ErrorMessage"] = NotificationMessage.DoesNotExists.Replace("{0}", "Item");
+                return RedirectToAction("Menu", "Menu");
             }
-
-            if (await _itemService.DeleteItem(itemid))
+            else
             {
-                return Json(new { success = true, text = NotificationMessage.EntityDeleted.Replace("{0}", "Item") });
+
+                if (await _itemService.DeleteItem(itemid))
+                {
+                    TempData["SuccessMessage"] = NotificationMessage.EntityDeleted.Replace("{0}", "Item");
+                    return RedirectToAction("Menu", "Menu");
+                }
+                TempData["ErrorMessage"] = NotificationMessage.EntityDeletedFailed.Replace("{0}", "Item");
+                return RedirectToAction("Menu", "Menu");
             }
-            return Json(new { success = false, text = NotificationMessage.EntityDeletedFailed.Replace("{0}", "Item") });
 
         }
         #endregion
@@ -389,7 +374,6 @@ namespace Pizza_Shop_Project.Controllers
 
         #region Pagination-Menu-Modifier
         [PermissionAuthorize("Menu.View")]
-
         public async Task<IActionResult> PaginationMenuModifiersByModGroups(long? modgrpid, string search = "", int pageNumber = 1, int pageSize = 3)
         {
             try
@@ -413,7 +397,6 @@ namespace Pizza_Shop_Project.Controllers
 
         #region Existing-Pagination-Menu-Modifier
         [PermissionAuthorize("Menu.View")]
-
         public async Task<IActionResult> ExistingPaginationMenuModifiersByModGroups(string search = "", int pageNumber = 1, int pageSize = 3)
         {
             try
@@ -439,7 +422,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddModifierGroup(MenuViewModel MenuVM)
         {
-            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExistForAdd(MenuVM.addModifierGroupVM);
+            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExist(MenuVM.addModifierGroupVM);
 
             if (IsModifierGrpExists)
             {
@@ -460,7 +443,6 @@ namespace Pizza_Shop_Project.Controllers
         #endregion
 
         #region Edit Modifier Group 
-
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> GetModifierGroupByModifierGroupId(long modgrpid)
         {
@@ -501,7 +483,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> EditModifierGroup(MenuViewModel MenuVM)
         {
-            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExistForEdit(MenuVM.addModifierGroupVM);
+            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExist(MenuVM.addModifierGroupVM);
 
             if (IsModifierGrpExists)
             {

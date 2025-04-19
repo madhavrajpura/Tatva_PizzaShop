@@ -1,12 +1,12 @@
-D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.csproj.AssemblyReference.cache
-D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.GeneratedMSBuildEditorConfig.editorconfig
-D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.csproj.CoreCompileInputs.cache
 D:\Tatva_PizzaShop\BLL\bin\Debug\net7.0\BLL.deps.json
 D:\Tatva_PizzaShop\BLL\bin\Debug\net7.0\BLL.runtimeconfig.json
 D:\Tatva_PizzaShop\BLL\bin\Debug\net7.0\BLL.dll
 D:\Tatva_PizzaShop\BLL\bin\Debug\net7.0\BLL.pdb
 D:\Tatva_PizzaShop\BLL\bin\Debug\net7.0\DAL.dll
 D:\Tatva_PizzaShop\BLL\bin\Debug\net7.0\DAL.pdb
+D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.csproj.AssemblyReference.cache
+D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.GeneratedMSBuildEditorConfig.editorconfig
+D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.csproj.CoreCompileInputs.cache
 D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.csproj.CopyComplete
 D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\BLL.dll
 D:\Tatva_PizzaShop\BLL\obj\Debug\net7.0\refint\BLL.dll
