@@ -132,6 +132,14 @@ public class OrderAppMenuController : Controller
         }
     }
 
+ public async Task<IActionResult> SaveOrderDetails(string orderDetailIds, string orderDetails){
+        List<int> orderDetailId = JsonConvert.DeserializeObject<List<int>>(orderDetailIds);
+        OrderDetaIlsInvoiceViewModel orderDetailvm = JsonConvert.DeserializeObject<OrderDetaIlsInvoiceViewModel>(orderDetails);
+        OrderDetaIlsInvoiceViewModel orderDetailsvm =await _orderAppMenuService.SaveOrderDetails(orderDetailId,orderDetailvm);
+
+        return PartialView("_MenuItemsWithOrderDetails",orderDetailsvm);
+    }
+
 }
 
 
