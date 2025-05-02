@@ -66,8 +66,8 @@ public class TableSectionService : ITableSectionService
     #region Add Section
     public async Task<bool> AddSection(SectionViewModel addsection, long userId)
     {
-        Section? isSectionExist = await _context.Sections.FirstOrDefaultAsync(x => x.SectionName.ToLower().Trim() == addsection.SectionName.ToLower().Trim() && !x.Isdelete);
-        if (isSectionExist != null)
+        Section? sections = await _context.Sections.FirstOrDefaultAsync(x => x.SectionName.ToLower().Trim() == addsection.SectionName.ToLower().Trim() && !x.Isdelete);
+        if (sections != null)
         {
             return false;
         }
@@ -93,7 +93,7 @@ public class TableSectionService : ITableSectionService
 
     public SectionViewModel GetSectionById(long sectionid)
     {
-        Section? section = _context.Sections.FirstOrDefault(x => x.SectionId == sectionid && !x.Isdelete);
+        Section? section = _context.Sections.FirstOrDefault(x => x.SectionId == sectionid && x.Isdelete == false);
         if (section != null)
         {
             SectionViewModel sectionVM = new SectionViewModel
@@ -118,12 +118,12 @@ public class TableSectionService : ITableSectionService
         }
         else
         {
-            Section? isSectionNameExist = await _context.Sections.FirstOrDefaultAsync(x => x.SectionId != editSection.SectionId && x.SectionName.ToLower().Trim() == editSection.SectionName.ToLower().Trim() && !x.Isdelete);
+            Section? isSectionNameExist = await _context.Sections.FirstOrDefaultAsync(x => x.SectionId != editSection.SectionId && x.SectionName.ToLower().Trim() == editSection.SectionName.ToLower().Trim() && x.Isdelete == false);
             if (isSectionNameExist != null)
             {
                 return false;
             }
-            Section? isSectionExist = await _context.Sections.FirstOrDefaultAsync(x => x.SectionId == editSection.SectionId && !x.Isdelete);
+            Section? isSectionExist = await _context.Sections.FirstOrDefaultAsync(x => x.SectionId == editSection.SectionId && x.Isdelete == false);
             if (isSectionExist != null)
             {
                 isSectionExist.SectionName = editSection.SectionName;
@@ -143,9 +143,9 @@ public class TableSectionService : ITableSectionService
     #region Delete Section
     public async Task<bool> DeleteSection(long sectionid)
     {
-        Section? sectionToDelete = await _context.Sections.FirstOrDefaultAsync(x => x.SectionId == sectionid && !x.Isdelete);
+        Section? sectionToDelete = await _context.Sections.FirstOrDefaultAsync(x => x.SectionId == sectionid && x.Isdelete == false);
 
-        List<Table> existingTables = await _context.Tables.Where(x => x.SectionId == sectionid && !x.Isdelete).ToListAsync();
+        List<Table> existingTables = await _context.Tables.Where(x => x.SectionId == sectionid && x.Isdelete == false).ToListAsync();
 
         if (existingTables.Count > 0)
         {
@@ -196,7 +196,7 @@ public class TableSectionService : ITableSectionService
             return false;
         }
 
-        Table? isTableExist = await _context.Tables.FirstOrDefaultAsync(x => x.TableName.ToLower().Trim() == tableVM.TableName.ToLower().Trim() && x.SectionId == tableVM.SectionId && !x.Isdelete);
+        Table? isTableExist = await _context.Tables.FirstOrDefaultAsync(x => x.TableName.ToLower().Trim() == tableVM.TableName.ToLower().Trim() && x.SectionId == tableVM.SectionId && x.Isdelete == false);
 
         if (isTableExist != null)
         {
@@ -224,7 +224,7 @@ public class TableSectionService : ITableSectionService
     #region Edit Table
     public TablesViewModel GetTableById(long tableId, long sectionId)
     {
-        Table? table = _context.Tables.FirstOrDefault(x => x.TableId == tableId && x.SectionId == sectionId && !x.Isdelete);
+        Table? table = _context.Tables.FirstOrDefault(x => x.TableId == tableId && x.SectionId == sectionId && x.Isdelete == false);
         if (table != null)
         {
             TablesViewModel tableVM = new TablesViewModel
@@ -256,14 +256,14 @@ public class TableSectionService : ITableSectionService
         // }
         // return false;
 
-        var isTableNameExist = _context.Tables.FirstOrDefault(x => x.TableId != tableVM.TableId && x.TableName.ToLower().Trim() == tableVM.TableName.ToLower().Trim() && !x.Isdelete);
+        var isTableNameExist = _context.Tables.FirstOrDefault(x => x.TableId != tableVM.TableId && x.TableName.ToLower().Trim() == tableVM.TableName.ToLower().Trim() && x.Isdelete == false);
 
         if (isTableNameExist != null)
         {
             return false;
         }
 
-        var table = _context.Tables.FirstOrDefault(x => x.TableId == tableVM.TableId && !x.Isdelete);
+        var table = _context.Tables.FirstOrDefault(x => x.TableId == tableVM.TableId && x.Isdelete == false);
 
         if (table != null)
         {
@@ -285,7 +285,7 @@ public class TableSectionService : ITableSectionService
     #region Delete Table
     public async Task<bool> DeleteTable(long tableId)
     {
-        Table? table = _context.Tables.FirstOrDefault(x => x.TableId == tableId && !x.Isdelete);
+        Table? table = _context.Tables.FirstOrDefault(x => x.TableId == tableId && x.Isdelete == false);
         if (table != null)
         {
             table.TableName = table.TableName + DateTime.Now;

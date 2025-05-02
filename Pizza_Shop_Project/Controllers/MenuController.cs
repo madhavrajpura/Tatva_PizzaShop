@@ -79,7 +79,7 @@ namespace Pizza_Shop_Project.Controllers
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> AddCategory(Category category)
         {
-            bool IsCategoryNameExists = _categoryService.IsCategoryExist(category);
+            bool IsCategoryNameExists = _categoryService.IsCategoryExistForAdd(category);
             if (IsCategoryNameExists)
             {
                 TempData["ErrorMessage"] = NotificationMessage.AlreadyExists.Replace("{0}", "Category");
@@ -104,7 +104,7 @@ namespace Pizza_Shop_Project.Controllers
         [PermissionAuthorize("Menu.AddEdit")]
         public async Task<IActionResult> EditCategoryById(Category category)
         {
-            bool IsCategoryNameExists = _categoryService.IsCategoryExist(category);
+            bool IsCategoryNameExists = _categoryService.IsCategoryExistForEdit(category);
             if (IsCategoryNameExists)
             {
                 TempData["ErrorMessage"] = NotificationMessage.AlreadyExists.Replace("{0}", "Category");
@@ -202,7 +202,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddItem([FromForm] MenuViewModel MenuVm)
         {
-            bool IsItemNameExists = _itemService.IsItemExist(MenuVm.addItems);
+            bool IsItemNameExists = _itemService.IsItemExistForAdd(MenuVm.addItems);
             if (IsItemNameExists)
             {
                 return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Item") });
@@ -242,7 +242,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
             }
 
-            bool addItemStatus = await _itemService.SaveItem(MenuVm.addItems, userId);
+            bool addItemStatus = await _itemService.AddItem(MenuVm.addItems, userId);
 
             if (addItemStatus)
             {
@@ -298,7 +298,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> EditItem([FromForm] MenuViewModel MenuVm)
         {
-            bool IsItemNameExists = _itemService.IsItemExist(MenuVm.addItems);
+            bool IsItemNameExists = _itemService.IsItemExistForEdit(MenuVm.addItems);
             if (IsItemNameExists)
             {
                 return Json(new { success = false, text = NotificationMessage.AlreadyExists.Replace("{0}", "Item") });
@@ -336,7 +336,7 @@ namespace Pizza_Shop_Project.Controllers
                 }
             }
 
-            bool editItemStatus = await _itemService.SaveItem(MenuVm.addItems, userId);
+            bool editItemStatus = await _itemService.EditItem(MenuVm.addItems, userId);
 
             if (editItemStatus)
             {
@@ -422,7 +422,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddModifierGroup(MenuViewModel MenuVM)
         {
-            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExist(MenuVM.addModifierGroupVM);
+            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExistForAdd(MenuVM.addModifierGroupVM);
 
             if (IsModifierGrpExists)
             {
@@ -483,7 +483,7 @@ namespace Pizza_Shop_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> EditModifierGroup(MenuViewModel MenuVM)
         {
-            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExist(MenuVM.addModifierGroupVM);
+            bool IsModifierGrpExists = _modifierGroupService.IsModifierGroupExistForEdit(MenuVM.addModifierGroupVM);
 
             if (IsModifierGrpExists)
             {

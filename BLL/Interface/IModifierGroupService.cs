@@ -17,6 +17,7 @@ public interface IModifierGroupService
     Task<bool> AddModToModifierGrpAfterEdit(long modgrpid, long modid, long userId);
     Task<bool> DeleteModToModifierGrpAfterEdit(long modid, long modgrpid);
     Task<bool> DeleteModifierGroup(long modgrpid);
-    bool IsModifierGroupExist(AddModifierGroupViewModel modifierGrpVM);
+    bool IsModifierGroupExistForAdd(AddModifierGroupViewModel modifierGrpVM);
+    bool IsModifierGroupExistForEdit(AddModifierGroupViewModel modifierGrpVM);
 
 }

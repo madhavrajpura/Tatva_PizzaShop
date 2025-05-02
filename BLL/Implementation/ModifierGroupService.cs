@@ -283,16 +283,13 @@ public class ModifierGroupService : IModifierGroupService
 
     #region Check Modifier Group Exist
 
-    public bool IsModifierGroupExist(AddModifierGroupViewModel modifierGrpVM)
+    public bool IsModifierGroupExistForAdd(AddModifierGroupViewModel modifierGrpVM)
     {
-        if (modifierGrpVM.ModifierGrpId == 0)
-        {
-            return _context.Modifiergroups.Any(x => x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
-        }
-        else
-        {
-            return _context.Modifiergroups.Any(x => x.ModifierGrpId != modifierGrpVM.ModifierGrpId && x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
-        }
+        return _context.Modifiergroups.Any(x => x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
+    }
+    public bool IsModifierGroupExistForEdit(AddModifierGroupViewModel modifierGrpVM)
+    {
+        return _context.Modifiergroups.Any(x => x.ModifierGrpId != modifierGrpVM.ModifierGrpId && x.ModifierGrpName.ToLower().Trim() == modifierGrpVM.ModifierGrpName.ToLower().Trim() && !x.Isdelete);
     }
 
     #endregion

@@ -64,15 +64,11 @@
 
         if (query.length > 2) {
 
-            console.log(query, "query");
-
             $.ajax({
                 url: "/OrderAppTable/GetCustomerEmail",
                 type: "GET",
                 data: { searchTerm: query },
                 success: function (data) {
-
-                    console.log(data, "reached");
 
                     $("#emailSuggestions").empty();
 
@@ -91,7 +87,6 @@
             $("#emailSuggestions").empty();
         }
     });
-
 
     $(document).on("change", "#Email", function () {
         var selectedOption = $("#emailSuggestions option[value='" + $(this).val() + "']");
@@ -112,17 +107,14 @@
 
         if (form.valid()) {
 
-            console.log("Form is valid");
-
             let formData = new FormData(this);
-            console.log("FormData entries:", [...formData.entries()]); // Log form data for debugging
 
             $.ajax({
                 url: "/OrderAppTable/WaitingTokenDetails",
                 type: "POST",
                 data: formData,
-                processData: false, // Prevent jQuery from processing FormData
-                contentType: false, // Let browser set correct content type
+                processData: false, 
+                contentType: false, 
                 success: function (res) {
                     console.log("Response:", res);
                     if (res.success) {
@@ -130,7 +122,7 @@
                     } else {
                         callErrorToaster(res.text);
                     }
-                    $(".btn-close").click(); // Close modal
+                    $(".btn-close").click(); 
                 },
                 error: function (xhr, status, error) {
                     console.error("AJAX error:", status, error, xhr.responseText);

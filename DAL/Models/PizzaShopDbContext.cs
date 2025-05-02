@@ -79,7 +79,7 @@ public partial class PizzaShopDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Database=Pizza_Shop_DB;Username=postgres;     password=postgres");
+        => optionsBuilder.UseNpgsql("Host=localhost;Database=Pizza_Shop_DB;Username=postgres;         password=postgres");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -311,6 +311,7 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.IsFavourite).HasColumnName("isFavourite");
             entity.Property(e => e.Isavailable)
                 .IsRequired()
                 .HasDefaultValueSql("true")

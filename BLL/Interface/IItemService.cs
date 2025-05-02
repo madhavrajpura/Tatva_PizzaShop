@@ -5,10 +5,11 @@ namespace BLL.Interface;
 public interface IItemService
 {
     PaginationViewModel<ItemsViewModel> GetMenuItemsByCategory(long? catid, string search = "", int pageNumber = 1, int pageSize = 3);
-    Task<bool> SaveItem(AddItemViewModel addItemVM, long userId);
+    Task<bool> AddItem(AddItemViewModel addItemVM, long userId);
     AddItemViewModel GetItemsByItemId(long itemid);
-    // Task<bool> EditItem(AddItemViewModel editItemVM, long userId);
+    Task<bool> EditItem(AddItemViewModel editItemVM, long userId);
     Task<bool> DeleteItem(long itemid);
-    bool IsItemExist(AddItemViewModel addItemVM);
+    bool IsItemExistForAdd(AddItemViewModel addItemVM);
+    bool IsItemExistForEdit(AddItemViewModel addItemVM);
 
 }

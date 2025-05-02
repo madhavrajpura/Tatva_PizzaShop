@@ -12,5 +12,7 @@ public class CustomerViewModel
     public DateOnly CreatedAt { get; set; }
 
     public int totalOrder { get; set; }
+        public int NoOfPerson { get; set; }
+
 
 }

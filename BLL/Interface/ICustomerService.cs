@@ -9,8 +9,8 @@ public interface ICustomerService
     CustomerHistoryViewModel GetCustomerHistory(long customerid);
     long IsCustomerPresent(string Email);
     List<CustomerViewModel> GetCustomerEmail(string searchTerm);
-    Task<bool> SaveCustomer(WaitingTokenDetailViewModel waitingTokenVM, long userId);
+    Task<bool> AddEditCustomer(WaitingTokenDetailViewModel waitingTokenVM, long userId);
     IQueryable<CustomerViewModel> GetAllCustomers();
-    Task<bool> IsCustomerPresentInWaiting(string Email);
+    Task<long> GetCustomerIdByTableId(long tableId);
 
 }

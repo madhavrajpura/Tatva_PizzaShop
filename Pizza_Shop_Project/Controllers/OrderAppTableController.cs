@@ -82,13 +82,6 @@ public class OrderAppTableController : Controller
     [HttpPost]
     public async Task<IActionResult> WaitingTokenDetails([FromForm] OrderAppTableMainViewModel TableMainVM)
     {
-        bool IsCustomerPresentInWaiting = await _customerService.IsCustomerPresentInWaiting(TableMainVM.waitingTokenDetailViewModel.Email);
-        
-        if (IsCustomerPresentInWaiting)
-        {
-            return Json(new { success = false, text = "Customer Already Present In Waiting List" });
-        }
-
         string token = Request.Cookies["AuthToken"];
         List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
@@ -97,7 +90,7 @@ public class OrderAppTableController : Controller
 
         // if (customerIdIfPresent == 0)
         // {
-        bool createCustomer = await _customerService.SaveCustomer(TableMainVM.waitingTokenDetailViewModel, userId);
+        bool createCustomer = await _customerService.AddEditCustomer(TableMainVM.waitingTokenDetailViewModel, userId);
 
         if (!createCustomer)
         {
@@ -105,9 +98,9 @@ public class OrderAppTableController : Controller
         }
         // }
 
-        bool customerAddToWaitingList = await _orderAppTableService.AddEditCustomerToWaitingList(TableMainVM.waitingTokenDetailViewModel, userId);
+        bool IsCustomerAddedToWaiting = await _orderAppTableService.AddCustomerToWaitingList(TableMainVM.waitingTokenDetailViewModel, userId);
 
-        if (customerAddToWaitingList)
+        if (IsCustomerAddedToWaiting)
         {
             return Json(new { success = true, text = "Customer Added In Waiting List" });
         }
@@ -117,52 +110,58 @@ public class OrderAppTableController : Controller
     #endregion
 
     #region AssignTable GET
-    public async Task<IActionResult> GetWaitingListAndCustomerDetails(long sectionid)
+    public async Task<IActionResult> GetWaitingListAndCustomerDetails(long sectionid, string sectionName)
     {
         OrderAppTableMainViewModel TableMainVM = new();
         TableMainVM.WaitingTokenVMList = await _orderAppTableService.GetWaitingCustomerList(sectionid);
+        TableMainVM.SectionId = sectionid;
+        TableMainVM.SectionName = sectionName;
         return PartialView("_AssignTableCanvas", TableMainVM);
     }
     #endregion
+    public async Task<IActionResult> GetCustomerDetails(long waitingId, long sectionId, string sectionName)
+    {
+        OrderAppTableMainViewModel TableMainVM = new();
+        if (waitingId == 0)
+        {
+            TableMainVM.waitingTokenDetailViewModel = new();
+            TableMainVM.waitingTokenDetailViewModel.SectionId = sectionId;
+            TableMainVM.waitingTokenDetailViewModel.SectionName = sectionName;
+            return PartialView("_CustomerDetails", TableMainVM);
+        }
+        TableMainVM.waitingTokenDetailViewModel = await _orderAppTableService.GetCustomerDetails(waitingId);
+        return PartialView("_CustomerDetails", TableMainVM);
+    }
 
-    // #region AssignTable POST
-    // [HttpPost]
-    // public async Task<IActionResult> AssignTable(string Email, int [] TableIds){
-    //    string token = Request.Cookies["AuthToken"];
-    //    List<User>? userData = _userService.getUserFromEmail(token);
-    //    long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
-    //    bool tableAssignStatus =await _orderAppTableService.Assigntable(Email, TableIds, userId);
-    //    if(tableAssignStatus){
-    //        return Json(new{ success = true, text = "Table Assigned "});
-    //       }
-    //    return Json(new { success = false, text = "Something Went wrong, Try Again!" });
-    //}
-    // #endregion
+    #region AssignTable POST
+    [HttpPost]
+    public async Task<IActionResult> AssignTable([FromForm] OrderAppTableMainViewModel TableMainVM)
+    {
+        string token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
+        long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
+        bool createCustomer = await _customerService.AddEditCustomer(TableMainVM.waitingTokenDetailViewModel, userId);
+
+        if (!createCustomer)
+        {
+            return Json(new { success = false, text = NotificationMessage.EntityCreatedFailed.Replace("{0}", "Customer") });
+        }
+
+        long customerId = await _customerService.GetCustomerIdByTableId(TableMainVM.TableIds[0]);
+
+        bool TableAssignStatus = await _orderAppTableService.AssignTable(TableMainVM, userId);
+        if (TableAssignStatus)
+        {
+            return Json(new { success = true, text = "Table Assigned", customerid = customerId });
+        }
+        return Json(new { success = false, text = "Something Went wrong, Try Again!" });
+    }
+    #endregion
+    public async Task<IActionResult> GetCustomerIdByTableId(long tableId)
+    {
+        long  CustomerId = await _customerService.GetCustomerIdByTableId(tableId);
+        return Json(new { customerId = CustomerId});
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

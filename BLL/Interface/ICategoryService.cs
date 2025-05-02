@@ -9,7 +9,8 @@ public interface ICategoryService
     Task<bool> AddCategory(Category category, long userId);
     Task<bool> EditCategory(Category category, long Cat_Id, long userId);
     Task<bool> DeleteCategory(long Cat_Id);
-    bool IsCategoryExist(Category category);
+    bool IsCategoryExistForAdd(Category category);
+    bool IsCategoryExistForEdit(Category category);
 
 }
 // using System.ComponentModel.DataAnnotations;

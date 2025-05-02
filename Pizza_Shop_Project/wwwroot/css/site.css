@@ -569,35 +569,55 @@ form i {
     color: #8b8b8b !important;
 }
 
-
-/*Menu*/
+/* Menu OrderApp */
 @media (max-width:767px){
     .category-toggle-active{
-      transform: translateX(-100%);
-      position: absolute !important;
+        transform: translateX(-100%);
+        position: absolute !important;
     }
-  }
-  
-  .category-toggle{
+}
+
+.category-toggle{
     transition: transform 0.4s ease-out;
-    z-index: 2;
-  }
-  
-  .overlay-category{
+    z-index: 6;
+}
+
+.category-click{
+    cursor:pointer;
+}
+
+.overlay-category{
     height: 100%;
     width: 100%;
     position: absolute;
     top:0;
     left: 0;
     background-color: rgb(0 0 0 / 39%);
-    z-index: 0;
+    z-index: 4;
     display: none;
-  }
-  
-  .overlay-category-active{
+}
+
+.overlay-category-active{
     display: initial;
-  }
-  
-  .category-toggle-position{
+}
+
+.category-toggle-position{
     position: absolute;
-  }
+}
+
+.orderAppActive{
+    background-color: #0084c3 ;
+    color: white;
+    border-radius: 0px 50px 50px 0px;
+    cursor: pointer;
+}
+
+.modifierSelected{
+    background-color: #cff0ff !important;
+    border: 1px solid #0084c3 !important;
+}
+
+.right-side-main-div{
+    background-color: rgb(238, 238, 238) !important;
+    min-height: 100vh;
+}
