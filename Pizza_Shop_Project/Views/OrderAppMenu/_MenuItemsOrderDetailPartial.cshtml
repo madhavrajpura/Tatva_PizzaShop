@@ -6,7 +6,9 @@
 
     <div class="bg-white rounded-2">
 
+        @* Upper Div *@
         <div class="d-flex justify-content-between p-1">
+            @* <!-- Table And Section --> *@
             <div class="d-flex">
                 <img src="../images/icons/dinner-table.svg" width="40px" height="40px" alt="Image"
                     style="background-color: #cbe4f3 !important;" class="p-1 rounded-1">
@@ -24,6 +26,8 @@
                     </span>
                 </span>
             </div>
+
+            @* <!-- QR code , Customer Details, Order Comment --> *@
             <div class="d-flex gap-2">
                 <div class="btn hollow-btn px-2" data-bs-toggle="modal" style="width: 38px !important;"
                     data-bs-target="#QRCodeModal"><i class="fa-solid fa-qrcode pt-1 fs-5"></i></div>
@@ -34,6 +38,7 @@
             </div>
         </div>
 
+        @* Items Section *@
         <div class="table-responsive p-1">
             <table class="table" style="border-collapse: separate; border-spacing: 0px 10px;">
                 <thead>
@@ -49,7 +54,7 @@
                     {
                         <tr class="">
                             <td colspan="4"
-                                class="text-center text-danger fw-bold border border-top-1 border-bottom-0 border-end-0 border-start-0">
+                                class="text-center text-danger fw-normal border border-top-1 border-bottom-0 border-end-0 border-start-0">
                                 No Order Found</td>
                         </tr>
                     }
@@ -58,6 +63,7 @@
                         @foreach (var item in Model.itemOrderVM)
                         {
                             <tr class="border">
+                                @* Item Name with Modifiers *@
                                 <td class="border border-1 border-end-0"
                                     style="border-top-left-radius: 10px !important; border-bottom-left-radius: 10px !important;">
                                     <div class="accordion-item border-0 rounded-0 ">
@@ -91,7 +97,7 @@
                                             {
                                                 <ul class="d-flex flex-column">
                                                     <li>
-                                                        <div class="w-100 gap-5 d-flex align-items-center">
+                                                        <div class="w-100 gap-3 d-flex align-items-center">
                                                             <div>@modifier.ModifierName</div>
                                                             <div>₹@modifier.Rate</div>
                                                         </div>
@@ -101,35 +107,40 @@
                                         }
                                     </div>
                                 </td>
+
+                                @* Quantity with +/- Button *@
                                 <td class="border border-1 border-end-0 border-start-0">
                                     <div class="p-2 border rounded d-flex align-items-center"
                                         style="max-width: fit-content; height: 30px;">
-                                        @if (item.status == "Pending")
-                                        {
-                                            <div class="me-4 " style="cursor: pointer;" onclick="MinusQuantity(this,@count)">-</div>
-                                            <span>@item.Quantity</span>
-                                            <div class="ms-4 " style="cursor: pointer;" onclick="PlusQuantity(this,@count)">+</div>
-                                        }
-                                        else
-                                        {
-                                            <div class="me-4 " style="cursor: pointer;" onclick="PrintToaster()">-</div>
-                                            <span>@item.Quantity</span>
-                                            <div class="ms-4 " style="cursor: pointer;" onclick="PrintToaster()">+</div>
-                                        }
+                                        @* @if (item.status == "Pending")
+                            { *@
+                                        <div class="me-4 minus" style="cursor: pointer;" onclick="MinusQuantity(this,@count)">-
+                                        </div>
+                                        <span>@item.Quantity</span>
+                                        <div class="ms-4 plus" style="cursor: pointer;" onclick="PlusQuantity(this,@count)">+</div>
+                                        @* }
+                            else
+                            {
+                            <div class="me-4 " style="cursor: pointer;" onclick="PrintToaster()">-</div>
+                            <span>@item.Quantity</span>
+                            <div class="ms-4 " style="cursor: pointer;" onclick="PrintToaster()">+</div>
+                            } *@
 
                                     </div>
                                 </td>
+
+                                @* Amount with Total Item Amount *@
                                 <td class="border border-1 border-start-0 border-end-0">
                                     <div class="d-flex flex-column gap-3 align-items-center mb-3" style="height: 30px;">
                                         <div>₹@item.TotalItemAmount</div>
 
 
                                         @* @foreach (var modifier in item.modifierOrderVM)
-                                    {
-                                        <div id="TableMainBodyID-@item.ItemId-@count" class="accordion-collapse collapse ">
-                                            ₹@modifier.TotalModifierAmount
-                                        </div>
-                                    } *@
+                            {
+                            <div id="TableMainBodyID-@item.ItemId-@count" class="accordion-collapse collapse ">
+                            ₹@modifier.TotalModifierAmount
+                            </div>
+                            } *@
                                         @if (item.modifierOrderVM.Count() != 0)
                                         {
                                             decimal? total = 0;
@@ -137,12 +148,15 @@
                                             {
                                                 total += modifier.TotalModifierAmount;
                                             }
-                                            <div id="TableMainBodyID-@item.ItemId-@count">₹@total</div>
+                                            <div id="">₹@total</div>
+                                            @* <div id="TableMainBodyID-@item.ItemId-@count">₹@total</div> *@
                                         }
                                     </div>
 
 
                                 </td>
+
+                                @* Remove Item Button *@
                                 <td class="border border-1 border-start-0 "
                                     style="border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
                                     <div class=" ps-5">
@@ -165,18 +179,19 @@
             </table>
         </div>
 
-        <!-- Tax section -->
+        @* <!-- Tax section --> *@
         <div class="p-1 border-top">
+
             @if (Model.itemOrderVM != null)
             {
                 <div class="fs-6 w-100 pt-1 pb-2 d-flex justify-content-between align-items-center">
                     <span class="fs-5">SubTotal</span>
                     <div>
-                        @* <span> </span> *@
                         <span class="fs-5">₹@Model.SubTotalAmountOrder</span>
                     </div>
                 </div>
             }
+
             @if (Model.taxInvoiceVM != null)
             {
                 @foreach (var tax in Model.taxInvoiceVM)
@@ -189,51 +204,51 @@
                 <div class="fs-6 pt-3 pb-3 w-100 d-flex justify-content-between align-items-center">
                     <span class="fs-5">Total</span>
                     <div>
-                        @* <span>₹ </span> *@
-                        <span class="fs-5">₹@(Model.TotalAmountOrder == 0 ? (00.00) : Model.TotalAmountOrder)
-                        </span>
+                        <span class="fs-5">₹@(Model.TotalAmountOrder == 0 ? (00.00) : Model.TotalAmountOrder)</span>
                     </div>
                 </div>
             }
+
+            @* Payment Method *@
+
             <div class="fs-6 w-100 d-flex justify-content-between align-items-center">
                 <div>Payment Method</div>
                 <div class="d-flex gap-2 justify-content-between align-items-center">
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input" type="radio" name="payment" checked>
-                        <label class="form-check-label ps-2 pt-1" for="radioDefault1">
-                            Cash
-                        </label>
+                        <input class="form-check-input payment-type" type="radio" name="payment" checked>
+                        <label class="form-check-label ps-2 pt-1" for="radioDefault1">Cash</label>
                     </div>
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input" type="radio" name="payment">
-                        <label class="form-check-label ps-2 pt-1" for="radioDefault1">
-                            Card
-                        </label>
+                        <input class="form-check-input payment-type" type="radio" name="payment">
+                        <label class="form-check-label ps-2 pt-1" for="radioDefault1">Card</label>
                     </div>
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input" type="radio" name="payment">
-                        <label class="form-check-label ps-2 pt-1" for="radioDefault1">
-                            UPI
-                        </label>
+                        <input class="form-check-input payment-type" type="radio" name="payment">
+                        <label class="form-check-label ps-2 pt-1" for="radioDefault1">UPI</label>
                     </div>
                 </div>
             </div>
+
+            @* Order Status *@
             <div class="py-4 d-flex flex-wrap justify-content-end gap-3">
-                <button class="btn solid-btn order-save-btn" style="width: 180px;" disabled>Save</button>
+                <button class="btn solid-btn order-save-btn" style="width: 180px;" onclick="SaveOrder()">Save</button>
                 <button class="btn hollow-btn" style="width: 180px;" disabled>Complete</button>
                 <button class="btn hollow-btn" style="width: 180px;" disabled>Generate Invoice</button>
             </div>
+
             <div class="text-end">
-                <button class="btn hollow-btn" style="width: 180px;">Cancel</button>
+                <button class="btn hollow-btn" style="width: 180px;" disabled>Cancel</button>
             </div>
         </div>
+
     </div>
 }
 
 
-<!--                                Modal                                    -->
+<!----------------------------------------- Modal -------------------------------------------------------->
 
 <!--QR code modal -->
+
 <div id="QRCodeModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -303,219 +318,3 @@
         FillAlreadySavedDataInArray(orderDetails);
     });
 </script>
-
-@*
-
-<td class="border-1 border-end-0 border-start-0">
-                                <div class="p-2 border rounded d-flex align-items-center"
-                                    style="max-width: fit-content; height: 30px;">
-                                    @* @if (item.status == "Pending")
-                                    { *@
-                                        <div class="me-4 minus" onclick="Minus(this,@count)" style="cursor: pointer;">-</div>
-                                        <span>@item.Quantity</span>
-                                        <div class="ms-4 plus" onclick="Plus(this,@count)" style="cursor: pointer;">+</div>
-                                    @* }
-                                    else
-                                    {
-                                        <div class="me-4" style="cursor: pointer;" onclick="PrintToaster()">-</div>
-                                        <span>@item.Quantity</span>
-                                        <div class="ms-4" style="cursor: pointer;" onclick="PrintToaster()">+</div>
-                                    } *@
-
-                                </div>
-                            </td>
-
-            <div class="btn btn-primary me-sm-3 mt-2 " style="width: 150px;" onclick="SaveorderDetails()">Save</div>
-
-            main ma
-            var categoryID;
-        var AllItemsArray = []
-        var ItemQuantityArr = [];
-        var orderDetailIds = [];
-        var orderDetailsModel;
-        var itemQuantityUpdateflag = true;
-
-        //backend order items save in array
-        function FillAlreadySavedDataInArray(orderDetails) {
-            orderDetailsModel = orderDetails;
-
-            var AllItems = [];
-            AllItemsArray = [];
-            AllItems = orderDetails.itemsInOrderDetails;
-
-            if (orderDetails.itemsInOrderDetails != null) {
-                for (i = 0; i < AllItems.length; i++) {
-                    var item = [];
-                    for (j = 0; j < AllItems[i].modifiersInItemInvoice.length; j++) {
-                        item.push(parseInt(AllItems[i].modifiersInItemInvoice[j].modifierId));
-                    }
-                    item.sort();
-                    item.unshift(parseInt(AllItems[i].quantity));
-                    item.unshift(parseInt(AllItems[i].itemId));
-
-                    AllItemsArray.push(item);
-                    @* ItemQuantityArr.push(parseInt(AllItems[i].quantity)) *@
-                    }
-            }
-            if (itemQuantityUpdateflag) {
-                fillItemQuantity();
-                itemQuantityUpdateflag = false;
-            }
-        }
-
-        //
-        //fuction to fill itemQuantityarr when page loads
-        function fillItemQuantity() {
-            ItemQuantityArr = [];
-            console.log("quantity", orderDetailsModel)
-            if (orderDetailsModel.itemsInOrderDetails != null) {
-                for (i = 0; i < orderDetailsModel.itemsInOrderDetails.length; i++) {
-                    ItemQuantityArr.push(parseInt(orderDetailsModel.itemsInOrderDetails[i].quantity))
-                    orderDetailIds.push(parseInt(orderDetailsModel.itemsInOrderDetails[i].orderDetailId))
-                }
-            }
-
-        }
-
-        //Add item by menu without save button click
-        function AddItemModifierToList() {
-            var selectedModifiers = document.getElementsByClassName("modifierSelected");
-            var itemId = document.getElementById("itemIdForOrderDetails").value;
-            var item = [];
-
-            for (i = 0; i < selectedModifiers.length; i++) {
-                item.push(parseInt(selectedModifiers[i].getAttribute("data-modifierId")));
-            }
-            item.sort();
-            item.unshift(1);
-            item.unshift(parseInt(itemId))
-            @* console.log(item) *@
-                        var ItemCheckFlag = true
-            AllItemsArray.forEach((x) => {
-                if (x.toString().substr(0, x[0].toString().length + 1) + x.toString().substr(4) == item.toString().substr(0, item[0].toString().length + 1) + item.toString().substr(4) && x[1] < 10) {
-                    x[1]++
-                    console.log("x", x[1])
-                    ItemCheckFlag = false
-                }
-                else if (x[1] == 10) {
-                    ItemCheckFlag = false
-                    errorToaster("Maximum quantity already added")
-                }
-            })
-            if (ItemCheckFlag) AllItemsArray.push(item);
-            console.log("allitemarr", AllItemsArray)
-            $.ajax({
-                url: "/OrderAppMenu/UpdateOrderDetailPartialView",
-                type: "GET",
-                data: { ItemList: JSON.stringify(AllItemsArray), orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetailsWithTablePartial").html(data);
-                }
-            })
-            $(".btn-close").click();
-        }
-
-        function Minus(tag, count) {
-            if (parseInt(tag.nextElementSibling.innerHTML) < 0) {
-                tag.nextElementSibling.innerHTML = 0;
-            }
-            if(parseInt(tag.nextElementSibling.innerHTML) <= ItemQuantityArr[count]){
-                errorToaster("You can not change Order Because it is almost ready");
-                return;
-            }
-            AllItemsArray[count][1] = parseInt(tag.nextElementSibling.innerHTML) - 1;
-            console.log("allitemarr", AllItemsArray)
-            $.ajax({
-                url: "/OrderAppMenu/UpdateOrderDetailPartialView",
-                type: "GET",
-                data: { ItemList: JSON.stringify(AllItemsArray), orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetailsWithTablePartial").html(data);
-                }
-            })
-        }
-
-        function Plus(tag, count) {
-            if (parseInt(tag.previousElementSibling.innerHTML) >= 10) {
-                errorToaster("Can not aorder more than 10 items");
-                return;
-            }
-            AllItemsArray[count][1] = parseInt(tag.previousElementSibling.innerHTML) + 1;
-            console.log("allitemarr", AllItemsArray)
-            $.ajax({
-                url: "/OrderAppMenu/UpdateOrderDetailPartialView",
-                type: "GET",
-                data: { ItemList: JSON.stringify(AllItemsArray), orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetailsWithTablePartial").html(data);
-                }
-            })
-            @* tag.previousElementSibling.innerHTML = parseInt(tag.previousElementSibling.innerHTML) + 1; *@
-                    }
-
-        //show item instruction modal
-        function ItemWiseInstruction(tag, count) {
-            console.log(orderDetailsModel.itemsInOrderDetails[count].specialInstruction)
-            document.getElementById("ItemInstruction").value = orderDetailsModel.itemsInOrderDetails[count].specialInstruction != null ? orderDetailsModel.itemsInOrderDetails[count].specialInstruction : "";
-            document.getElementById("itemInstructionCount").value = count;
-        }
-
-        //store item instruction inmViewmodel
-        function StoreItemInstruction() {
-            var count = document.getElementById("itemInstructionCount").value;
-            orderDetailsModel.itemsInOrderDetails[count].specialInstruction = document.getElementById("ItemInstruction").value;
-            $(".btn-close").click();
-        }
-
-        //remove item if not saved
-        function RemoveItemFromOrder(itemId, count) {
-            AllItemsArray.splice(count, 1);
-            console.log(AllItemsArray)
-            $.ajax({
-                url: "/OrderAppMenu/RemoveItemfromOrderDetailPartialView",
-                type: "GET",
-                data: { ItemList: JSON.stringify(AllItemsArray), count, orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetailsWithTablePartial").html(data);
-                }
-            })
-        }
-
-        //save order details in db
-        function SaveorderDetails() {
-            $.ajax({
-                url: "/OrderAppMenu/SaveOrderDetails",
-                type: "POST",
-                data: { orderDetailIds:JSON.stringify(orderDetailIds) , orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetailsWithTablePartial").html(data);
-                }
-            })
-        }
-
-
-
-        $(document).ready(function (x) {
-            var maindivsidebar = document.getElementById("maindivsidebar")
-
-            maindivsidebar.parentElement.classList.remove("pb-3")
-            maindivsidebar.parentElement.classList.remove("ps-lg-5")
-            maindivsidebar.parentElement.classList.remove("pt-3")
-            maindivsidebar.parentElement.classList.remove("ps-md-4")
-            maindivsidebar.parentElement.classList.remove("pe-md-4")
-            maindivsidebar.parentElement.classList.remove("pe-lg-5")
-            maindivsidebar.parentElement.classList.add("p-0")
-
-            categySelected(document.getElementsByClassName("category")[0], -1);
-            GetOrderDetailsBycustId();
-            @* itemQuantityUpdateflag=true; *@
-
-                @* if (@((long)ViewData["customerId"] != 0)){
-                var orderDetails = @Html.Raw(Json.Serialize(Model));
-                console.log(orderDetails);
-                FillAlreadySavedDataInArray(orderDetails);
-            } *@
-
-                                })
-
-*@
