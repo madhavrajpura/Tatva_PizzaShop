@@ -104,6 +104,8 @@
         var ItemQuantity = [];
         var OrderDetailIds = [];
         var ItemQuantityUpdateFlag = true;
+        var IsOrderCompleted = false;
+        var IsAllItemSaved = false;
 
         // Toggle Sidebar Category
         function toggleSidebarCategory() {
@@ -227,77 +229,46 @@
 
         // Add Item To Order
         function AddItemModifierToList() {
-            var selectedModifiers = document.getElementsByClassName("modifierSelected");
-            var itemId = document.getElementById("itemIdForOrderDetails").value;
-            var item = [];
-
-            for (i = 0; i < selectedModifiers.length; i++) {
-                item.push(parseInt(selectedModifiers[i].getAttribute("data-modifierId")));
-            }
-            item.sort();
-            item.unshift(1);
-            item.unshift(parseInt(itemId))
-
-            console.log("item", item);
-
-            var ItemCheckFlag = true;
-
-            MainItem.forEach((x) => {
-
-                if (x.toString().substr(0, x[0].toString().length + 1) + x.toString().substr(4) == item.toString().substr(0,
-                    item[0].toString().length + 1) + item.toString().substr(4) && x[1] < 10) {
-                    x[1]++;
-                    console.log("x", x[1]);
-                    ItemCheckFlag = false;
-                }
-                else if (x[1] == 10) {
-                    ItemCheckFlag = false;
-                    callErrorToaster("Maximum Quantity already added!");
-                }
-
-            });
-
-
-            if (ItemCheckFlag) MainItem.push(item);
-
-            console.log("AllItems = ", MainItem);
-            console.log("orderDetailsModel = ", orderDetailsModel);
-
-            $.ajax({
-                url: "/OrderAppMenu/UpdateOrderDetailPartialView",
-                type: "GET",
-                data: { ItemList: JSON.stringify(MainItem), orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetails-Content").html(data);
-                }
-            })
-            $(".btn-close").click();
-        }
-
-        // Remove Item from Order
-        function RemoveItemFromOrder(itemId, count) {
-            MainItem.splice(count, 1);
-            $.ajax({
-                url: "/OrderAppMenu/RemoveItemfromOrderDetailPartialView",
-                type: "GET",
-                data: { ItemList: JSON.stringify(MainItem), count, orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetails-Content").html(data);
-                }
-            })
-        }
-
-        // Minus quantity
-        function MinusQuantity(tag, count) {
-            var quantity = parseInt(tag.nextElementSibling.innerText);
-            if (parseInt(tag.nextElementSibling.innerText) <= ItemQuantity[count]) {
-                callErrorToaster("Sorry Item is almost ready!");
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
                 return;
             }
-            if (quantity > 1) {
-                quantity--;
-                tag.nextElementSibling.innerText = quantity;
-                MainItem[count][1] = quantity;
+            else {
+                var selectedModifiers = document.getElementsByClassName("modifierSelected");
+                var itemId = document.getElementById("itemIdForOrderDetails").value;
+                var item = [];
+
+                for (i = 0; i < selectedModifiers.length; i++) {
+                    item.push(parseInt(selectedModifiers[i].getAttribute("data-modifierId")));
+                }
+                item.sort();
+                item.unshift(1);
+                item.unshift(parseInt(itemId))
+
+                console.log("item", item);
+
+                var ItemCheckFlag = true;
+
+                MainItem.forEach((x) => {
+
+                    if (x.toString().substr(0, x[0].toString().length + 1) + x.toString().substr(4) == item.toString().substr(0,
+                        item[0].toString().length + 1) + item.toString().substr(4) && x[1] < 10) {
+                        x[1]++;
+                        console.log("x", x[1]);
+                        ItemCheckFlag = false;
+                    }
+                    else if (x[1] == 10) {
+                        ItemCheckFlag = false;
+                        callErrorToaster("Maximum Quantity already added!");
+                    }
+
+                });
+
+                if (ItemCheckFlag) MainItem.push(item);
+
+                console.log("AllItems = ", MainItem);
+                console.log("orderDetailsModel = ", orderDetailsModel);
+
                 $.ajax({
                     url: "/OrderAppMenu/UpdateOrderDetailPartialView",
                     type: "GET",
@@ -305,27 +276,81 @@
                     success: function (data) {
                         $("#OrderDetails-Content").html(data);
                     }
+                })
+                $(".btn-close").click();
+            }
+        }
+
+        // Remove Item from Order
+        function RemoveItemFromOrder(itemId, count) {
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
+                return;
+            }
+            else {
+                MainItem.splice(count, 1);
+                $.ajax({
+                    url: "/OrderAppMenu/RemoveItemfromOrderDetailPartialView",
+                    type: "GET",
+                    data: { ItemList: JSON.stringify(MainItem), count, orderDetails: JSON.stringify(orderDetailsModel) },
+                    success: function (data) {
+                        $("#OrderDetails-Content").html(data);
+                    }
                 });
+            }
+        }
+
+        // Minus quantity
+        function MinusQuantity(tag, count) {
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
+                return;
+            }
+            else {
+                var quantity = parseInt(tag.nextElementSibling.innerText);
+                if (parseInt(tag.nextElementSibling.innerText) <= ItemQuantity[count]) {
+                    callErrorToaster("Sorry Item is almost ready!");
+                    return;
+                }
+                if (quantity > 1) {
+                    quantity--;
+                    tag.nextElementSibling.innerText = quantity;
+                    MainItem[count][1] = quantity;
+                    $.ajax({
+                        url: "/OrderAppMenu/UpdateOrderDetailPartialView",
+                        type: "GET",
+                        data: { ItemList: JSON.stringify(MainItem), orderDetails: JSON.stringify(orderDetailsModel) },
+                        success: function (data) {
+                            $("#OrderDetails-Content").html(data);
+                        }
+                    });
+                }
             }
         }
 
         // Plus quantity
         function PlusQuantity(tag, count) {
-            var quantity = parseInt(tag.previousElementSibling.innerText);
-            if (quantity < 10) {
-                quantity++;
-                tag.previousElementSibling.innerText = quantity;
-                MainItem[count][1] = quantity;
-                $.ajax({
-                    url: "/OrderAppMenu/UpdateOrderDetailPartialView",
-                    type: "GET",
-                    data: { ItemList: JSON.stringify(MainItem), orderDetails: JSON.stringify(orderDetailsModel) },
-                    success: function (data) {
-                        $("#OrderDetails-Content").html(data);
-                    }
-                });
-            } else {
-                callErrorToaster("You can select maximum 10 quantity");
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
+                return;
+            }
+            else {
+                var quantity = parseInt(tag.previousElementSibling.innerText);
+                if (quantity < 10) {
+                    quantity++;
+                    tag.previousElementSibling.innerText = quantity;
+                    MainItem[count][1] = quantity;
+                    $.ajax({
+                        url: "/OrderAppMenu/UpdateOrderDetailPartialView",
+                        type: "GET",
+                        data: { ItemList: JSON.stringify(MainItem), orderDetails: JSON.stringify(orderDetailsModel) },
+                        success: function (data) {
+                            $("#OrderDetails-Content").html(data);
+                        }
+                    });
+                } else {
+                    callErrorToaster("You can select maximum 10 quantity");
+                }
             }
         }
 
@@ -337,29 +362,50 @@
 
         // Save Item Instruction
         function StoreItemInstruction() {
-            var count = parseInt($("#ItemInstructionCount").val());
-            var instruction = document.getElementById("ItemInstructionText").value;
-            orderDetailsModel.itemOrderVM[count].extraInstruction = instruction;
-            $(".btn-close").click();
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
+                return;
+            }
+            else {
+                var count = parseInt($("#ItemInstructionCount").val());
+                var instruction = document.getElementById("ItemInstructionText").value;
+                orderDetailsModel.itemOrderVM[count].extraInstruction = instruction;
+                $(".btn-close").click();
+            }
         }
 
         // Save Order
         function SaveOrder() {
-            $.ajax({
-                url: "/OrderAppMenu/SaveOrder",
-                type: "POST",
-                data: { OrderDetailIds: JSON.stringify(OrderDetailIds), orderDetails: JSON.stringify(orderDetailsModel) },
-                success: function (data) {
-                    $("#OrderDetails-Content").html(data);
-                    ItemQuantityUpdateFlag = true;
-                    callSuccessToaster("Order Saved Successfully");
-                },
-                error: function (data) {
-                    console.log(data);
-                    callErrorToaster("Something went wrong!");
-                }
-            });
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
+                return;
+            }
+            else {
+                console.log("MainItem", MainItem);
+                console.log("orderDetailsModel", orderDetailsModel);
+                console.log("ItemQuantity", ItemQuantity);
+                console.log("OrderDetailIds", OrderDetailIds);
+
+                $.ajax({
+                    url: "/OrderAppMenu/SaveOrder",
+                    type: "POST",
+                    data: { OrderDetailIds: JSON.stringify(OrderDetailIds), orderDetails: JSON.stringify(orderDetailsModel) },
+                    success: function (data) {
+                        $("#OrderDetails-Content").html(data);
+                        ItemQuantityUpdateFlag = true;
+                        IsAllItemSaved = true;
+                        callSuccessToaster("Order Saved Successfully");
+                    },
+                    error: function (data) {
+                        console.log(data);
+                        callErrorToaster("Something went wrong !");
+                    }
+                });
+            }
         }
+
+        // Complete Order
+
 
         // READY
         $(document).ready(function () {

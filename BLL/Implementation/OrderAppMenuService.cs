@@ -229,7 +229,7 @@ public class OrderAppMenuService : IOrderAppMenuService
             {
                 long itemId = itemList[k][0];
 
-                ItemOrderViewModel? itemdata = _context.Items.Where(x => x.ItemId == itemId && !x.Isdelete)
+                ItemOrderViewModel? itemdata = await _context.Items.Where(x => x.ItemId == itemId && !x.Isdelete)
                                                         .Select(i => new ItemOrderViewModel
                                                         {
                                                             ItemId = i.ItemId,
@@ -238,9 +238,9 @@ public class OrderAppMenuService : IOrderAppMenuService
                                                             status = k >= _context.Orderdetails.Where(x => x.OrderId == orderdetails.OrderId && !x.Isdelete).Count() ? "Pending" : "In Progress",
                                                             Quantity = itemList[k][1] >= 1 ? itemList[k][1] : 1,
                                                             ExtraInstruction = itemOrderVM != null ? (k >= itemOrderVM.Count() ? null : itemOrderVM[k].ExtraInstruction) : null,
-                                                            OrderdetailId = k >= itemOrderVM.Count() ? 0 : itemOrderVM[k].OrderdetailId,
+                                                            OrderdetailId = itemOrderVM != null ? (k >= itemOrderVM.Count() ? 0 : itemOrderVM[k].OrderdetailId) : 0,
                                                             TotalItemAmount = Math.Round(i.Rate * (itemList[k][1] >= 1 ? itemList[k][1] : 1), 2)
-                                                        }).First();
+                                                        }).FirstAsync();
                 itemdata.modifierOrderVM = new();
                 for (int j = 2; j < itemList[k].Count; j++)
                 {
@@ -257,8 +257,8 @@ public class OrderAppMenuService : IOrderAppMenuService
             }
             orderdetails.SubTotalAmountOrder = Math.Round((decimal)orderdetails.itemOrderVM
                                                        .Sum(x => x.TotalItemAmount + x.modifierOrderVM.Sum(x => x.TotalModifierAmount)), 2);
-            var taxedetails = _context.Taxes
-            .Where(x => !x.Isdelete).ToList();
+            List<Tax>? taxedetails = await _context.Taxes
+            .Where(x => !x.Isdelete).ToListAsync();
 
             orderdetails.taxInvoiceVM = new List<TaxInvoiceViewModel>();
             foreach (var tax in taxedetails)
@@ -406,6 +406,7 @@ public class OrderAppMenuService : IOrderAppMenuService
                     PaymentmethodId = 1,
                     PaymentStatusId = 1,
                     SectionId = orderDetailsVM.SectionId,
+                    TableId = orderDetailsVM.tableList[0].TableId,
                     ExtraInstruction = orderDetailsVM.OrderInstruction,
                     CreatedAt = DateTime.Now,
                     OrderType = "Dine In",
@@ -526,5 +527,7 @@ public class OrderAppMenuService : IOrderAppMenuService
             return null;
         }
     }
+
+    
 
 }
