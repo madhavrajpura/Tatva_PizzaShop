@@ -106,6 +106,8 @@
         var ItemQuantityUpdateFlag = true;
         var IsOrderCompleted = false;
         var IsAllItemSaved = false;
+        var PaymentmethodId = 1;
+
 
         // Toggle Sidebar Category
         function toggleSidebarCategory() {
@@ -405,7 +407,135 @@
         }
 
         // Complete Order
+        function CompleteOrderValidation() {
+            if (orderDetailsModel.itemOrderVM == null) {
+                callErrorToaster("You haven't ordered any item yet !");
+                return;
+            }
 
+            for (i = 0; i < orderDetailsModel.itemOrderVM.count; i++) {
+                if (orderDetailsModel.itemOrderVM[i].status == "Pending") {
+                    callErrorToaster("Please Save Order First");
+                    return;
+                }
+            }
+
+            if (!IsAllItemSaved) {
+                callErrorToaster("Please Save Orders First")
+                return;
+            }
+
+            $.ajax({
+                url: "/OrderAppMenu/CompleteOrderValidation",
+                type: "POST",
+                data: { orderDetailIds: JSON.stringify(orderDetailIds), orderDetails: JSON.stringify(orderDetailsModel) },
+                success: function (data) {
+                    if (data.success) {
+                        $("#CustomerReviewModal").modal("show");
+                    } else {
+                        callErrorToaster("All items are not ready yet !");
+                    }
+                }
+            });
+        }
+
+        //complete order details 
+        function CompleteOrder() {
+
+            var foodreview = document.getElementsByClassName("food-review-active").length;
+            var serviceReview = document.getElementsByClassName("service-review-active").length;
+            var ambienceReview = document.getElementsByClassName("ambience-review-active").length;
+            var reviewtext = document.getElementById("ReviewText").value;
+
+            console.log(foodreview, "food");
+
+            var paymentmethod = document.getElementsByClassName("payment-type");
+
+            console.log(paymentmethod, "paymentmethod");
+
+            for (i = 0; i < paymentmethod.length; i++) {
+                if (paymentmethod[i].checked) {
+                    PaymentmethodId = paymentmethod[i].value;
+                }
+            }
+
+            $.ajax({
+                url: "/OrderAppMenu/SaveRatings",
+                type: "POST",
+                data: { customerId: orderDetailsModel.customerId, foodreview, serviceReview, ambienceReview, reviewtext },
+                success: function (data) {
+                    orderDetailsModel.RatingId = data;
+                    $.ajax({
+                        url: "/OrderAppMenu/CompleteOrder",
+                        type: "POST",
+                        data: { orderDetails: JSON.stringify(orderDetailsModel), PaymentmethodId },
+                        success: function (data) {
+                            $("#OrderDetails-Content").html(data);
+                            ItemQuantityUpdateFlag = true;
+                            $(".btn-close").click();
+                            IsOrderCompleted = true;
+                            document.getElementById("OrderSaveBtn").setAttribute("disabled", "disabled")
+                            document.getElementById("OrderCompleteBtn").setAttribute("disabled", "disabled")
+                            document.getElementById("OrderCancelBtn").setAttribute("disabled", "disabled")
+
+                        },
+                        error: function (data) {
+                            @* console.log(data); *@
+                            callErrorToaster("Something went wrong in inner ho!");
+                        }
+                    });
+                },
+                error: function (data) {
+                    @* console.log(data); *@
+                    callErrorToaster("Something went wrong in outer ho!");
+                }
+            });
+        }
+
+        // Edit Review
+        function EditReview(type, number) {
+
+            if (IsOrderCompleted) {
+                callErrorToaster("Order is already completed");
+                return;
+            }
+            else {
+
+                var StarTags = document.getElementsByClassName(`${type}-review-class`);
+                var CheckStarFlag = true;
+
+                for (i = 1; i < StarTags.length; i++) {
+                    if (StarTags[i].classList.contains(`${type}-review-active`)) {
+                        CheckStarFlag = false;
+                        StarTags[i].classList.add("fa-regular");
+                        StarTags[i].classList.remove("fa-solid");
+                        StarTags[i].classList.remove(`${type}-review-active`);
+                    }
+                }
+
+                if (number == 1) {
+                    var FirstStarTag = document.getElementById(`${type}-review-1`);
+                    if (FirstStarTag.classList.contains(`${type}-review-active`) && CheckStarFlag) {
+                        FirstStarTag.classList.add("fa-regular");
+                        FirstStarTag.classList.remove("fa-solid");
+                        FirstStarTag.classList.remove(`${type}-review-active`);
+                    }
+                    else {
+                        FirstStarTag.classList.remove("fa-regular");
+                        FirstStarTag.classList.add("fa-solid");
+                        FirstStarTag.classList.add(`${type}-review-active`);
+                    }
+                }
+                else {
+                    for (i = 1; i <= number; i++) {
+                        var StartTag = document.getElementById(`${type}-review-${i}`);
+                        StartTag.classList.remove("fa-regular");
+                        StartTag.classList.add("fa-solid");
+                        StartTag.classList.add(`${type}-review-active`);
+                    }
+                }
+            }
+        }
 
         // READY
         $(document).ready(function () {

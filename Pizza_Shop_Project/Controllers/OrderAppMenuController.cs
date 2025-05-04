@@ -145,4 +145,33 @@ public class OrderAppMenuController : Controller
 
         return PartialView("_MenuItemsOrderDetailPartial", orderDetailsVM);
     }
+
+    // public async Task<IActionResult> SaveRatings(long customerId, int foodreview, int serviceReview, int ambienceReview, string reviewtext)
+    // {
+    //     long ratingId = await _orderAppMenuService.SaveRatings(customerId, foodreview, serviceReview, ambienceReview, reviewtext);
+    //     return Json(ratingId);
+    // }
+    // public async Task<IActionResult> CompleteOrder(string orderDetails, long paymentmethodId)
+    // {
+    //     OrderDetailViewModel? orderDetailVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
+    //     OrderDetailViewModel orderDetailsVM = await _orderAppMenuService.CompleteOrder(orderDetailVM, paymentmethodId);
+    //     return PartialView("_MenuItemsOrderDetailPartial", orderDetailsVM);
+    // }
+
+    // public async Task<IActionResult> CompleteOrderValidation(string orderDetailIds, string orderDetails)
+    // {
+    //     List<int>? orderDetailId = JsonConvert.DeserializeObject<List<int>>(orderDetailIds);
+    //     OrderDetailViewModel? orderDetailsVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
+    //     bool IsAllItemReady = await _orderAppMenuService.IsAllItemReady(orderDetailId, orderDetailsVM);
+    //     if (IsAllItemReady)
+    //     {
+    //         return Json(new { success = true });
+    //     }
+    //     else
+    //     {
+    //         return Json(new { success = false });
+    //     }
+    // }
+
+
 }
