@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Pizza_Shop_Project.Authorization;
+using Rotativa.AspNetCore;
 
 namespace Pizza_Shop_Project.Controllers;
 
@@ -146,32 +147,113 @@ public class OrderAppMenuController : Controller
         return PartialView("_MenuItemsOrderDetailPartial", orderDetailsVM);
     }
 
+    public async Task<IActionResult> CompleteOrder(string orderDetailIds, string orderDetails)
+    {
+        List<int>? orderDetailId = JsonConvert.DeserializeObject<List<int>>(orderDetailIds);
+        OrderDetailViewModel? orderDetailsVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
+        bool IsItemsReady = await _orderAppMenuService.IsItemsReady(orderDetailId, orderDetailsVM);
+        if (IsItemsReady)
+        {
+            bool orderDetail = await _orderAppMenuService.CompleteOrder(orderDetailsVM);
+            if(orderDetail)
+            {
+                return Json(new { success = true, text = "Order Completed Successfully" });
+            }
+            else
+            {
+                return Json(new { success = false, text = "Something Went Wrong! Try Again!" });
+            }
+        }
+        else
+        {
+            return Json(new { success = false, text = "Items are not ready yet !"});
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // public async Task<IActionResult> SaveRatings(long customerId, int foodreview, int serviceReview, int ambienceReview, string reviewtext)
     // {
     //     long ratingId = await _orderAppMenuService.SaveRatings(customerId, foodreview, serviceReview, ambienceReview, reviewtext);
     //     return Json(ratingId);
     // }
+
     // public async Task<IActionResult> CompleteOrder(string orderDetails, long paymentmethodId)
     // {
-    //     OrderDetailViewModel? orderDetailVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
-    //     OrderDetailViewModel orderDetailsVM = await _orderAppMenuService.CompleteOrder(orderDetailVM, paymentmethodId);
-    //     return PartialView("_MenuItemsOrderDetailPartial", orderDetailsVM);
+    //     OrderDetailViewModel? orderDetailvm = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
+    //     OrderDetailViewModel orderDetailsvm = await _orderAppMenuService.CompleteOrder(orderDetailvm, paymentmethodId);
+    //     return PartialView("_MenuItemsWithOrderDetails", orderDetailsvm);
     // }
 
-    // public async Task<IActionResult> CompleteOrderValidation(string orderDetailIds, string orderDetails)
+    // public IActionResult GeneratePdfInvoice(long customerId)
     // {
-    //     List<int>? orderDetailId = JsonConvert.DeserializeObject<List<int>>(orderDetailIds);
-    //     OrderDetailViewModel? orderDetailsVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
-    //     bool IsAllItemReady = await _orderAppMenuService.IsAllItemReady(orderDetailId, orderDetailsVM);
-    //     if (IsAllItemReady)
+    //     OrderDetailViewModel orderDetails = _orderAppMenuService.GetOrderDetailsByCustomerId(customerId);
+
+    //     //   return PartialView("DownloadInvoicePdf", orderDetails);
+    //     var generatedpdf = new ViewAsPdf("GenerateInvoicePDF", orderDetails)
     //     {
-    //         return Json(new { success = true });
-    //     }
-    //     else
-    //     {
-    //         return Json(new { success = false });
-    //     }
+    //         FileName = "OrderInvoice.pdf"
+    //     };
+    //     return generatedpdf;
     // }
+
+    // public IActionResult CanCancelOrder(string orderDetails)
+    // {
+    //     OrderDetailViewModel? orderDetailvm = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
+    //     return Json( _orderAppMenuService.IsAnyItemReady( orderDetailvm));
+    // }
+
+    // public async Task<IActionResult> CancelOrder(string orderDetails){
+    //      OrderDetailViewModel? orderDetailvm = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
+    //     return  Json(await _orderAppMenuService.CancelOrder(orderDetailvm));
+    // }
+
+
 
 
 }

@@ -1,3 +1,4 @@
+
 @using DAL.ViewModels;
 @model OrderDetailViewModel;
 
@@ -167,7 +168,7 @@
                                         }
                                         else
                                         {
-                                            <i class="fa-solid fa-trash-can text-secondary" onclick="PrintToaster()"></i>
+                                            <i class="fa-solid fa-trash-can text-black-50" onclick="PrintToaster()"></i>
                                         }
                                     </div>
                                 </td>
@@ -215,15 +216,15 @@
                 <div>Payment Method</div>
                 <div class="d-flex gap-2 justify-content-between align-items-center">
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input payment-type" type="radio" name="payment" value="1" checked>
+                        <input class="form-check-input payment-type" type="radio" name="payment" value="1" @(Model.PaymentmethodId == 1 ? "checked=\"checked\"" : "") >
                         <label class="form-check-label ps-2 pt-1" for="radioDefault1">Cash</label>
                     </div>
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input payment-type" type="radio" name="payment" value="2">
+                        <input class="form-check-input payment-type" type="radio" name="payment" value="2" @(Model.PaymentmethodId == 2 ? "checked=\"checked\"" : "")>
                         <label class="form-check-label ps-2 pt-1" for="radioDefault1">Card</label>
                     </div>
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input payment-type" type="radio" name="payment" value="3">
+                        <input class="form-check-input payment-type" type="radio" name="payment" value="3" @(Model.PaymentmethodId == 3 ? "checked=\"checked\"" : "")>
                         <label class="form-check-label ps-2 pt-1" for="radioDefault1">UPI</label>
                     </div>
                 </div>
@@ -231,8 +232,8 @@
 
             @* Order Status *@
             <div class="py-4 d-flex flex-wrap justify-content-end gap-3">
-                <button id="OrderSaveBtn" class="btn solid-btn order-save-btn" style="width: 180px;" onclick="SaveOrder()">Save</button>
-                <button id="OrderCompleteBtn" class="btn hollow-btn" style="width: 180px;" onclick="CompleteOrderValidation()">Complete</button>
+                <button id="OrderSaveBtn" class="btn solid-btn order-OrderSaveBtn" style="width: 180px;" onclick="SaveOrder()">Save</button>
+                <button id="OrderCompleteBtn" class="btn hollow-btn" style="width: 180px;" onclick="CompleteOrder()">Complete</button>
                 <button id="OrderGenerateInvoiceBtn" class="btn hollow-btn" style="width: 180px;" >Generate Invoice</button>
             </div>
 
@@ -310,36 +311,36 @@
     <div class="modal-dialog-centered modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fs-5 fw-bold text-secondary">Customer review</h5>
+                <h5 class="modal-title fs-5 fw-bold text-secondary">Customer Review</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body d-flex justify-content-center align-items-center flex-column">
-                <div class="d-flex justify-content-between col-12">
-                    <span>Food</span>
+                <div class="d-flex justify-content-between col-12 pb-2">
+                    <span class="text-secondary fw-bold">Food</span>
                     <span>
                         @for (int i = 1; i <= 5; i++)
                         {
-                            <i class="fa-regular fa-star text-warning food-review-class" id="food-review-@i"
+                            <i class="fa-regular fa-star text-warning food-review-class ps-2" id="food-review-@i"
                                 onclick="EditReview(`food`,@i)"></i>
                         }
                     </span>
                 </div>
-                <div class="d-flex justify-content-between col-12">
-                    <span>Service</span>
+                <div class="d-flex justify-content-between col-12 pb-2">
+                    <span class="text-secondary fw-bold">Service</span>
                     <span>
                         @for (int i = 1; i <= 5; i++)
                         {
-                            <i class="fa-regular fa-star text-warning service-review-class" id="service-review-@i"
+                            <i class="fa-regular fa-star text-warning service-review-class ps-2" id="service-review-@i"
                                 onclick="EditReview(`service`,@i)"></i>
                         }
                     </span>
                 </div>
-                <div class="d-flex justify-content-between col-12">
-                    <span>Ambience</span>
+                <div class="d-flex justify-content-between col-12 pb-2">
+                    <span class="text-secondary fw-bold">Ambience</span>
                     <span>
                         @for (int i = 1; i <= 5; i++)
                         {
-                            <i class="fa-regular fa-star text-warning ambience-review-class" id="ambience-review-@i"
+                            <i class="fa-regular fa-star text-warning ambience-review-class ps-2" id="ambience-review-@i"
                                 onclick="EditReview(`ambience`,@i)"></i>
                         }
                     </span>
@@ -347,15 +348,13 @@
                 <hr class="text-warning col-12" style="height: 3px;"/>
                 <div class="form-floating col-12 mt-3">
                     <textarea class="form-control"
-                        placeholder="Leave a comment here" id="ReviewText" style="height: 100px"
-                        maxlength="50"></textarea>
-                    <label for="ReviewText">Comment*</label>
+                        placeholder="Leave a comment here" id="ReviewText" style="height: 100px"></textarea>
+                    <label for="ReviewText" class="text-secondary">Comment</label>
                 </div>
-                @* <span class="text-start col-12 mt-2 "><span id="CustomerReviewCount">0</span>/50</span> *@
             </div>
             <div class="modal-footer d-flex justify-content-center">
-                <button type="button" class="btn solid-btn me-2" id="SaveCustomerReview" onclick="CompleteOrder()">Save</button>
-                <button type="button" class="btn hollow-btn" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn solid-btn me-2 fw-normal" id="SaveCustomerReview" onclick="CompleteOrder()">Save</button>
+                <button type="button" class="btn hollow-btn fw-normal" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
@@ -369,8 +368,30 @@
         callErrorToaster("Sorry order is almost Ready!");
     }
 
+
+
     $(document).ready(function () {
         var orderDetails = @Html.Raw(Json.Serialize(Model));
         FillAlreadySavedDataInArray(orderDetails);
+
+        if(JSON.stringify(TempItem) == JSON.stringify(MainItem)){
+            $('#OrderSaveBtn').attr('disabled', true);
+            $('#OrderCompleteBtn').attr('disabled', false); 
+            $('#OrderGenerateInvoiceBtn').attr('disabled',false);
+            $('#OrderCancelBtn').attr('disabled',false);
+        }else{
+            $('#OrderSaveBtn').attr('disabled', false);
+            $('#OrderCompleteBtn').attr('disabled', true);
+            $('#OrderGenerateInvoiceBtn').attr('disabled',true);
+            $('#OrderCancelBtn').attr('disabled',false);
+ 
+        }
+ 
+        if(orderDetails.status == "Completed"){
+            $('#OrderSaveBtn').attr('disabled', true);
+            $('#OrderCompleteBtn').attr('disabled', true);
+            $('#OrderCancelBtn').attr('disabled',true);
+            $('#OrderGenerateInvoiceBtn').attr('disabled',false);
+        }
     });
 </script>
