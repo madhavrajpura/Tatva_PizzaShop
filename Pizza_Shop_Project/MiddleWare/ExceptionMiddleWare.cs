@@ -32,13 +32,13 @@ public class ExceptionMiddleWare
 
         switch (exception)
         {
-            case NotFoundException:
+            case CustomException:
                 code = HttpStatusCode.NotFound;
                 message = exception.Message;
                 break;
             default:
                 code = HttpStatusCode.InternalServerError;
-                message = "Internal server error. Please try again later.";
+                message = "Something went wrong. Please try after some time.";
                 break;
         }
 
@@ -85,5 +85,4 @@ public class ExceptionMiddleWare
             }
         }
     }
-
 }
