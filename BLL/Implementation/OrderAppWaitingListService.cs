@@ -9,12 +9,10 @@ public class OrderAppWaitingListService : IOrderAppWaitingListService
 {
     private readonly PizzaShopDbContext _context;
 
-    #region Constructor
     public OrderAppWaitingListService(PizzaShopDbContext context)
     {
         _context = context;
     }
-    #endregion
 
     public List<WaitingTokenDetailViewModel> GetWaitingList(long sectionid)
     {
@@ -75,7 +73,7 @@ public class OrderAppWaitingListService : IOrderAppWaitingListService
     {
         try
         {
-            Waitinglist? waitingList = _context.Waitinglists.Include(w => w.Customer).Include(wc => wc.Section).FirstOrDefault(wcs => wcs.WaitingId == waitingid && !wcs.Isdelete);
+            Waitinglist? waitingList = _context.Waitinglists.Include(w => w.Customer).Include(wc => wc.Section).FirstOrDefault(wcs => wcs.WaitingId == waitingid && !wcs.Isdelete && !wcs.Isassign);
             if (waitingList != null)
             {
                 WaitingTokenDetailViewModel WaitingListVM = new WaitingTokenDetailViewModel
@@ -101,26 +99,19 @@ public class OrderAppWaitingListService : IOrderAppWaitingListService
         }
     }
 
-
-    public async Task<bool> DeleteWaitingToken(long waitingid)
+    public async Task<bool> DeleteWaitingToken(long waitingid, long userId)
     {
-        try
+        var waiting = await _context.Waitinglists.FirstOrDefaultAsync(w => w.WaitingId == waitingid && !w.Isdelete && !w.Isassign);
+        if (waiting != null)
         {
-            var waiting = await _context.Waitinglists.FirstOrDefaultAsync(w => w.WaitingId == waitingid && !w.Isdelete && !w.Isassign);
-            if (waiting != null)
-            {
-                waiting.Isdelete = true;
-                // waiting.ModifiedAt = DateTime.Now;
-                _context.Waitinglists.Update(waiting);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            waiting.Isdelete = true;
+            waiting.ModifiedAt = DateTime.Now;
+            waiting.ModifiedBy = userId;
+            _context.Waitinglists.Update(waiting);
+            await _context.SaveChangesAsync();
+            return true;
         }
-        catch (Exception e)
-        {
-            return false;
-        }
+        return false;
     }
 
     public List<OrderAppTableVM> GetAvailableTables(long sectionid)
@@ -133,7 +124,12 @@ public class OrderAppWaitingListService : IOrderAppWaitingListService
                TableName = t.TableName,
                SectionId = t.SectionId,
                Capacity = t.Capacity,
-           }).ToList();
+           }).OrderBy(t => t.TableId).ToList();
+           
+        if (tables == null)
+        {
+            return null;
+        }
         return tables;
     }
 
@@ -175,14 +171,17 @@ public class OrderAppWaitingListService : IOrderAppWaitingListService
                     table.ModifiedAt = DateTime.Now;
                     table.ModifiedBy = userId;
                     _context.Tables.Update(table);
+                    await _context.SaveChangesAsync();
                 }
             }
         }
+        else
+        {
+            return false;
+        }
+        
         await _context.SaveChangesAsync();
         return true;
     }
-
-
-
 
 }

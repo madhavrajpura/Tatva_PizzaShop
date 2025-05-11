@@ -17,7 +17,7 @@ public class OrderDetailViewModel
     public long PaymentmethodId { get; set; }
 
     // new one 
-    public long RatingId { get; set; } 
+    public long RatingId { get; set; }
 
     // Customer Details
     public long CustomerId { get; set; }
@@ -38,5 +38,9 @@ public class OrderDetailViewModel
     // Extra Fields
     public decimal SubTotalAmountOrder { get; set; }
     public decimal TotalAmountOrder { get; set; }
+    public DateTime ModifiedOn { get; set; }
+
+    // Rating
+    public RatingsViewModel ratingVM { get; set; }
 
 }

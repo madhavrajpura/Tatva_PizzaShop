@@ -91,7 +91,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.AssignId).HasColumnName("assign_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -139,7 +139,7 @@ public partial class PizzaShopDbContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("category_name");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -197,7 +197,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -228,7 +228,7 @@ public partial class PizzaShopDbContext : DbContext
                 .ToTable("favouriteitem");
 
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -263,7 +263,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.InvoiceId).HasColumnName("invoice_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -306,7 +306,7 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -395,7 +395,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.ItemTypeId).HasColumnName("item_type_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -463,7 +463,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.ModifierId).HasColumnName("modifier_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -529,7 +529,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.ModifierGrpId).HasColumnName("modifier_grp_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -560,7 +560,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.ModifierOrderId).HasColumnName("modifier_order_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -600,7 +600,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -614,7 +614,7 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnName("modified_at");
             entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
             entity.Property(e => e.OrderDate)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("order_date");
             entity.Property(e => e.OrderType)
@@ -678,7 +678,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.OrderdetailId).HasColumnName("orderdetail_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -750,7 +750,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.PermissionId).HasColumnName("permission_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.ModifiedAt)
@@ -770,7 +770,7 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.RatingId).HasColumnName("rating_id");
             entity.Property(e => e.Ambience).HasColumnName("ambience");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -806,7 +806,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.ModifiedAt)
@@ -850,7 +850,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.SectionId).HasColumnName("section_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -900,7 +900,7 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.TableId).HasColumnName("table_id");
             entity.Property(e => e.Capacity).HasColumnName("capacity");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -939,7 +939,7 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.TaxId).HasColumnName("tax_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -979,7 +979,14 @@ public partial class PizzaShopDbContext : DbContext
 
             entity.Property(e => e.TaxInvoiceId).HasColumnName("tax_invoice_id");
             entity.Property(e => e.InvoiceId).HasColumnName("invoice_id");
+            entity.Property(e => e.IsDelete).HasColumnName("is_Delete");
+            entity.Property(e => e.TaxAmount)
+                .HasPrecision(10, 2)
+                .HasColumnName("Tax_Amount");
             entity.Property(e => e.TaxId).HasColumnName("tax_id");
+            entity.Property(e => e.TaxName)
+                .HasMaxLength(20)
+                .HasColumnName("Tax_Name");
 
             entity.HasOne(d => d.Invoice).WithMany(p => p.TaxInvoiceMappings)
                 .HasForeignKey(d => d.InvoiceId)
@@ -1007,7 +1014,7 @@ public partial class PizzaShopDbContext : DbContext
             entity.Property(e => e.CityId).HasColumnName("city_id");
             entity.Property(e => e.CountryId).HasColumnName("country_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -1093,7 +1100,7 @@ public partial class PizzaShopDbContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("assigned_at");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_DATE")
+                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");

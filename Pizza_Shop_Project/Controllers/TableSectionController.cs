@@ -22,7 +22,6 @@ public class TableSectionController : Controller
         _userLoginService = userLoginService;
     }
 
-    #region Main Table Section View
     [PermissionAuthorize("TableSection.View")]
     public IActionResult TableSection(long? sectionid, string search = "", int pageNumber = 1, int pageSize = 3)
     {
@@ -31,39 +30,34 @@ public class TableSectionController : Controller
         tableSectionVM.SectionList = _tableSectionService.GetAllSections();
 
         ViewBag.SectionList = new SelectList(_tableSectionService.GetAllSections(), "SectionId", "SectionName");
-
-        if (sectionid == null)
+        if (sectionid == null && tableSectionVM.SectionList.Count != 0)
         {
             tableSectionVM.PaginationForTable = _tableSectionService.GetTablesBySection(tableSectionVM.SectionList[0].SectionId, search, pageNumber, pageSize);
+        }
+        else
+        {
+            tableSectionVM.PaginationForTable = _tableSectionService.GetTablesBySection(sectionid, search, pageNumber, pageSize);
         }
 
         ViewData["sidebar-active"] = "TableSection";
         return View(tableSectionVM);
     }
-    #endregion
 
-    #region Pagination Table
     [PermissionAuthorize("TableSection.View")]
     public IActionResult PaginationForTable(long? sectionid, string search = "", int pageNumber = 1, int pageSize = 3)
     {
-        try
-        {
-            TableSectionViewModel tableSectionData = new TableSectionViewModel();
-            tableSectionData.SectionList = _tableSectionService.GetAllSections();
 
-            if (sectionid != null)
-            {
-                tableSectionData.PaginationForTable = _tableSectionService.GetTablesBySection(sectionid, search, pageNumber, pageSize);
-            }
+        TableSectionViewModel tableSectionData = new TableSectionViewModel();
+        tableSectionData.SectionList = _tableSectionService.GetAllSections();
 
-            return PartialView("_TableListPartial", tableSectionData.PaginationForTable);
-        }
-        catch (Exception ex)
+        if (sectionid != null)
         {
-            return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            tableSectionData.PaginationForTable = _tableSectionService.GetTablesBySection(sectionid, search, pageNumber, pageSize);
         }
+
+        return PartialView("_TableListPartial", tableSectionData.PaginationForTable);
+
     }
-    #endregion
 
     #region Section CRUD
 
@@ -78,11 +72,17 @@ public class TableSectionController : Controller
     [HttpPost]
     public async Task<IActionResult> AddSection(TableSectionViewModel tableSectionVM)
     {
+        var sectionNamePresent = await _tableSectionService.GetSectionByName(tableSectionVM.section);
+        if (sectionNamePresent != null)
+        {
+            return Json(new { success = false, text = "Section Already Present" });
+        }
+
         string token = Request.Cookies["AuthToken"];
         List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        bool addSectionStatus = await _tableSectionService.AddSection(tableSectionVM.sectionVM, userId);
+        bool addSectionStatus = await _tableSectionService.SaveSection(tableSectionVM.sectionVM, userId);
         if (addSectionStatus)
         {
             return Json(new { success = true, text = "Section Added successfully" });
@@ -102,11 +102,16 @@ public class TableSectionController : Controller
     [HttpPost]
     public async Task<IActionResult> EditSection(TableSectionViewModel tableSectionVM)
     {
+        var sectionNamePresent = await _tableSectionService.GetSectionByName(tableSectionVM.section);
+        if (sectionNamePresent != null)
+        {
+            return Json(new { success = false, text = "Section Already Present" });
+        }
         string token = Request.Cookies["AuthToken"];
         List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        bool editSectionStatus = await _tableSectionService.EditSection(tableSectionVM.sectionVM, userId);
+        bool editSectionStatus = await _tableSectionService.SaveSection(tableSectionVM.sectionVM, userId);
         if (editSectionStatus)
         {
             return Json(new { success = true, text = "Section Updated successfully" });
@@ -118,6 +123,10 @@ public class TableSectionController : Controller
     // [HttpPost]
     public async Task<IActionResult> DeleteSection(long sectionid)
     {
+
+        string token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
+        long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
         TableSectionViewModel tableSectionVM = new TableSectionViewModel();
 
 
@@ -128,8 +137,8 @@ public class TableSectionController : Controller
         {
             return Json(new { success = false, text = "Section Cannot be deleted where Table is Occupied" });
         }
-        
-        bool deleteSectionStatus = await _tableSectionService.DeleteSection(sectionid);
+
+        bool deleteSectionStatus = await _tableSectionService.DeleteSection(sectionid,userId);
 
         if (deleteSectionStatus)
         {
@@ -140,7 +149,6 @@ public class TableSectionController : Controller
 
     #endregion
 
-    #region Get All Section List
     [PermissionAuthorize("TableSection.View")]
     public IActionResult GetAllSections()
     {
@@ -148,7 +156,6 @@ public class TableSectionController : Controller
         tableSectionVM.SectionList = _tableSectionService.GetAllSections();
         return PartialView("_SectionListPartial", tableSectionVM);
     }
-    #endregion
 
     #region Table CRUD
 

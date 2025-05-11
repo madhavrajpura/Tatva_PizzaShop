@@ -6,6 +6,7 @@ using DAL.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Pizza_Shop_Project.Authorization;
 using BLL.common;
+using BLL;
 
 namespace Pizza_Shop_Project.Controllers
 {
@@ -15,14 +16,12 @@ namespace Pizza_Shop_Project.Controllers
         private readonly IUserLoginService _userLoginService;
         private readonly IJWTService _JWTService;
 
-        #region User Constructor
         public UserController(IUserService userService, IJWTService JWTService, IUserLoginService userLoginService)
         {
             this._userService = userService;
             this._JWTService = JWTService;
             this._userLoginService = userLoginService;
         }
-        #endregion
 
         #region Dashboard
         [PermissionAuthorize("AdminAccountManager")]
@@ -35,9 +34,21 @@ namespace Pizza_Shop_Project.Controllers
             ViewData["sidebar-active"] = "Dashboard";
             return View();
         }
+
+        public IActionResult GetDashboardDetails(string Range = "", string startDate = "", string endDate = "")
+        {
+            DashboardViewModel dashboard = _userService.GetDashboardDetails(Range, startDate, endDate);
+            return PartialView("_DashboardDataPartial", dashboard);
+        }
+
+        public IActionResult GetRevenueAndCustomer(string Range = "Today", string startDate = "", string endDate = "")
+        {
+            var (RevenueList, CustomerList) = _userService.GetRevenueAndCustomer(Range, startDate, endDate);
+            return Json(new { RevenueList, CustomerList });
+        }
+
         #endregion
 
-        #region State,City
         public JsonResult GetStates(long? countryId)
         {
             List<State>? states = _userService.GetState(countryId);
@@ -49,7 +60,6 @@ namespace Pizza_Shop_Project.Controllers
             List<City>? cities = _userService.GetCity(stateId);
             return Json(new SelectList(cities, "CityId", "CityName"));
         }
-        #endregion
 
         #region UserProfile
         public IActionResult UserProfile()
@@ -92,7 +102,7 @@ namespace Pizza_Shop_Project.Controllers
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                    string fileName = BLL.common.ImageTemplate.UploadImage(user.ProfileImage,path);
+                    string fileName = BLL.common.ImageTemplate.UploadImage(user.ProfileImage, path);
                     user.Image = $"/uploads/{fileName}";
                 }
                 else
@@ -171,7 +181,6 @@ namespace Pizza_Shop_Project.Controllers
         }
         #endregion
 
-        #region Logout
         public IActionResult UserLogout()
         {
             Response.Cookies.Delete("AuthToken");
@@ -182,7 +191,6 @@ namespace Pizza_Shop_Project.Controllers
             TempData["SuccessMessage"] = NotificationMessage.LogoutSuccess;
             return RedirectToAction("VerifyUserLogin", "UserLogin");
         }
-        #endregion
 
         #region UserListData
         [PermissionAuthorize("Users.View")]
@@ -206,7 +214,6 @@ namespace Pizza_Shop_Project.Controllers
 
         #region User CRUD
 
-        #region AddUser
         [PermissionAuthorize("Users.AddEdit")]
         public IActionResult AddUser()
         {
@@ -258,7 +265,7 @@ namespace Pizza_Shop_Project.Controllers
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                    string fileName = ImageTemplate.UploadImage(user.ProfileImage,path);
+                    string fileName = ImageTemplate.UploadImage(user.ProfileImage, path);
                     user.Image = $"/uploads/{fileName}";
                 }
                 else
@@ -314,9 +321,7 @@ namespace Pizza_Shop_Project.Controllers
             TempData["SuccessMessage"] = NotificationMessage.EntityCreated.Replace("{0}", "User");
             return RedirectToAction("UserListData", "User");
         }
-        #endregion
 
-        #region EditUser
         [PermissionAuthorize("Users.AddEdit")]
         public IActionResult EditUser(string Email)
         {
@@ -364,19 +369,19 @@ namespace Pizza_Shop_Project.Controllers
                 TempData["CityError"] = "Please select a city";
             }
 
-             if (edituser.ProfileImage != null)
+            if (edituser.ProfileImage != null)
             {
                 string[]? extension = edituser.ProfileImage.FileName.Split(".");
                 if (extension[extension.Length - 1] == "jpg" || extension[extension.Length - 1] == "jpeg" || extension[extension.Length - 1] == "png")
                 {
                     string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                    string fileName = ImageTemplate.UploadImage(edituser.ProfileImage,path);
+                    string fileName = ImageTemplate.UploadImage(edituser.ProfileImage, path);
                     edituser.Image = $"/uploads/{fileName}";
                 }
                 else
                 {
                     TempData["ErrorMessage"] = NotificationMessage.ImageFormat;
-                    return RedirectToAction("AddUser", "User", new { Email = edituser .Email });
+                    return RedirectToAction("AddUser", "User", new { Email = edituser.Email });
                 }
             }
 
@@ -397,9 +402,7 @@ namespace Pizza_Shop_Project.Controllers
                 return RedirectToAction("EditUser", "User", new { Email = edituser.Email });
             }
         }
-        #endregion
 
-        #region DeleteUser
         [PermissionAuthorize("Users.Delete")]
         public async Task<IActionResult> DeleteUser(string Email)
         {
@@ -426,7 +429,6 @@ namespace Pizza_Shop_Project.Controllers
                 return RedirectToAction("UserListData", "User");
             }
         }
-        #endregion
 
         #endregion
 

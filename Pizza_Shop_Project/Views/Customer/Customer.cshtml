@@ -101,7 +101,7 @@
 
 <!------------------------------------- Custom Date Modal --------------------------------------------------->
 
-<div id="CustomDateModal" class="modal fade" tabindex="-1">
+<div id="CustomDateModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -237,6 +237,7 @@
             $('#from-date').removeAttr('max');
         }
 
+        // READY
         $(document).ready(function () {
 
             // Search on keyup
@@ -334,11 +335,15 @@
                     type: "GET",
                     data: { customerid: customerid },
                     success: function (data) {
-                        $("#CustomerHistoryDiv").html(data);
+                        if (data.success != false) {
+                            $("#CustomerHistoryModal").modal("show");
+                            $("#CustomerHistoryDiv").html(data);
+                        }
                     }
                 });
             });
 
+            // From Date
             $('#from-date').on('change', function () {
                 let fromDateValue = $(this).val();
                 if (fromDateValue) {
@@ -351,6 +356,7 @@
                 }
             });
 
+            // To Date
             $('#to-date').on('change', function () {
                 let toDateValue = $(this).val();
                 if (toDateValue) {

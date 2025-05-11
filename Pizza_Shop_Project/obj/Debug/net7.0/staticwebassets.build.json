@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "SsIgjaFkpa0p9zLXsqLun8vssMmJAE9KyRJfGsrjYM8=",
+  "Hash": "QTQXrKuA26ORobL7qvHQ1T0Hh/JM8HPkbFUBSR0cgxk=",
   "Source": "Pizza_Shop_Project",
   "BasePath": "_content/Pizza_Shop_Project",
   "Mode": "Default",
@@ -100,6 +100,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\camera.svg"
+    },
+    {
+      "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\customer.svg",
+      "SourceId": "Pizza_Shop_Project",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\",
+      "BasePath": "_content/Pizza_Shop_Project",
+      "RelativePath": "images/customer.svg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\customer.svg"
     },
     {
       "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\dashboard-default.svg",
@@ -508,6 +525,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\QR.png"
+    },
+    {
+      "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\qrcode_localhost.png",
+      "SourceId": "Pizza_Shop_Project",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\",
+      "BasePath": "_content/Pizza_Shop_Project",
+      "RelativePath": "images/qrcode_localhost.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\qrcode_localhost.png"
     },
     {
       "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\toppng.com-warning-icon-2400x2400.png",
@@ -2023,6 +2057,23 @@
       "OriginalItemSpec": "wwwroot\\uploads\\422a2f39-ea45-4e05-9145-f2075a0b9b4b.png"
     },
     {
+      "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\46c2b438-1ea5-44d1-bda9-9a5295e5ce92.png",
+      "SourceId": "Pizza_Shop_Project",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\",
+      "BasePath": "_content/Pizza_Shop_Project",
+      "RelativePath": "uploads/46c2b438-1ea5-44d1-bda9-9a5295e5ce92.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\46c2b438-1ea5-44d1-bda9-9a5295e5ce92.png"
+    },
+    {
       "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\470cc46d-f562-4df3-bf0d-22c4d7efd55a_Default_pfp.svg.png",
       "SourceId": "Pizza_Shop_Project",
       "SourceType": "Discovered",
@@ -2684,6 +2735,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\85eceb3c-297b-4304-9c6a-d22b506bfd7b_transperent-pizza.png"
+    },
+    {
+      "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\864e370c-e2cb-44dc-88c0-2c6a19ced376.png",
+      "SourceId": "Pizza_Shop_Project",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\",
+      "BasePath": "_content/Pizza_Shop_Project",
+      "RelativePath": "uploads/864e370c-e2cb-44dc-88c0-2c6a19ced376.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\864e370c-e2cb-44dc-88c0-2c6a19ced376.png"
     },
     {
       "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\869e7fd0-c37c-4b99-9426-9a302eef8702_dining-menu.png",
@@ -3432,6 +3500,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\d448a11c-1a05-415b-a569-55d13ebe13ed_transperent-pizza.png"
+    },
+    {
+      "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\d696a64f-ee85-4d06-8fac-72c950c40fc1.png",
+      "SourceId": "Pizza_Shop_Project",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\",
+      "BasePath": "_content/Pizza_Shop_Project",
+      "RelativePath": "uploads/d696a64f-ee85-4d06-8fac-72c950c40fc1.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\d696a64f-ee85-4d06-8fac-72c950c40fc1.png"
     },
     {
       "Identity": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\dc110572-d3eb-48af-9172-2f60964de9ff_dining-menu.png",

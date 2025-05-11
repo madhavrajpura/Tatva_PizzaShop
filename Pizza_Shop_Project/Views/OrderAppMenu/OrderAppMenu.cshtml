@@ -100,7 +100,6 @@
     <script>
         var categoryid;
         var MainItem = [];
-        var TempItem = [];
         var orderDetailsModel;
         var ItemQuantity = [];
         var OrderDetailIds = [];
@@ -108,8 +107,8 @@
         var IsOrderCompleted = false;
         var IsAllItemSaved = false;
         var PaymentmethodId = 1;
-        var IsFirst = true;
-
+        var comment;
+        var IsOrderAnything = false;
 
         // Toggle Sidebar Category
         function toggleSidebarCategory() {
@@ -196,13 +195,12 @@
         function FillAlreadySavedDataInArray(orderDetails) {
 
             orderDetailsModel = orderDetails;
-            console.log(orderDetailsModel, "orderDetail");
+            IsOrderAnything = orderDetailsModel.orderId == 0 ? false : true;
 
             var SubItems = [];
             MainItem = [];
             SubItems = orderDetails.itemOrderVM == null ? [] : orderDetails.itemOrderVM;
             IsOrderCompleted = orderDetailsModel.status == "Completed" ? true : false;
-
 
             for (i = 0; i < SubItems.length; i++) {
 
@@ -217,22 +215,34 @@
 
                 MainItem.push(item);
             }
+
             if (ItemQuantityUpdateFlag) {
                 fillItemQuantity();
                 ItemQuantityUpdateFlag = false;
             }
 
-            if (IsFirst) {
-                TempItem = [...MainItem];
-                IsFirst = false;
-            }
-
-        @* if (IsOrderCompleted) {
-            document.getElementById("OrderSaveBtn").setAttribute("disabled", "disabled");
-            document.getElementById("OrderCompleteBtn").setAttribute("disabled", "disabled");
-            document.getElementById("OrderCancelBtn").setAttribute("disabled", "disabled");
-            } *@
+            if (IsOrderAnything) {
+                document.getElementById("OrderCancelBtn").removeAttribute("disabled");
+                document.getElementById("OrderCompleteBtn").removeAttribute("disabled");
+                @* document.getElementById("OrderGenerateInvoiceBtn").removeAttribute("disabled") *@
+                        if (IsAllItemSaved) {
+                    document.getElementById("OrderSaveBtn").setAttribute("disabled", "disabled");
+                    document.getElementById("OrderCompleteBtn").removeAttribute("disabled");
+                    @* document.getElementById("OrderGenerateInvoiceBtn").removeAttribute("disabled") *@
+                        } else {
+                    document.getElementById("OrderSaveBtn").removeAttribute("disabled");
+                    document.getElementById("OrderCompleteBtn").setAttribute("disabled", "disabled")
+                    @* document.getElementById("OrderGenerateInvoiceBtn").setAttribute("disabled", "disabled"); *@
+                        }
+            } else {
+                document.getElementById("OrderCancelBtn").setAttribute("disabled", "disabled");
+                document.getElementById("OrderCompleteBtn").setAttribute("disabled", "disabled")
+                @* document.getElementById("OrderGenerateInvoiceBtn").setAttribute("disabled", "disabled"); *@
+                        if (orderDetailsModel.itemOrderVM == null) {
+                    document.getElementById("OrderSaveBtn").setAttribute("disabled", "disabled");
                 }
+            }
+        }
 
         // Fill Item Quantity
         function fillItemQuantity() {
@@ -248,11 +258,31 @@
 
         // Add Item To Order
         function AddItemModifierToList() {
+            var AllValid = true;
             if (IsOrderCompleted) {
                 callErrorToaster("Order is already completed");
                 return;
             }
             else {
+
+                $(".ModifierGroup").each(function () {
+                    var modGrpId = $(this).data("modgrpid");
+                    var MinModifier = $(this).data("minmodifier");
+
+                    $(`.minimumValidation-${modGrpId}`).addClass("d-none");
+
+                    var selectedClass = document.getElementsByClassName(`modifierSelected-${modGrpId}`);
+                    var count = selectedClass.length;
+                    if (count < MinModifier) {
+                        $(`.minimumValidation-${modGrpId}`).removeClass("d-none");
+                        AllValid = false;
+                    }
+                });
+
+                if (!AllValid) {
+                    return;
+                }
+
                 IsAllItemSaved = false;
                 var selectedModifiers = document.getElementsByClassName("modifierSelected");
                 var itemId = document.getElementById("itemIdForOrderDetails").value;
@@ -264,8 +294,6 @@
                 item.sort();
                 item.unshift(1);
                 item.unshift(parseInt(itemId))
-
-                console.log("item", item);
 
                 var ItemCheckFlag = true;
 
@@ -281,13 +309,9 @@
                         ItemCheckFlag = false;
                         callErrorToaster("Maximum Quantity already added!");
                     }
-
                 });
 
                 if (ItemCheckFlag) MainItem.push(item);
-
-                console.log("AllItems = ", MainItem);
-                console.log("orderDetailsModel = ", orderDetailsModel);
 
                 $.ajax({
                     url: "/OrderAppMenu/UpdateOrderDetailPartialView",
@@ -398,6 +422,19 @@
             }
         }
 
+        // Get Order Instruction
+        function getOrderInstruction() {
+            document.getElementById("orderInstruction").value = orderDetailsModel.orderInstruction == null ? "" : orderDetailsModel.orderInstruction;
+        }
+
+        // Save Order Instruction.
+        function saveOrderInstruction() {
+            orderDetailsModel.orderInstruction = document.getElementById("orderInstruction").value;
+            callSuccessToaster("orderInstruction Saved");
+            $(".btn-close").click();
+            IsAllItemSaved = false;
+        }
+
         // Save Order.
         function SaveOrder() {
             if (IsOrderCompleted) {
@@ -405,10 +442,6 @@
                 return;
             }
             else {
-                @* console.log("MainItem", MainItem);
-                console.log("orderDetailsModel", orderDetailsModel);
-                console.log("ItemQuantity", ItemQuantity);
-                console.log("OrderDetailIds", OrderDetailIds); *@
 
                 $.ajax({
                     url: "/OrderAppMenu/SaveOrder",
@@ -418,10 +451,10 @@
                         $("#OrderDetails-Content").html(data);
                         ItemQuantityUpdateFlag = true;
                         IsAllItemSaved = true;
+                        IsOrderAnything = true;
                         callSuccessToaster("Order Saved Successfully");
                     },
                     error: function (data) {
-                        @* console.log(data); *@
                         callErrorToaster("Something went wrong !");
                     }
                 });
@@ -448,8 +481,6 @@
                 return;
             }
 
-            console.log("ids",OrderDetailIds)
-
             $.ajax({
                 url: "/OrderAppMenu/CompleteOrder",
                 type: "POST",
@@ -457,159 +488,93 @@
                 success: function (data) {
                     if (data.success) {
                         $("#CustomerReviewModal").modal("show");
-                        callSuccessToaster("All items are ready to eat!");
                     } else {
                         callErrorToaster("All items are not ready yet !");
                     }
                 }
             });
         }
-@* 
-        //complete order details 
-        function CompleteOrder() {
-            var foodreview = document.getElementsByClassName("food-review-active").length;
+
+        // Save Rating In DB
+        function SaveRating() {
+            var foodReview = document.getElementsByClassName("food-review-active").length;
             var serviceReview = document.getElementsByClassName("service-review-active").length;
             var ambienceReview = document.getElementsByClassName("ambience-review-active").length;
-            var reviewtext = document.getElementById("ReviewText").value;
-            console.log(foodreview)
 
-            var paymentmethod = document.getElementsByClassName("paymentmethod");
-            console.log(paymentmethod)
-            for (i = 0; i < paymentmethod.length; i++) {
-                if (paymentmethod[i].checked) {
-                    paymentmethodId = paymentmethod[i].value;
-                }
-            }
+            orderDetailsModel.ratingVM.food = foodReview;
+            orderDetailsModel.ratingVM.service = serviceReview;
+            orderDetailsModel.ratingVM.ambience = ambienceReview;
+            orderDetailsModel.ratingVM.review = comment;
+
             $.ajax({
-                url: "/OrderAppMenu/SaveRatings",
+                url: "/OrderAppMenu/SaveRating",
                 type: "POST",
-                data: { customerId: orderDetailsModel.customerId, foodreview, serviceReview, ambienceReview, reviewtext, },
+                data: orderDetailsModel,
                 success: function (data) {
-                    orderDetailsModel.RatingId = data;
-                    $.ajax({
-                        url: "/OrderAppMenu/CompleteOrder",
-                        type: "POST",
-                        data: { orderDetails: JSON.stringify(orderDetailsModel), paymentmethodId },
-                        success: function (data) {
-                            $("#OrderDetailsWithTablePartial").html(data);
-                            itemQuantityUpdateflag = true;
-                            $(".btn-close").click();
-                            IsOrderCompleted = true;
-                            successToaster("Order Completed.")
-                            window.location.href = "/OrderAppTable/OrderAppTable"
-                        }
-                    })
-                    $(".btn-close").click();
+                    if (data.success) {
+                        callSuccessToaster("Thank you for your feedback");
+                        ItemQuantityUpdateFlag = true;
+                        IsOrderCompleted = true;
+                        $("#CustomerReviewModal").modal("hide");
+                        window.location.href = "/OrderAppTable/OrderAppTable";
+                    }
                 }
-            })
-
+            });
         }
 
-    
-
-            function GeneratePdfInvoice() {
-                $.ajax({
-                    url: `/OrderAppMenu/GeneratePdfInvoice`,
-                    type: "GET",
-                    data: { customerId: orderDetailsModel.customerId },
-                    xhrFields: {
-                        responseType: 'blob' //binary large object -- to handle binary response
-                    },
-                    success: function (data, status, xhr) {
-                        let filename = "OrderInvoice.pdf";
-
-                        let disposition = xhr.getResponseHeader('Content-Disposition');
-                        comment------ console.log("disp", disposition); 
-                                    if (disposition && disposition.indexOf('attachment') !== -1) {
-                            let matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition); //ExportOrderDataToExcel filename From disposition
-                            if (matches && matches[1]) {
-                                filename = matches[1].replace(/['"]/g, ''); // Remove quotes if present
-                            }
-                        }
-
-                        let blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
-                        let link = document.createElement('a');
-                        link.href = window.URL.createObjectURL(blob); //timePeriod url points to blob obj
-                        link.download = filename; //Download file name
-                        document.body.appendChild(link); //appendChild so that it Cancelled be cliked
-                        link.click();
-                        document.body.removeChild(link);
-
-                        console.log("Export Successfully");
-                    }
-                });
-            }
-
-        //cancel order
-        function cancelOrder() {
-            console.log("ajaxstart", orderDetailsModel)
+        // Cancel Order
+        function CancelOrder() {
+            console.log("ajax start", orderDetailsModel);
             $.ajax({
-                url: "/OrderAppMenu/CanCancelOrder",
+                url: "/OrderAppMenu/CancelOrder",
                 type: "POST",
-                data: { orderDetails: JSON.stringify(orderDetailsModel) },
+                data: orderDetailsModel,
                 success: function (data) {
-                    if (data) {
-                        console.log(data)
-                        itemQuantityUpdateflag = true;
-                        errorToaster("The order item is ready, cannot cancel the order")
+                    if (data.success) {
+                        callSuccessToaster(data.text);
+                        window.location.href = "/OrderAppTable/OrderAppTable";
                     } else {
-                        $.ajax({
-                            url: "/OrderAppMenu/CancelOrder",
-                            type: "POST",
-                            data: { orderDetails: JSON.stringify(orderDetailsModel) },
-                            success: function (data) {
-                                successToaster("Order Cancelled.")
-                                window.location.href = "/OrderAppTable/OrderAppTable";
-                            }
-                        })
-
+                        ItemQuantityUpdateFlag = true;
+                        callErrorToaster(data.text);
                     }
                 }
-            })
-        } *@
-
+            });
+        }
 
         // Edit Review
         function EditReview(type, number) {
 
-            if (IsOrderCompleted) {
-                callErrorToaster("Order is already completed");
-                return;
-            }
-            else {
+            var StarTags = document.getElementsByClassName(`${type}-review-class`);
+            var CheckStarFlag = true;
 
-                var StarTags = document.getElementsByClassName(`${type}-review-class`);
-                var CheckStarFlag = true;
-
-                for (i = 1; i < StarTags.length; i++) {
-                    if (StarTags[i].classList.contains(`${type}-review-active`)) {
-                        CheckStarFlag = false;
-                        StarTags[i].classList.add("fa-regular");
-                        StarTags[i].classList.remove("fa-solid");
-                        StarTags[i].classList.remove(`${type}-review-active`);
-                    }
+            for (i = 1; i < StarTags.length; i++) {
+                if (StarTags[i].classList.contains(`${type}-review-active`)) {
+                    CheckStarFlag = false;
+                    StarTags[i].classList.add("fa-regular");
+                    StarTags[i].classList.remove("fa-solid");
+                    StarTags[i].classList.remove(`${type}-review-active`);
                 }
+            }
 
-                if (number == 1) {
-                    var FirstStarTag = document.getElementById(`${type}-review-1`);
-                    if (FirstStarTag.classList.contains(`${type}-review-active`) && CheckStarFlag) {
-                        FirstStarTag.classList.add("fa-regular");
-                        FirstStarTag.classList.remove("fa-solid");
-                        FirstStarTag.classList.remove(`${type}-review-active`);
-                    }
-                    else {
-                        FirstStarTag.classList.remove("fa-regular");
-                        FirstStarTag.classList.add("fa-solid");
-                        FirstStarTag.classList.add(`${type}-review-active`);
-                    }
+            if (number == 1) {
+                var FirstStarTag = document.getElementById(`${type}-review-1`);
+                if (FirstStarTag.classList.contains(`${type}-review-active`) && CheckStarFlag) {
+                    FirstStarTag.classList.add("fa-regular");
+                    FirstStarTag.classList.remove("fa-solid");
+                    FirstStarTag.classList.remove(`${type}-review-active`);
                 }
                 else {
-                    for (i = 1; i <= number; i++) {
-                        var StartTag = document.getElementById(`${type}-review-${i}`);
-                        StartTag.classList.remove("fa-regular");
-                        StartTag.classList.add("fa-solid");
-                        StartTag.classList.add(`${type}-review-active`);
-                    }
+                    FirstStarTag.classList.remove("fa-regular");
+                    FirstStarTag.classList.add("fa-solid");
+                    FirstStarTag.classList.add(`${type}-review-active`);
+                }
+            }
+            else {
+                for (i = 1; i <= number; i++) {
+                    var StartTag = document.getElementById(`${type}-review-${i}`);
+                    StartTag.classList.remove("fa-regular");
+                    StartTag.classList.add("fa-solid");
+                    StartTag.classList.add(`${type}-review-active`);
                 }
             }
         }
@@ -618,7 +583,9 @@
         $(document).ready(function () {
 
             categorySelected(document.getElementsByClassName("category-click")[1], 0);
-            GetOrderDetailsByCustomerId();
+            if (@Model.customerId != 0) {
+                GetOrderDetailsByCustomerId();
+            }
 
         });
     </script>

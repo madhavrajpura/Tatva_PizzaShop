@@ -54,12 +54,14 @@ public class OrderAppMenuService : IOrderAppMenuService
 
     }
 
-    public async Task<bool> FavouriteItem(long itemId, bool IsFavourite)
+    public async Task<bool> FavouriteItem(long itemId, bool IsFavourite, long userId)
     {
         Item? item = await _context.Items.FirstOrDefaultAsync(x => x.ItemId == itemId && !x.Isdelete);
         if (item != null)
         {
             item.IsFavourite = IsFavourite;
+            item.ModifiedAt = DateTime.Now;
+            item.ModifiedBy = userId;
             _context.Items.Update(item);
             await _context.SaveChangesAsync();
             return true;
@@ -118,8 +120,7 @@ public class OrderAppMenuService : IOrderAppMenuService
           .Select(od => new OrderDetailViewModel
           {
               OrderId = orderId,
-              OrderInstruction = od.Orders.FirstOrDefault() == null ? "" : od.Orders.FirstOrDefault().ExtraInstruction,
-              PaymentmethodId = od.Orders.FirstOrDefault().PaymentmethodId == null ? 4 : od.Orders.FirstOrDefault().PaymentmethodId,
+              PaymentmethodId = 4,
 
               // Table Details
 
@@ -138,19 +139,28 @@ public class OrderAppMenuService : IOrderAppMenuService
               CustomerName = od.CustomerName,
               PhoneNo = od.PhoneNo,
               Email = od.Email,
-              NoOfPerson = od.AssignTables.FirstOrDefault().NoOfPerson
+              NoOfPerson = od.AssignTables.Sum(x => x.NoOfPerson)
 
           }).ToList()[0];
-
-        //orderDetails
 
         if (orderId != 0)
         {
             var orderDetails = _context.Orderdetails.Include(od => od.Item)
                             .Include(x => x.Modifierorders).ThenInclude(modo => modo.Modifier)
                             .Where(m => m.OrderId == orderId && !m.Isdelete).ToList();
-            orderDetailsvm.Status = _context.Orders.FirstOrDefault(x => x.OrderId == orderId && !x.Isdelete)?.Status;
-            orderDetailsvm.InvoiceId = _context.Invoices.FirstOrDefault(i => i.OrderId == orderId && i.CustomerId == customerId) == null ? 0 : _context.Invoices.FirstOrDefault(i => i.OrderId == orderId && i.CustomerId == customerId).InvoiceId;
+
+            orderDetailsvm.Status = _context.Orders.FirstOrDefault(x => x.OrderId == orderId && !x.Isdelete)!.Status;
+
+            orderDetailsvm.OrderInstruction = _context.Orders.FirstOrDefault(x => x.OrderId == orderId && !x.Isdelete)?.ExtraInstruction;
+
+            orderDetailsvm.InvoiceId = _context.Invoices.FirstOrDefault(i => i.OrderId == orderId && i.CustomerId == customerId && !i.Isdelete) == null ? 0 : _context.Invoices.FirstOrDefault(i => i.OrderId == orderId && i.CustomerId == customerId && !i.Isdelete)!.InvoiceId;
+
+            orderDetailsvm.OrderDate = _context.AssignTables.FirstOrDefault(x => x.CustomerId == customerId && !x.Isdelete)!.Order!.OrderDate;
+
+            orderDetailsvm.ModifiedOn = _context.AssignTables.FirstOrDefault(x => x.CustomerId == customerId && !x.Isdelete)!.Order!.ModifiedAt == null ?
+                                            _context.AssignTables.FirstOrDefault(x => x.CustomerId == customerId && !x.Isdelete)!.Order!.OrderDate : (DateTime)_context.AssignTables.FirstOrDefault(x => x.CustomerId == customerId && !x.Isdelete)!.Order!.ModifiedAt!;
+
+            orderDetailsvm.ratingVM = new RatingsViewModel();
 
             orderDetailsvm.itemOrderVM = orderDetails
                         .Select(i => new ItemOrderViewModel
@@ -160,11 +170,11 @@ public class OrderAppMenuService : IOrderAppMenuService
                             Rate = i.Item.Rate,
                             status = "In Progress",
                             Quantity = i.Quantity,
-                            ExtraInstruction = i.ExtraInstruction,
+                            ExtraInstruction = i.ExtraInstruction == null ? "" : i.ExtraInstruction,
                             OrderdetailId = i.OrderdetailId,
                             TotalItemAmount = Math.Round(i.Quantity * i.Item.Rate, 2),
                             modifierOrderVM = _context.Modifierorders.Include(m => m.Modifier).Include(m => m.Orderdetail).ThenInclude(m => m.Item)
-                                .Where(m => m.Orderdetail.ItemId == i.ItemId)
+                                .Where(m => m.Orderdetail.OrderdetailId == i.OrderdetailId)
                                 .Select(m => new ModifierorderViewModel
                                 {
                                     ModifierId = m.ModifierId,
@@ -220,88 +230,80 @@ public class OrderAppMenuService : IOrderAppMenuService
 
     public async Task<OrderDetailViewModel> UpdateOrderDetailPartialView(List<List<int>> itemList, OrderDetailViewModel orderDetailsvm)
     {
-        try
+        OrderDetailViewModel orderdetails = orderDetailsvm;
+        List<ItemOrderViewModel> itemOrderVM = new();
+        itemOrderVM = orderDetailsvm.itemOrderVM;
+        // OrderDetailViewModel orderdetails = orderDetailsvm;
+
+        // if (orderdetails.itemOrderVM == null)
+        // {
+        orderdetails.itemOrderVM = new();
+        // }
+        for (int k = 0; k < itemList.Count; k++)
         {
-            OrderDetailViewModel orderdetails = orderDetailsvm;
-            List<ItemOrderViewModel> itemOrderVM = new();
-            itemOrderVM = orderDetailsvm.itemOrderVM;
-            // OrderDetailViewModel orderdetails = orderDetailsvm;
+            long itemId = itemList[k][0];
 
-            // if (orderdetails.itemOrderVM == null)
-            // {
-            orderdetails.itemOrderVM = new();
-            // }
-            for (int k = 0; k < itemList.Count; k++)
+            ItemOrderViewModel? itemdata = await _context.Items.Where(x => x.ItemId == itemId && !x.Isdelete)
+                                                    .Select(i => new ItemOrderViewModel
+                                                    {
+                                                        ItemId = i.ItemId,
+                                                        ItemName = i.ItemName,
+                                                        Rate = i.Rate,
+                                                        status = k >= _context.Orderdetails.Where(x => x.OrderId == orderdetails.OrderId && !x.Isdelete).Count() ? "Pending" : "In Progress",
+                                                        Quantity = itemList[k][1] >= 1 ? itemList[k][1] : 1,
+                                                        ExtraInstruction = itemOrderVM != null ? (k >= itemOrderVM.Count() ? null : itemOrderVM[k].ExtraInstruction) : null,
+                                                        OrderdetailId = itemOrderVM != null ? (k >= itemOrderVM.Count() ? 0 : itemOrderVM[k].OrderdetailId) : 0,
+                                                        TotalItemAmount = Math.Round(i.Rate * (itemList[k][1] >= 1 ? itemList[k][1] : 1), 2)
+                                                    }).FirstAsync();
+            itemdata.modifierOrderVM = new();
+            for (int j = 2; j < itemList[k].Count; j++)
             {
-                long itemId = itemList[k][0];
-
-                ItemOrderViewModel? itemdata = await _context.Items.Where(x => x.ItemId == itemId && !x.Isdelete)
-                                                        .Select(i => new ItemOrderViewModel
-                                                        {
-                                                            ItemId = i.ItemId,
-                                                            ItemName = i.ItemName,
-                                                            Rate = i.Rate,
-                                                            status = k >= _context.Orderdetails.Where(x => x.OrderId == orderdetails.OrderId && !x.Isdelete).Count() ? "Pending" : "In Progress",
-                                                            Quantity = itemList[k][1] >= 1 ? itemList[k][1] : 1,
-                                                            ExtraInstruction = itemOrderVM != null ? (k >= itemOrderVM.Count() ? null : itemOrderVM[k].ExtraInstruction) : null,
-                                                            OrderdetailId = itemOrderVM != null ? (k >= itemOrderVM.Count() ? 0 : itemOrderVM[k].OrderdetailId) : 0,
-                                                            TotalItemAmount = Math.Round(i.Rate * (itemList[k][1] >= 1 ? itemList[k][1] : 1), 2)
-                                                        }).FirstAsync();
-                itemdata.modifierOrderVM = new();
-                for (int j = 2; j < itemList[k].Count; j++)
-                {
-                    Modifier modifier = await _context.Modifiers.FirstOrDefaultAsync(x => x.ModifierId == itemList[k][j] && !x.Isdelete);
-                    ModifierorderViewModel mod = new();
-                    mod.ModifierId = modifier.ModifierId;
-                    mod.ModifierName = modifier.ModifierName;
-                    mod.Rate = modifier.Rate;
-                    mod.TotalModifierAmount = Math.Round((decimal)(modifier.Rate * itemdata.Quantity), 2);
-                    itemdata.modifierOrderVM.Add(mod);
-                }
-                orderdetails.itemOrderVM.Add(itemdata);
-
+                Modifier modifier = await _context.Modifiers.FirstOrDefaultAsync(x => x.ModifierId == itemList[k][j] && !x.Isdelete);
+                ModifierorderViewModel mod = new();
+                mod.ModifierId = modifier.ModifierId;
+                mod.ModifierName = modifier.ModifierName;
+                mod.Rate = modifier.Rate;
+                mod.TotalModifierAmount = Math.Round((decimal)(modifier.Rate * itemdata.Quantity), 2);
+                itemdata.modifierOrderVM.Add(mod);
             }
-            orderdetails.SubTotalAmountOrder = Math.Round((decimal)orderdetails.itemOrderVM
-                                                       .Sum(x => x.TotalItemAmount + x.modifierOrderVM.Sum(x => x.TotalModifierAmount)), 2);
-            List<Tax>? taxedetails = await _context.Taxes
-            .Where(x => !x.Isdelete && (bool)x.Isenable).ToListAsync();
+            orderdetails.itemOrderVM.Add(itemdata);
 
-            orderdetails.taxInvoiceVM = new List<TaxInvoiceViewModel>();
-            foreach (var tax in taxedetails)
-            {
-                if (tax.TaxType == "Flat Amount")
-                {
-                    orderdetails.taxInvoiceVM.Add(
-                        new TaxInvoiceViewModel
-                        {
-                            TaxId = tax.TaxId,
-                            TaxName = tax.TaxName,
-                            TaxType = tax.TaxType,
-                            TaxValue = tax.TaxValue
-                        }
-                    );
-                }
-                else
-                {
-                    orderdetails.taxInvoiceVM.Add(
-                        new TaxInvoiceViewModel
-                        {
-                            TaxId = tax.TaxId,
-                            TaxName = tax.TaxName,
-                            TaxType = tax.TaxType,
-                            TaxValue = Math.Round(tax.TaxValue / 100 * orderdetails.SubTotalAmountOrder, 2)
-                        }
-                    );
-                }
-            }
-            orderdetails.TotalAmountOrder = orderdetails.SubTotalAmountOrder + orderdetails.taxInvoiceVM.Sum(x => x.TaxValue);
-            return orderdetails;
         }
-        catch (Exception e)
+        orderdetails.SubTotalAmountOrder = Math.Round((decimal)orderdetails.itemOrderVM
+                                                   .Sum(x => x.TotalItemAmount + x.modifierOrderVM.Sum(x => x.TotalModifierAmount)), 2);
+        List<Tax>? taxedetails = await _context.Taxes
+        .Where(x => !x.Isdelete && (bool)x.Isenable).ToListAsync();
+
+        orderdetails.taxInvoiceVM = new List<TaxInvoiceViewModel>();
+        foreach (var tax in taxedetails)
         {
-            Console.WriteLine("Excpetion is = ", e.Message);
-            return null;
+            if (tax.TaxType == "Flat Amount")
+            {
+                orderdetails.taxInvoiceVM.Add(
+                    new TaxInvoiceViewModel
+                    {
+                        TaxId = tax.TaxId,
+                        TaxName = tax.TaxName,
+                        TaxType = tax.TaxType,
+                        TaxValue = tax.TaxValue
+                    }
+                );
+            }
+            else
+            {
+                orderdetails.taxInvoiceVM.Add(
+                    new TaxInvoiceViewModel
+                    {
+                        TaxId = tax.TaxId,
+                        TaxName = tax.TaxName,
+                        TaxType = tax.TaxType,
+                        TaxValue = Math.Round(tax.TaxValue / 100 * orderdetails.SubTotalAmountOrder, 2)
+                    }
+                );
+            }
         }
+        orderdetails.TotalAmountOrder = orderdetails.SubTotalAmountOrder + orderdetails.taxInvoiceVM.Sum(x => x.TaxValue);
+        return orderdetails;
     }
 
     public async Task<OrderDetailViewModel> RemoveItemfromOrderDetailPartialView(List<List<int>> itemList, int count, OrderDetailViewModel orderDetails)
@@ -364,6 +366,7 @@ public class OrderAppMenuService : IOrderAppMenuService
         customer.CustomerName = orderDetailVM.CustomerName;
         customer.PhoneNo = orderDetailVM.PhoneNo;
         customer.Email = orderDetailVM.Email;
+        customer.ModifiedAt = DateTime.Now;
         customer.ModifiedBy = userId;
         _context.Customers.Update(customer);
 
@@ -372,6 +375,7 @@ public class OrderAppMenuService : IOrderAppMenuService
         foreach (var table in AssignTable)
         {
             table.NoOfPerson = orderDetailVM.NoOfPerson;
+            table.ModifiedAt = DateTime.Now;
             table.ModifiedBy = userId;
             _context.AssignTables.Update(table);
         }
@@ -380,204 +384,212 @@ public class OrderAppMenuService : IOrderAppMenuService
         return orderDetailVM;
     }
 
-    public async Task<OrderDetailViewModel> UpdateOrderComment(OrderDetailViewModel orderDetailVM, long userId)
-    {
-        Order? order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderDetailVM.OrderId && !x.Isdelete);
+    // public async Task<OrderDetailViewModel> UpdateOrderComment(OrderDetailViewModel orderDetailVM, long userId)
+    // {
+    //     Order? order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderDetailVM.OrderId && !x.Isdelete);
 
-        if (order == null)
+    //     if (order == null)
+    //     {
+    //         return null;
+    //     }
+
+    //     order.ExtraInstruction = orderDetailVM.OrderInstruction;
+    //     order.ModifiedBy = userId;
+    //     _context.Orders.Update(order);
+    //     await _context.SaveChangesAsync();
+    //     return orderDetailVM;
+    // }
+
+    public async Task<OrderDetailViewModel> SaveOrder(List<int> orderDetailIds, OrderDetailViewModel orderDetailsVM, long userId)
+    {
+
+        long orderId;
+        if (orderDetailsVM.OrderId == 0)
         {
-            return null;
+            Order newOrder = new Order
+            {
+                CustomerId = orderDetailsVM.CustomerId,
+                OrderDate = DateTime.Now,
+                Status = "Pending",
+                TotalAmount = orderDetailsVM.TotalAmountOrder,
+                PaymentmethodId = 4,
+                PaymentStatusId = 1,
+                SectionId = orderDetailsVM.SectionId,
+                TableId = orderDetailsVM.tableList[0].TableId,
+                ExtraInstruction = orderDetailsVM.OrderInstruction,
+                CreatedBy = userId,
+                CreatedAt = DateTime.Now,
+                OrderType = "DineIn",
+            };
+            await _context.Orders.AddAsync(newOrder);
+            await _context.SaveChangesAsync();
+            orderId = newOrder.OrderId;
+        }
+        else
+        {
+            Order? ExistOrder = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderDetailsVM.OrderId && !x.Isdelete);
+            ExistOrder.TotalAmount = orderDetailsVM.TotalAmountOrder;
+            ExistOrder.PaymentmethodId = orderDetailsVM.PaymentmethodId;
+            ExistOrder.PaymentStatusId = 1;
+            ExistOrder.ExtraInstruction = orderDetailsVM.OrderInstruction;
+            ExistOrder.ModifiedBy = userId;
+            ExistOrder.ModifiedAt = DateTime.Now;
+            _context.Orders.Update(ExistOrder);
+            await _context.SaveChangesAsync();
+            orderId = ExistOrder.OrderId;
         }
 
-        order.ExtraInstruction = orderDetailVM.OrderInstruction;
-        order.ModifiedBy = userId;
-        _context.Orders.Update(order);
-        await _context.SaveChangesAsync();
-        return orderDetailVM;
-    }
+        // for update
+        orderDetailsVM.OrderId = orderId;
 
-    public async Task<OrderDetailViewModel> SaveOrder(List<int> orderDetailIds, OrderDetailViewModel orderDetailsVM)
-    {
-        try
+        // Add Orderdetails to the database
+        for (int i = orderDetailIds.Count; i < orderDetailsVM.itemOrderVM.Count; i++)
         {
-            long orderId;
-            if (orderDetailsVM.OrderId == 0)
+            Orderdetail orderdetail = new Orderdetail
             {
-                Order newOrder = new Order
+                OrderId = orderId,
+                ItemId = orderDetailsVM.itemOrderVM[i].ItemId,
+                Quantity = (int)orderDetailsVM.itemOrderVM[i].Quantity,
+                ExtraInstruction = orderDetailsVM.itemOrderVM[i].ExtraInstruction,
+                Status = "Pending",
+                CreatedAt = DateTime.Now,
+                CreatedBy = userId,
+            };
+            await _context.Orderdetails.AddAsync(orderdetail);
+            await _context.SaveChangesAsync();
+
+            orderDetailsVM.itemOrderVM[i].OrderdetailId = orderdetail.OrderdetailId;
+
+            for (int j = 0; j < orderDetailsVM.itemOrderVM[i].modifierOrderVM.Count; j++)
+            {
+                Modifierorder modifierOrder = new Modifierorder
                 {
-                    CustomerId = orderDetailsVM.CustomerId,
-                    OrderDate = DateTime.Now,
-                    Status = "Pending",
-                    TotalAmount = orderDetailsVM.TotalAmountOrder,
-                    PaymentmethodId = 4,
-                    PaymentStatusId = 1,
-                    SectionId = orderDetailsVM.SectionId,
-                    TableId = orderDetailsVM.tableList[0].TableId,
-                    ExtraInstruction = orderDetailsVM.OrderInstruction,
+                    OrderdetailId = orderdetail.OrderdetailId,
+                    ModifierId = orderDetailsVM.itemOrderVM[i].modifierOrderVM[j].ModifierId,
                     CreatedAt = DateTime.Now,
-                    OrderType = "Dine In",
+                    CreatedBy = userId,
+                    ModifierQuantity = (int)orderDetailsVM.itemOrderVM[i].Quantity,
+
                 };
-                await _context.Orders.AddAsync(newOrder);
-                await _context.SaveChangesAsync();
-                orderId = newOrder.OrderId;
+                await _context.Modifierorders.AddAsync(modifierOrder);
+            }
+        }
+
+
+        // Update the Existing Orderdetails
+        for (int i = 0; i < orderDetailIds.Count; i++)
+        {
+            Orderdetail? ExistingOrderdetail = await _context.Orderdetails.FirstOrDefaultAsync(od => od.OrderdetailId == orderDetailIds[i] && !od.Isdelete);
+            if (ExistingOrderdetail != null)
+            {
+                ExistingOrderdetail.Quantity = (int)orderDetailsVM.itemOrderVM[i].Quantity;
+                ExistingOrderdetail.ExtraInstruction = orderDetailsVM.itemOrderVM[i].ExtraInstruction;
+                ExistingOrderdetail.ModifiedAt = DateTime.Now;
+                ExistingOrderdetail.ModifiedBy = userId;
+                _context.Orderdetails.Update(ExistingOrderdetail);
+                // await _context.SaveChangesAsync();
+
+                List<Modifierorder>? ExistingModifierOrders = await _context.Modifierorders.Where(x => x.OrderdetailId == ExistingOrderdetail.OrderdetailId).ToListAsync();
+                foreach (var modifierOrder in ExistingModifierOrders)
+                {
+                    modifierOrder.ModifierQuantity = (int)orderDetailsVM.itemOrderVM[i].Quantity;
+                    modifierOrder.ModifiedAt = DateTime.Now;
+                    modifierOrder.ModifiedBy = userId;
+                    _context.Modifierorders.Update(modifierOrder);
+                }
+                // await _context.SaveChangesAsync();
+            }
+        }
+
+        // Update the AssignTable Orderid and status -> Running
+        for (int i = 0; i < orderDetailsVM.tableList.Count; i++)
+        {
+            AssignTable? assignTable = await _context.AssignTables.FirstOrDefaultAsync(x => x.TableId == orderDetailsVM.tableList[i].TableId && !x.Isdelete);
+
+            if (assignTable != null)
+            {
+                assignTable.OrderId = orderId;
+                assignTable.ModifiedAt = DateTime.Now;
+                assignTable.ModifiedBy = userId;
+                _context.AssignTables.Update(assignTable);
+            }
+
+            Table? tables = await _context.Tables.FirstOrDefaultAsync(x => x.TableId == orderDetailsVM.tableList[i].TableId && !x.Isdelete);
+            if (tables != null)
+            {
+                tables.Status = "Running";
+                tables.ModifiedAt = DateTime.Now;
+                tables.ModifiedBy = userId;
+                _context.Tables.Update(tables);
+            }
+
+            // await _context.AssignTables.AddAsync(assignTable);
+        }
+
+        // Update the Order status to "In Progress"
+        Order? order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && !x.Isdelete);
+        if (order != null)
+        {
+            order.Status = "In Progress";
+            _context.Orders.Update(order);
+        }
+
+        for (int i = 0; i < orderDetailsVM.itemOrderVM.Count; i++)
+        {
+            orderDetailsVM.itemOrderVM[i].status = "In Progress";
+        }
+
+
+
+        await _context.SaveChangesAsync();
+        var taxedetails = _context.Taxes.Where(x => !x.Isdelete && (bool)x.Isenable).ToList();
+
+        orderDetailsVM.taxInvoiceVM = new List<TaxInvoiceViewModel>();
+        foreach (var tax in taxedetails)
+        {
+
+            if (tax.TaxType == "Flat Amount")
+            {
+                orderDetailsVM.taxInvoiceVM.Add(
+                    new TaxInvoiceViewModel
+                    {
+                        TaxId = tax.TaxId,
+                        TaxName = tax.TaxName,
+                        TaxType = tax.TaxType,
+                        TaxValue = tax.TaxValue
+                    }
+                );
             }
             else
             {
-                Order? ExistOrder = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderDetailsVM.OrderId && !x.Isdelete);
-                ExistOrder.TotalAmount = orderDetailsVM.TotalAmountOrder;
-                ExistOrder.PaymentmethodId = orderDetailsVM.PaymentmethodId;
-                ExistOrder.PaymentStatusId = 1;
-                ExistOrder.ExtraInstruction = orderDetailsVM.OrderInstruction;
-                _context.Orders.Update(ExistOrder);
-                await _context.SaveChangesAsync();
-                orderId = ExistOrder.OrderId;
-            }
-
-            // for update
-            orderDetailsVM.OrderId = orderId;
-
-            // Add Orderdetails to the database
-            for (int i = orderDetailIds.Count; i < orderDetailsVM.itemOrderVM.Count; i++)
-            {
-                Orderdetail orderdetail = new Orderdetail
-                {
-                    OrderId = orderId,
-                    ItemId = orderDetailsVM.itemOrderVM[i].ItemId,
-                    Quantity = (int)orderDetailsVM.itemOrderVM[i].Quantity,
-                    ExtraInstruction = orderDetailsVM.itemOrderVM[i].ExtraInstruction,
-                    Status = "Pending",
-                    CreatedAt = DateTime.Now,
-                };
-                await _context.Orderdetails.AddAsync(orderdetail);
-                await _context.SaveChangesAsync();
-
-                orderDetailsVM.itemOrderVM[i].OrderdetailId = orderdetail.OrderdetailId;
-
-                for (int j = 0; j < orderDetailsVM.itemOrderVM[i].modifierOrderVM.Count; j++)
-                {
-                    Modifierorder modifierOrder = new Modifierorder
+                orderDetailsVM.taxInvoiceVM.Add(
+                    new TaxInvoiceViewModel
                     {
-                        OrderdetailId = orderdetail.OrderdetailId,
-                        ModifierId = orderDetailsVM.itemOrderVM[i].modifierOrderVM[j].ModifierId,
-                        CreatedAt = DateTime.Now,
-                        ModifierQuantity = (int)orderDetailsVM.itemOrderVM[i].Quantity,
-
-                    };
-                    await _context.Modifierorders.AddAsync(modifierOrder);
-                }
-            }
-
-
-            // Update the Existing Orderdetails
-            for (int i = 0; i < orderDetailIds.Count; i++)
-            {
-                Orderdetail? ExistingOrderdetail = await _context.Orderdetails.FirstOrDefaultAsync(od => od.OrderdetailId == orderDetailIds[i] && !od.Isdelete);
-                if (ExistingOrderdetail != null)
-                {
-                    ExistingOrderdetail.Quantity = (int)orderDetailsVM.itemOrderVM[i].Quantity;
-                    ExistingOrderdetail.ExtraInstruction = orderDetailsVM.itemOrderVM[i].ExtraInstruction;
-                    _context.Orderdetails.Update(ExistingOrderdetail);
-                    // await _context.SaveChangesAsync();
-
-                    List<Modifierorder>? ExistingModifierOrders = await _context.Modifierorders.Where(x => x.OrderdetailId == ExistingOrderdetail.OrderdetailId).ToListAsync();
-                    foreach (var modifierOrder in ExistingModifierOrders)
-                    {
-                        modifierOrder.ModifierQuantity = (int)orderDetailsVM.itemOrderVM[i].Quantity;
-                        _context.Modifierorders.Update(modifierOrder);
+                        TaxId = tax.TaxId,
+                        TaxName = tax.TaxName,
+                        TaxType = tax.TaxType,
+                        TaxValue = Math.Round(tax.TaxValue / 100 * orderDetailsVM.SubTotalAmountOrder, 2)
                     }
-                    // await _context.SaveChangesAsync();
-                }
+                );
             }
-
-            // Update the AssignTable Orderid and status -> Running
-            for (int i = 0; i < orderDetailsVM.tableList.Count; i++)
-            {
-                AssignTable? assignTable = await _context.AssignTables.FirstOrDefaultAsync(x => x.TableId == orderDetailsVM.tableList[i].TableId && !x.Isdelete);
-
-                if (assignTable != null)
-                {
-                    assignTable.OrderId = orderId;
-                    _context.AssignTables.Update(assignTable);
-                }
-
-                Table? tables = await _context.Tables.FirstOrDefaultAsync(x => x.TableId == orderDetailsVM.tableList[i].TableId && !x.Isdelete);
-                if (tables != null)
-                {
-                    tables.Status = "Running";
-                    _context.Tables.Update(tables);
-                }
-
-                // await _context.AssignTables.AddAsync(assignTable);
-            }
-
-            // Update the Order status to "In Progress"
-            Order? order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && !x.Isdelete);
-            if (order != null)
-            {
-                order.Status = "In Progress";
-                _context.Orders.Update(order);
-            }
-
-            for (int i = 0; i < orderDetailsVM.itemOrderVM.Count; i++)
-            {
-                orderDetailsVM.itemOrderVM[i].status = "In Progress";
-            }
-
-
-
-            await _context.SaveChangesAsync();
-            var taxedetails = _context.Taxes.Where(x => !x.Isdelete && (bool)x.Isenable).ToList();
-
-            orderDetailsVM.taxInvoiceVM = new List<TaxInvoiceViewModel>();
-            foreach (var tax in taxedetails)
-            {
-
-                if (tax.TaxType == "Fix Amount")
-                {
-                    orderDetailsVM.taxInvoiceVM.Add(
-                        new TaxInvoiceViewModel
-                        {
-                            TaxId = tax.TaxId,
-                            TaxName = tax.TaxName,
-                            TaxType = tax.TaxType,
-                            TaxValue = tax.TaxValue
-                        }
-                    );
-                }
-                else
-                {
-                    orderDetailsVM.taxInvoiceVM.Add(
-                        new TaxInvoiceViewModel
-                        {
-                            TaxId = tax.TaxId,
-                            TaxName = tax.TaxName,
-                            TaxType = tax.TaxType,
-                            TaxValue = Math.Round(tax.TaxValue / 100 * orderDetailsVM.SubTotalAmountOrder, 2)
-                        }
-                    );
-                }
-            }
-
-            //Add invoice
-            if (orderDetailsVM.InvoiceId == 0 || orderDetailsVM.InvoiceId == null)
-            {
-
-                Invoice invoice = new();
-                invoice.InvoiceNo = "#DOM" + DateTime.Now.ToString("yyyyMMddHHmmss");
-                invoice.OrderId = orderDetailsVM.OrderId;
-                invoice.CustomerId = orderDetailsVM.CustomerId;
-                await _context.AddAsync(invoice);
-                await _context.SaveChangesAsync();
-                orderDetailsVM.InvoiceId = invoice.InvoiceId;
-            }
-
-            return orderDetailsVM;
         }
-        catch (Exception e)
+
+        //Add invoice
+        if (orderDetailsVM.InvoiceId == 0 || orderDetailsVM.InvoiceId == null)
         {
-            Console.WriteLine("Excpetion is = ", e.Message);
-            return null;
+            Invoice invoiceObj = new();
+            invoiceObj.InvoiceNo = "#DOM" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            invoiceObj.OrderId = orderDetailsVM.OrderId;
+            invoiceObj.CustomerId = orderDetailsVM.CustomerId;
+            invoiceObj.CreatedAt = DateTime.Now;
+            invoiceObj.CreatedBy = userId;
+            await _context.AddAsync(invoiceObj);
+            _context.SaveChanges();
+
+            orderDetailsVM.InvoiceId = invoiceObj.InvoiceId;
         }
+
+        return orderDetailsVM;
     }
 
     public async Task<bool> IsItemsReady(List<int> orderDetailId, OrderDetailViewModel orderDetailsVM)
@@ -594,107 +606,118 @@ public class OrderAppMenuService : IOrderAppMenuService
         return true;
     }
 
-    public async Task<bool> CompleteOrder(OrderDetailViewModel orderDetailsVM)
+    public async Task<bool> CompleteOrder(OrderDetailViewModel orderDetailsVM, long userId)
     {
-        try
+        // Update Order
+        Order? order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderDetailsVM.OrderId && !x.Isdelete);
+
+        if (order == null)
         {
-            // Update Order
-            Order? order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderDetailsVM.OrderId && !x.Isdelete);
-
-            if (order == null)
-            {
-                return false;
-            }
-
-            order.TotalAmount = orderDetailsVM.TotalAmountOrder;
-            order.ExtraInstruction = orderDetailsVM.OrderInstruction;
-            // order.RatingId = orderDetailsVM.RatingId;
-            order.PaymentmethodId = orderDetailsVM.PaymentmethodId;
-            order.Status = "Completed";
-            order.PaymentStatusId = 2;
-
-            _context.Update(order);
-            await _context.SaveChangesAsync();
-
-            // Update OrderDetail
-            for (int i = 0; i < orderDetailsVM.itemOrderVM.Count; i++)
-            {
-                Orderdetail? orderdetail = await _context.Orderdetails.FirstOrDefaultAsync(x => x.OrderdetailId == orderDetailsVM.itemOrderVM[i].OrderdetailId && !x.Isdelete);
-                orderdetail.Status = "Served";
-                _context.Update(orderdetail);
-
-            }
-
-            // Update AssignTable
-            List<AssignTable> assigntable = _context.AssignTables.Where(x => x.OrderId == orderDetailsVM.OrderId && x.CustomerId == orderDetailsVM.CustomerId && !x.Isdelete).ToList();
-            for (int i = 0; i < assigntable.Count; i++)
-            {
-                assigntable[i].Isdelete = true;
-                _context.Update(assigntable[i]);
-            }
-
-            // Update Table Status
-            for (int i = 0; i < orderDetailsVM.tableList.Count; i++)
-            {
-                Table? table = await _context.Tables.FirstOrDefaultAsync(t => t.TableId == orderDetailsVM.tableList[i].TableId && !t.Isdelete);
-                table.Status = "Available";
-                _context.Update(table);
-            }
-            await _context.SaveChangesAsync();
-
-            //add tax in taxinvoicemapping table
-            for (int i = 0; i < orderDetailsVM.taxInvoiceVM.Count; i++)
-            {
-                TaxInvoiceMapping taxinvoicemapping = new();
-                taxinvoicemapping.TaxId = orderDetailsVM.taxInvoiceVM[i].TaxId;
-                taxinvoicemapping.InvoiceId = orderDetailsVM.InvoiceId;
-                // taxinvoicemapping.TaxName = orderDetailsVM.taxInvoiceVM[i].TaxName;
-                // taxinvoicemapping.TaxAmount = orderDetailsVM.taxInvoiceVM[i].TaxType == "Fix Amount" ? orderDetailsVM.taxInvoiceVM[i].TaxValue :
-                                            Math.Round(orderDetailsVM.taxInvoiceVM[i].TaxValue / 100 * orderDetailsVM.SubTotalAmountOrder, 2);
-                await _context.AddAsync(taxinvoicemapping);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Message", e.Message);
             return false;
         }
 
+        order.TotalAmount = orderDetailsVM.TotalAmountOrder;
+        order.ExtraInstruction = orderDetailsVM.OrderInstruction;
+        // order.RatingId = orderDetailsVM.RatingId;
+        order.PaymentmethodId = orderDetailsVM.PaymentmethodId;
+        order.Status = "Completed";
+        order.PaymentStatusId = 2;
+        order.ModifiedAt = DateTime.Now;
+        order.ModifiedBy = userId;
+
+        _context.Update(order);
+        await _context.SaveChangesAsync();
+
+        // Update OrderDetail
+        for (int i = 0; i < orderDetailsVM.itemOrderVM.Count; i++)
+        {
+            Orderdetail? orderdetail = await _context.Orderdetails.FirstOrDefaultAsync(x => x.OrderdetailId == orderDetailsVM.itemOrderVM[i].OrderdetailId && !x.Isdelete);
+            orderdetail.Status = "Served";
+            orderdetail.ModifiedAt = DateTime.Now;
+            orderdetail.ModifiedBy = userId;
+            _context.Update(orderdetail);
+
+        }
+
+        // Update AssignTable
+        List<AssignTable> assigntable = _context.AssignTables.Where(x => x.OrderId == orderDetailsVM.OrderId && x.CustomerId == orderDetailsVM.CustomerId && !x.Isdelete).ToList();
+        for (int i = 0; i < assigntable.Count; i++)
+        {
+            assigntable[i].Isdelete = true;
+            assigntable[i].ModifiedAt = DateTime.Now;
+            assigntable[i].ModifiedBy = userId;
+            _context.Update(assigntable[i]);
+        }
+
+        // Update Table Status
+        for (int i = 0; i < orderDetailsVM.tableList.Count; i++)
+        {
+            Table? table = await _context.Tables.FirstOrDefaultAsync(t => t.TableId == orderDetailsVM.tableList[i].TableId && !t.Isdelete);
+            table.Status = "Available";
+            table.ModifiedAt = DateTime.Now;
+            table.ModifiedBy = userId;
+            _context.Update(table);
+        }
+        await _context.SaveChangesAsync();
+
+        // Add TaxInvoice Mapping
+
+        for (int i = 0; i < orderDetailsVM.taxInvoiceVM.Count; i++)
+        {
+            TaxInvoiceMapping taxinvoicemapping = new();
+            taxinvoicemapping.TaxId = orderDetailsVM.taxInvoiceVM[i].TaxId;
+            taxinvoicemapping.InvoiceId = orderDetailsVM.InvoiceId;
+            taxinvoicemapping.TaxName = orderDetailsVM.taxInvoiceVM[i].TaxName;
+            taxinvoicemapping.TaxAmount = orderDetailsVM.taxInvoiceVM[i].TaxValue;
+            await _context.AddAsync(taxinvoicemapping);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return true;
+
     }
 
-    public async Task<long> SaveRatings(long customerId, int foodreview, int serviceReview, int ambienceReview, string reviewtext)
+    public async Task<bool> SaveRatings(OrderDetailViewModel orderDetailVM, long userId)
     {
-        Rating? ratings = await _context.Ratings.FirstOrDefaultAsync(r => r.Food == foodreview && r.Ambience == ambienceReview && r.Service == serviceReview && r.Review == reviewtext && r.Isdelete == false);
-        long ratingId;
-        if (ratings == null)
+        Rating? ratingData = await _context.Ratings.FirstOrDefaultAsync(r => r.CustomerId == orderDetailVM.CustomerId && !r.Isdelete);
+
+        if (ratingData == null)
         {
             Rating rating = new();
-            rating.Food = foodreview;
-            rating.CustomerId = customerId;
-            rating.Ambience = ambienceReview;
-            rating.Service = serviceReview;
-            rating.Review = reviewtext;
+            rating.Food = orderDetailVM.ratingVM.Food;
+            rating.CustomerId = orderDetailVM.CustomerId;
+            rating.Ambience = orderDetailVM.ratingVM.Ambience;
+            rating.Service = orderDetailVM.ratingVM.Service;
+            rating.Review = orderDetailVM.ratingVM.Review;
+            rating.CreatedAt = DateTime.Now;
+            rating.CreatedBy = userId;
             await _context.Ratings.AddAsync(rating);
             await _context.SaveChangesAsync();
-            ratingId = rating.RatingId;
-            return ratingId;
-        }
-        return (long)ratings.RatingId;
 
+            Order? order = _context.Orders.FirstOrDefault(x => x.CustomerId == orderDetailVM.CustomerId && !x.Isdelete && x.Status == "Completed");
+
+            if (order != null)
+            {
+                order.RatingId = rating.RatingId;
+                order.ModifiedAt = DateTime.Now;
+                order.ModifiedBy = userId;
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+            }
+
+            return true;
+        }
+        return false;
     }
 
-        #region IsAnyItemReady
-    public bool IsAnyItemReady(OrderDetailViewModel orderDetailsvm)
+    public async Task<bool> IsAnyItemReady(OrderDetailViewModel orderDetailsVM)
     {
-        for (int i = 0; i < orderDetailsvm.itemOrderVM.Count; i++)
+        for (int i = 0; i < orderDetailsVM.itemOrderVM.Count; i++)
         {
-            if (orderDetailsvm.itemOrderVM[i].OrderdetailId != 0)
+            if (orderDetailsVM.itemOrderVM[i].OrderdetailId != 0)
             {
-                Orderdetail? orderdetail = _context.Orderdetails.FirstOrDefault(x => x.OrderdetailId == orderDetailsvm.itemOrderVM[i].OrderdetailId);
+                Orderdetail? orderdetail = await _context.Orderdetails.FirstOrDefaultAsync(x => x.OrderdetailId == orderDetailsVM.itemOrderVM[i].OrderdetailId);
                 if (orderdetail.ReadyQuantity > 0)
                 {
                     return true;
@@ -703,85 +726,58 @@ public class OrderAppMenuService : IOrderAppMenuService
         }
         return false;
     }
-    #endregion
 
-    #region isItemRedy
-    public bool IsItemReady(long orderDetailId)
+    public async Task<bool> CancelOrder(OrderDetailViewModel orderDetailsVM, long userId)
     {
-        Orderdetail? orderdetail = _context.Orderdetails.FirstOrDefault(x => x.OrderdetailId == orderDetailId);
-        if (orderdetail.Quantity != orderdetail.ReadyQuantity)
+
+        // if (orderDetailsVM.InvoiceId != 0)
+        // {
+        //     Invoice? invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.InvoiceId == orderDetailsVM.InvoiceId && !i.Isdelete);
+        //     invoice.Isdelete = true;
+        //     _context.Update(invoice);
+        // }
+
+        if (orderDetailsVM.OrderId != 0)
         {
-            return false;
+            Order? order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderDetailsVM.OrderId && !o.Isdelete);
+            order!.Status = "Cancelled";
+            order.ModifiedAt = DateTime.Now;
+            order.ModifiedBy = userId;
+            _context.Update(order);
         }
+
+        for (int i = 0; i < orderDetailsVM.itemOrderVM.Count; i++)
+        {
+            if (orderDetailsVM.itemOrderVM[i].OrderdetailId != 0)
+            {
+                Orderdetail? orderdetail = await _context.Orderdetails.FirstOrDefaultAsync(od => od.OrderdetailId == orderDetailsVM.itemOrderVM[i].OrderdetailId && !od.Isdelete);
+                orderdetail!.Status = "Cancelled";
+                orderdetail.ModifiedAt = DateTime.Now;
+                orderdetail.ModifiedBy = userId;
+                _context.Update(orderdetail);
+            }
+        }
+
+        List<AssignTable> assigntableList = _context.AssignTables.Where(at => at.CustomerId == orderDetailsVM.CustomerId && !at.Isdelete).ToList();
+
+        foreach (var assigntable in assigntableList)
+        {
+            assigntable.Isdelete = true;
+            assigntable.ModifiedAt = DateTime.Now;
+            assigntable.ModifiedBy = userId;
+            _context.Update(assigntable);
+
+            Table? table = await _context.Tables.FirstOrDefaultAsync(t => t.TableId == assigntable.TableId && !t.Isdelete);
+            table!.Status = "Available";
+            table.ModifiedAt = DateTime.Now;
+            table.ModifiedBy = userId;
+            _context.Update(table);
+        }
+
+        await _context.SaveChangesAsync();
+
         return true;
+
     }
-    #endregion
 
-    #region CancelOrder
-    public async Task<bool> CancelOrder(OrderDetailViewModel orderDetailsvm)
-    {
-        try
-        {
-            if (orderDetailsvm.InvoiceId != 0)
-            {
-                Invoice? invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.InvoiceId == orderDetailsvm.InvoiceId && !i.Isdelete);
-                invoice.Isdelete = true;
-                _context.Update(invoice);
-
-            }
-            if (orderDetailsvm.OrderId != 0)
-            {
-                Order? order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderDetailsvm.OrderId && !o.Isdelete);
-                order.Status = "Cancelled";
-                order.TotalAmount = 0;
-                order.ExtraInstruction = null;
-                _context.Update(order);
-
-                List<Kot> kotList = _context.Kots.Where(kot => kot.OrderId == orderDetailsvm.OrderId && !kot.Isdelete).ToList();
-                foreach (var kot in kotList)
-                {
-                    kot.Isdelete = true;
-                    _context.Update(kot);
-                }
-            }
-
-            for (int i = 0; i < orderDetailsvm.itemOrderVM.Count; i++)
-            {
-                if (orderDetailsvm.itemOrderVM[i].OrderdetailId != 0)
-                {
-                    Orderdetail? orderdetail = await _context.Orderdetails.FirstOrDefaultAsync(od => od.OrderdetailId == orderDetailsvm.itemOrderVM[i].OrderdetailId && !od.Isdelete);
-                    // orderdetail.Isdelete = true;
-                    orderdetail.Status = "Cancelled";
-                    _context.Update(orderdetail);
-
-                    List<Modifierorder> modifierorderList = _context.Modifierorders.Where(mo => mo.OrderdetailId == orderDetailsvm.itemOrderVM[i].OrderdetailId && !mo.Isdelete).ToList();
-                    foreach (var modiferorder in modifierorderList)
-                    {
-                        modiferorder.Isdelete = true;
-                        _context.Update(modiferorder);
-                    }
-                }
-            }
-
-            List<AssignTable> assigntableList = _context.AssignTables.Where(at => at.CustomerId == orderDetailsvm.CustomerId && !at.Isdelete).ToList();
-            foreach (var table in assigntableList)
-            {
-                table.Isdelete = true;
-                _context.Update(table);
-
-                DAL.Models.Table? table1 = await _context.Tables.FirstOrDefaultAsync(t => t.TableId == table.TableId && !t.Isdelete);
-                table1.Status = "Available";
-                _context.Update(table1);
-
-            }
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-    }
-    #endregion
 }

@@ -29,6 +29,10 @@
       "PackagePath": "staticwebassets\\images\\camera.svg"
     },
     {
+      "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\customer.svg",
+      "PackagePath": "staticwebassets\\images\\customer.svg"
+    },
+    {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\dashboard-default.svg",
       "PackagePath": "staticwebassets\\images\\dashboard-default.svg"
     },
@@ -115,6 +119,10 @@
     {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\qr-code.png",
       "PackagePath": "staticwebassets\\images\\qr-code.png"
+    },
+    {
+      "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\qrcode_localhost.png",
+      "PackagePath": "staticwebassets\\images\\qrcode_localhost.png"
     },
     {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\images\\toppng.com-warning-icon-2400x2400.png",
@@ -469,6 +477,10 @@
       "PackagePath": "staticwebassets\\uploads\\422a2f39-ea45-4e05-9145-f2075a0b9b4b.png"
     },
     {
+      "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\46c2b438-1ea5-44d1-bda9-9a5295e5ce92.png",
+      "PackagePath": "staticwebassets\\uploads\\46c2b438-1ea5-44d1-bda9-9a5295e5ce92.png"
+    },
+    {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\470cc46d-f562-4df3-bf0d-22c4d7efd55a_Default_pfp.svg.png",
       "PackagePath": "staticwebassets\\uploads\\470cc46d-f562-4df3-bf0d-22c4d7efd55a_Default_pfp.svg.png"
     },
@@ -623,6 +635,10 @@
     {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\85eceb3c-297b-4304-9c6a-d22b506bfd7b_transperent-pizza.png",
       "PackagePath": "staticwebassets\\uploads\\85eceb3c-297b-4304-9c6a-d22b506bfd7b_transperent-pizza.png"
+    },
+    {
+      "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\864e370c-e2cb-44dc-88c0-2c6a19ced376.png",
+      "PackagePath": "staticwebassets\\uploads\\864e370c-e2cb-44dc-88c0-2c6a19ced376.png"
     },
     {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\869e7fd0-c37c-4b99-9426-9a302eef8702_dining-menu.png",
@@ -799,6 +815,10 @@
     {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\d448a11c-1a05-415b-a569-55d13ebe13ed_transperent-pizza.png",
       "PackagePath": "staticwebassets\\uploads\\d448a11c-1a05-415b-a569-55d13ebe13ed_transperent-pizza.png"
+    },
+    {
+      "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\d696a64f-ee85-4d06-8fac-72c950c40fc1.png",
+      "PackagePath": "staticwebassets\\uploads\\d696a64f-ee85-4d06-8fac-72c950c40fc1.png"
     },
     {
       "Id": "D:\\Tatva_PizzaShop\\Pizza_Shop_Project\\wwwroot\\uploads\\dc110572-d3eb-48af-9172-2f60964de9ff_dining-menu.png",

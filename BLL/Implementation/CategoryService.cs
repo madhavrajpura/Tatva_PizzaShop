@@ -16,7 +16,14 @@ public class CategoryService : ICategoryService
 
     public async Task<List<Category>> GetAllCategories()
     {
-        return await _context.Categories.Where(x => !x.Isdelete).OrderBy(x => x.CategoryId).ToListAsync();
+        try
+        {
+            return await _context.Categories.Where(x => !x.Isdelete).OrderBy(x => x.CategoryId).ToListAsync();
+        }
+        catch(Exception e)
+        {
+            throw new Exception();
+        }
     }
 
     public async Task<bool> AddCategory(Category category, long userId)
@@ -41,7 +48,7 @@ public class CategoryService : ICategoryService
             return false;
         }
 
-        Category cat = await _context.Categories.SingleOrDefaultAsync(x => x.CategoryId == Cat_Id && !x.Isdelete);
+        Category? cat = await _context.Categories.SingleOrDefaultAsync(x => x.CategoryId == Cat_Id && !x.Isdelete);
         if (cat == null)
         {
             return false;
@@ -57,9 +64,9 @@ public class CategoryService : ICategoryService
 
     public async Task<bool> DeleteCategory(long Cat_Id)
     {
-        Category category = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Cat_Id && !x.Isdelete);
+        Category? category = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Cat_Id && !x.Isdelete);
 
-        List<Item> ItemsInCategory = await _context.Items.Where(x => x.CategoryId == Cat_Id && !x.Isdelete).ToListAsync();
+        List<Item>? ItemsInCategory = await _context.Items.Where(x => x.CategoryId == Cat_Id && !x.Isdelete).ToListAsync();
 
         // if (ItemsInCategory.Count > 0)
         // {

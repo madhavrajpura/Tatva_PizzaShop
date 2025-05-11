@@ -41,6 +41,8 @@ public class OrderAppMenuController : Controller
         return View(OrderAppMenuVM);
     }
 
+    #region GET
+
     public IActionResult GetItems(long categoryid, string searchText = "")
     {
         OrderAppMenuViewModel OrderAppMenuVM = new();
@@ -50,7 +52,11 @@ public class OrderAppMenuController : Controller
 
     public async Task<IActionResult> FavouriteItem(long itemId, bool IsFavourite)
     {
-        bool status = await _orderAppMenuService.FavouriteItem(itemId, IsFavourite);
+        string token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
+        long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+        bool status = await _orderAppMenuService.FavouriteItem(itemId, IsFavourite, userId);
         if (status)
         {
             if (IsFavourite)
@@ -81,8 +87,11 @@ public class OrderAppMenuController : Controller
     {
         OrderDetailViewModel orderDetailVM = new();
         orderDetailVM = _orderAppMenuService.GetOrderDetailsByCustomerId(customerId);
+        // orderDetailVM.itemOrderVM = new();
         return PartialView("_MenuItemsOrderDetailPartial", orderDetailVM);
     }
+
+    #endregion
 
     public async Task<IActionResult> UpdateOrderDetailPartialView(string ItemList, string orderDetails)
     {
@@ -119,43 +128,52 @@ public class OrderAppMenuController : Controller
         }
     }
 
-    public async Task<IActionResult> UpdateOrderComment([FromForm] OrderDetailViewModel orderDetailVM)
-    {
+    // public async Task<IActionResult> UpdateOrderComment([FromForm] OrderDetailViewModel orderDetailVM)
+    // {
 
+    //     string token = Request.Cookies["AuthToken"];
+    //     List<User>? userData = _userService.getUserFromEmail(token);
+    //     long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
+    //     OrderDetailViewModel? data = await _orderAppMenuService.UpdateOrderComment(orderDetailVM, userId);
+
+    //     if (data != null)
+    //     {
+    //         return Json(new { success = true, text = "Order Comment Updated Successfully", data });
+    //     }
+    //     else
+    //     {
+    //         return Json(new { success = false, text = "Something Went Wrong! Try Again!" });
+    //     }
+    // }
+
+    #region Order 
+    public async Task<IActionResult> SaveOrder(string orderDetailIds, string orderDetails)
+    {
         string token = Request.Cookies["AuthToken"];
         List<User>? userData = _userService.getUserFromEmail(token);
         long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
-        OrderDetailViewModel? data = await _orderAppMenuService.UpdateOrderComment(orderDetailVM, userId);
-
-        if (data != null)
-        {
-            return Json(new { success = true, text = "Order Comment Updated Successfully", data });
-        }
-        else
-        {
-            return Json(new { success = false, text = "Something Went Wrong! Try Again!" });
-        }
-    }
-
-    public async Task<IActionResult> SaveOrder(string orderDetailIds, string orderDetails)
-    {
         List<int> orderDetailId = JsonConvert.DeserializeObject<List<int>>(orderDetailIds);
         OrderDetailViewModel orderDetailVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
-        OrderDetailViewModel orderDetailsVM = await _orderAppMenuService.SaveOrder(orderDetailId, orderDetailVM);
+        OrderDetailViewModel orderDetailsVM = await _orderAppMenuService.SaveOrder(orderDetailId, orderDetailVM, userId);
 
         return PartialView("_MenuItemsOrderDetailPartial", orderDetailsVM);
     }
 
     public async Task<IActionResult> CompleteOrder(string orderDetailIds, string orderDetails)
     {
+        string token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
+        long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
+
         List<int>? orderDetailId = JsonConvert.DeserializeObject<List<int>>(orderDetailIds);
         OrderDetailViewModel? orderDetailsVM = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
         bool IsItemsReady = await _orderAppMenuService.IsItemsReady(orderDetailId, orderDetailsVM);
         if (IsItemsReady)
         {
-            bool orderDetail = await _orderAppMenuService.CompleteOrder(orderDetailsVM);
-            if(orderDetail)
+            bool orderDetail = await _orderAppMenuService.CompleteOrder(orderDetailsVM, userId);
+            if (orderDetail)
             {
                 return Json(new { success = true, text = "Order Completed Successfully" });
             }
@@ -166,94 +184,52 @@ public class OrderAppMenuController : Controller
         }
         else
         {
-            return Json(new { success = false, text = "Items are not ready yet !"});
+            return Json(new { success = false, text = "Items are not ready yet !" });
         }
     }
 
+    public async Task<IActionResult> SaveRating(OrderDetailViewModel orderDetailVM)
+    {
+        string token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
+        long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
+        bool IsRatingDone = await _orderAppMenuService.SaveRatings(orderDetailVM, userId);
+        if (IsRatingDone)
+        {
+            return Json(new { success = true, text = "Thank you for your feedback." });
+        }
+        else
+        {
+            return Json(new { success = false, text = "Something Went Wrong! Try Again!" });
+        }
+    }
 
+    public async Task<IActionResult> CancelOrder(OrderDetailViewModel orderDetailVM)
+    {
+        string token = Request.Cookies["AuthToken"];
+        List<User>? userData = _userService.getUserFromEmail(token);
+        long userId = _userLoginService.GetUserId(userData[0].Userlogin.Email);
 
+        bool IsAnyItemReady = await _orderAppMenuService.IsAnyItemReady(orderDetailVM);
+        if (IsAnyItemReady)
+        {
+            return Json(new { success = false, text = "Items are ready to be served. Cannot cancel the order." });
+        }
+        else
+        {
+            bool IsOrderCancelled = await _orderAppMenuService.CancelOrder(orderDetailVM, userId);
+            if (IsOrderCancelled)
+            {
+                return Json(new { success = true, text = "Order Cancelled Successfully" });
+            }
+            else
+            {
+                return Json(new { success = false, text = "Something Went Wrong! Try Again!" });
+            }
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // public async Task<IActionResult> SaveRatings(long customerId, int foodreview, int serviceReview, int ambienceReview, string reviewtext)
-    // {
-    //     long ratingId = await _orderAppMenuService.SaveRatings(customerId, foodreview, serviceReview, ambienceReview, reviewtext);
-    //     return Json(ratingId);
-    // }
-
-    // public async Task<IActionResult> CompleteOrder(string orderDetails, long paymentmethodId)
-    // {
-    //     OrderDetailViewModel? orderDetailvm = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
-    //     OrderDetailViewModel orderDetailsvm = await _orderAppMenuService.CompleteOrder(orderDetailvm, paymentmethodId);
-    //     return PartialView("_MenuItemsWithOrderDetails", orderDetailsvm);
-    // }
-
-    // public IActionResult GeneratePdfInvoice(long customerId)
-    // {
-    //     OrderDetailViewModel orderDetails = _orderAppMenuService.GetOrderDetailsByCustomerId(customerId);
-
-    //     //   return PartialView("DownloadInvoicePdf", orderDetails);
-    //     var generatedpdf = new ViewAsPdf("GenerateInvoicePDF", orderDetails)
-    //     {
-    //         FileName = "OrderInvoice.pdf"
-    //     };
-    //     return generatedpdf;
-    // }
-
-    // public IActionResult CanCancelOrder(string orderDetails)
-    // {
-    //     OrderDetailViewModel? orderDetailvm = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
-    //     return Json( _orderAppMenuService.IsAnyItemReady( orderDetailvm));
-    // }
-
-    // public async Task<IActionResult> CancelOrder(string orderDetails){
-    //      OrderDetailViewModel? orderDetailvm = JsonConvert.DeserializeObject<OrderDetailViewModel>(orderDetails);
-    //     return  Json(await _orderAppMenuService.CancelOrder(orderDetailvm));
-    // }
-
-
-
+    #endregion
 
 }

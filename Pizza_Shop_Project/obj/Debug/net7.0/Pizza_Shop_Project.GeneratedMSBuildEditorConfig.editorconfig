@@ -304,6 +304,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxVc2VyUHJvZmlsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Tatva_PizzaShop/Pizza_Shop_Project/Views/User/_DashboardDataPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxfRGFzaGJvYXJkRGF0YVBhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Tatva_PizzaShop/Pizza_Shop_Project/Views/User/_UserListDataPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxfVXNlckxpc3REYXRhUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
