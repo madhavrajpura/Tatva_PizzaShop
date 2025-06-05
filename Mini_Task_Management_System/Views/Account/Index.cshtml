@@ -1,0 +1,79 @@
+﻿@model DataAccessLayer.ViewModels.UserLoginViewModel;
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container-fluid" style="height:100vh; background-color: rgb(191, 238, 240);">
+
+    <div class="login-main-div d-flex row align-content-center justify-content-center" style="height:100vh;">
+
+        <!-- Start Login Section -->
+        <div class="container p-4" style="width: 600px; border-radius: 3%; background-color: rgba(255, 255, 255, 0.432);">
+
+            <div class="d-flex align-items-center justify-content-center mb-2 pt-3 pb-2" style="background-color: rgb(255, 255, 255); border-radius: 13px; ">
+                <span><img src="~/images/logo.png" alt="Logo" class="rounded-circle mb-2 me-2" height="40px"
+                width="40px" /></span>
+                <h3 class="fw-bold custom-text-color">Task Manager</h3>
+            </div>
+            <hr>
+
+            <!--Start Login Text -->
+            <div class="d-flex align-items-center justify-content-center mb-4">
+                <h3 class="fw-bold custom-text-color fs-4">Login</h3>
+            </div>
+            <!--End Login Text -->
+
+            <!--Start Login Form-->
+            <form asp-action="Login" asp-controller="Account" class="login-form w-100 pb-5" method="post">
+
+                <!-- Email -->
+                <div class="mb-4 form-group ps-5">
+                    <input asp-for="Email" type="email" class="input form-control d-inline"
+                        style="width: 90% !important;" id="Email" placeholder="Email*" />
+                    <i class="bi bi-person-fill" style="margin: -29px;"></i>
+                    <div class="pe-5">
+                        <span asp-validation-for="Email" class="text-size"
+                            style="color: rgb(218, 0, 0) !important;"></span>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4 form-group ps-5">
+                    <input asp-for="Password" class="form-control input d-inline" type="password" id="pass-inp"
+                        style="width: 90% !important;" placeholder="Password*" />
+                    <i class="bi bi-eye-slash-fill" style="margin: -29px;" id="togglePassword"></i>
+                    <div class="pe-5">
+                        <span asp-validation-for="Password" class="text-size"
+                            style="color: rgb(218, 0, 0) !important;"></span>
+                    </div>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="mb-4 form-group ps-5">
+                    <div class="form-check d-flex justify-content-between">
+                        <div>
+                            <input class="form-check-input" asp-for="Remember_me" type="checkbox" id="flexCheckDefault">
+                            <label class="user-text" for="flexCheckDefault">Remember Me</label>
+                        </div>
+                        <span class="form-check">
+                            <a asp-action="Register" asp-controller="Account" class="custom-text-color pe-5">Register Here</a>
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- Login -->
+                <div class="d-grid form-group ps-5 pe-5">
+                    <input value="Login" id="login-btn" class="btn text-light"
+                        style="background-color: rgb(48, 117, 119);" type="submit" />
+                </div>
+
+            </form>
+            <!--End Login Form-->
+
+        </div>
+        <!-- End Login Section -->
+
+    </div>
+
+</div>

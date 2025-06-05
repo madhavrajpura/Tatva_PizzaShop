@@ -1,0 +1,90 @@
+@model DataAccessLayer.ViewModels.UserLoginViewModel;
+
+<div class="container-fluid" style="height:100vh; background-color: rgb(191, 238, 240);">
+
+    <div class="login-main-div d-flex row align-content-center justify-content-center" style="height:100vh;">
+
+        <!-- Start Register Section -->
+        <div class="container p-4"
+            style="width: 600px; border-radius: 3%; background-color: rgba(255, 255, 255, 0.432);">
+
+            <div class="d-flex align-items-center justify-content-center mb-2 pt-3 pb-2" style="background-color: rgb(255, 255, 255); border-radius: 13px; ">
+                <span><img src="~/images/logo.png" alt="Logo" class="rounded-circle mb-2 me-2" height="40px"
+                        width="40px" /></span>
+                <h3 class="fw-bold custom-text-color">Task Manager</h3>
+            </div>
+            <hr>
+
+            <!--Start Register Text -->
+            <div class="d-flex align-items-center justify-content-center mb-4">
+                <h3 class="fw-bold custom-text-color fs-4">Register</h3>
+            </div>
+            <!--End Register Text -->
+
+            <!--Start Register Form-->
+
+            <form asp-action="Register" asp-controller="Account">
+
+                <!-- Name & Email -->
+
+                <div class="form-row">
+                    <div class="form-group col-md-12 pb-3">
+                        <input type="text" asp-for="Name" class="form-control" id="Name" placeholder="Name*">
+                        <span asp-validation-for="Name" class="text-size"
+                            style="color: rgb(218, 0, 0) !important;"></span>
+                    </div>
+                    <div class="form-group col-md-12 pb-3">
+                        <input type="email" asp-for="Email" class="form-control" id="Email" placeholder="Email*">
+                        <span asp-validation-for="Email" class="text-size"
+                            style="color: rgb(218, 0, 0) !important;"></span>
+                    </div>
+                </div>
+
+                <!-- Password -->
+
+                <div class="form-row">
+                    <div class="form-group col-md-12 pb-3">
+                        <input asp-for="Password" class="form-control input d-inline" type="password"
+                            id="register-pass-inp" style="width: 100% !important;" placeholder="Password*" />
+                        <i class="bi bi-eye-slash-fill" style="margin: -29px;" id="registerTogglePassword"></i>
+                        <div class="pe-5">
+                            <span asp-validation-for="Password" class="text-size"
+                                style="color: rgb(218, 0, 0) !important;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+
+                <div class="form-row">
+                    <div class="form-group col-md-12 pb-3">
+                        <input asp-for="ConfirmPassword" class="form-control input d-inline" type="password"
+                            id="confirm-pass-inp" style="width: 100% !important;" placeholder="Confirm Password*" />
+                        <i class="bi bi-eye-slash-fill" style="margin: -29px;" id="toggleConfirmPassword"></i>
+                        <div class="pe-5">
+                            <span asp-validation-for="ConfirmPassword" class="text-size"
+                                style="color: rgb(218, 0, 0) !important;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sign In -->
+
+                <div class="d-grid form-group w-100">
+                    <button type="submit" id="login-btn" class="btn solid-btn mt-3">Sign in</button>
+                </div>
+
+                <!-- Back To Login -->
+
+                <div class="d-flex justify-content-center pt-4">
+                    <a asp-action="Index" class="custom-text-color">Back to Login</a>
+                </div>
+
+            </form>
+            <!--End Register Form-->
+
+        </div>
+        <!-- End Register Section -->
+
+    </div>
+</div>

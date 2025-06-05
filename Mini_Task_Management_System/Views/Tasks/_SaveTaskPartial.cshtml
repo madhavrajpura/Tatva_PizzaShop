@@ -1,0 +1,124 @@
+@model DataAccessLayer.ViewModels.TaskItemViewModel;
+
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title fs-5 fw-bold text-secondary">@(Model.Id == 0 ? "Add Task" : "Edit Task")</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <form id="SaveTaskForm">
+        <div class="modal-body ">
+
+            <input type="hidden" asp-for="@Model.Id" />
+
+            <div class="form-floating col mb-3">
+                <input type="text" class="form-control" id="Title" asp-for="@Model.Title" placeholder="Title*">
+                <label for="Title">Title*</label>
+                <span asp-validation-for="@Model.Title" class="text-danger text-size"></span>
+            </div>
+
+            <div class="form-floating col mb-3">
+                <input type="text" class="form-control" id="Description" asp-for="@Model.Description"
+                    placeholder="Description">
+                <label for="Description">Description</label>
+                <span asp-validation-for="@Model.Description" class="text-danger text-size"></span>
+            </div>
+
+            <div class="form-floating col mb-3">
+                <input type="date" class="form-control" id="DueDate" asp-for="@Model.DueDate" placeholder="dd-mm-yyyy">
+                <label for="DueDate">Due Date</label>
+                <span asp-validation-for="@Model.DueDate" class="text-danger text-size"></span>
+            </div>
+
+            <div class="form-floating col mb-3">
+                <select class="form-select dropdown" id="floatingSelect" asp-for="@Model.CategoryId">
+                    <option value="">Select Category</option>
+
+                    @foreach (var category in ViewBag.CategoryList)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+
+                </select>
+                <label asp-for="@Model.CategoryId">Categories*</label>
+                <span class="text-danger text-size" asp-validation-for="@Model.CategoryId"></span>
+            </div>
+
+            <div class="form-floating col mb-3">
+                <select class="form-select dropdown" id="floatingSelect" asp-for="@Model.PriorityId">
+                    <option value="">Select Priority</option>
+                    @foreach (var priority in ViewBag.PriorityList)
+                    {
+                        <option value="@priority.Id">@priority.Name</option>
+                    }
+
+                </select>
+                <label asp-for="@Model.PriorityId">Priority*</label>
+                <span class="text-danger text-size" asp-validation-for="@Model.PriorityId"></span>
+            </div>
+
+
+            @if (Model.Id > 0)
+            {
+                <div class="form-floating col mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="flexCheckChecked" asp-for="@Model.IsCompleted">
+                        <label class="form-check-label" for="flexCheckChecked">
+                            Completed
+                        </label>
+                    </div>
+                </div>
+            }
+
+            <div class="modal-footer">
+                <button type="submit" class="btn solid-btn">Save</button>
+                <button type="button" class="btn hollow-btn" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<partial name="_ValidationScriptsPartial" />
+
+<script>
+
+    var Model = @Html.Raw(Json.Serialize(Model));
+
+    $(document).ready(function () {
+        const today = new Date().toISOString().split('T')[0];
+
+        if (Model.id == 0) {
+            $("#DueDate").val(today);
+            $("#DueDate").attr('min', today);
+        }
+    });
+
+    $("#SaveTaskForm").on("submit", function (e) {
+
+        e.preventDefault();
+
+        let form = $("#SaveTaskForm");
+
+        if (form.valid()) {
+
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: "/Tasks/Save",
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function (data) {
+                    if (data.success) {
+                        callSuccessToaster(data.text);
+                        loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, DueDate);
+                        GetDashboardData();
+                        $(".btn-close").click();
+                    } else {
+                        callErrorToaster(data.text);
+                    }
+                }
+            });
+        }
+    });
+</script>

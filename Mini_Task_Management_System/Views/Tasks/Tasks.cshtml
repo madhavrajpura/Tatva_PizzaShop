@@ -1,0 +1,407 @@
+@model DataAccessLayer.ViewModels.TaskItemViewModel;
+
+<!-- Start Navbar Div -->
+<div class="d-flex align-items-center bg-custom-color-nav shadow w-100"
+    style="height : 60px !important; position:fixed !important">
+    <div class="container-fluid d-flex gap-3">
+        <img src="~/images/logo.png" alt="Logo" class="rounded-circle" height="40px" width="40px" />
+        <span class="fw-bold fs-3 custom-text-color">Task Manager</span>
+    </div>
+    <div class="pe-3">
+        <button class="btn solid-btn" type="button" data-bs-target="#Logout_Modal_id"
+            data-bs-toggle="modal">Logout</button>
+    </div>
+</div>
+<!-- End Navbar Div -->
+
+
+<!-- Start Body Content -->
+
+<!-- Start Dashboard Display Content -->
+<div class="container-fluid p-4" style="padding-top: 87px !important;">
+    <div class="container-fluid p-3 pt-0 shadow-sm" style="border-radius: 10px; background-color: rgb(227, 239, 240);">
+
+        <!-- Dashboard Text -->
+        <h3 class="fw-bold p-3 mb-0 pb-0 custom-text-color ">Dashboard</h3>
+
+        <!-- Start Cards -->
+        <div class="row gx-4 d-flex justify-content-center" id="Dashboard_Items">
+
+        </div>
+        <!-- End Cards -->
+
+    </div>
+</div>
+<!-- End Dashboard Display Content -->
+
+<!-- Start Task List -->
+<div class="container-fluid p-4 pt-0">
+    <div class="container-fluid p-3 pt-0 shadow-sm" style="border-radius: 10px; background-color: rgb(227, 239, 240);">
+
+        <!-- -->
+        <div class="d-md-flex justify-content-between">
+
+            <!-- Task Text -->
+            <div class="custom-text-color fs-3 fw-bold ps-3 pt-3">My Tasks</div>
+
+            <!-- Add Task Button-->
+            <div class=" d-flex justify-content-end align-items-center pe-4 pt-3">
+                <button class="btn solid-btn SaveTaskId" type="button" data-bs-target="#SaveTaskModal"
+                    data-bs-toggle="modal" data-id="0">Add New Task</button>
+            </div>
+
+        </div>
+
+        <!-- Select Div -->
+        <div class="d-flex justify-content-end gap-2 pe-md-4">
+            <div class="form-floating">
+                <label class="text-black-50 text-size p-4">Status</label>
+
+                <select class="form-select mt-3 mb-3 ms-md-3 ms-0" aria-label="Default select example"
+                    style="width: max-content;" id="Select-Filter">
+                    <option value="All" selected>All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+            <div class="form-floating mt-3">
+                <input type="date" class="form-control" id="from-order-date" placeholder="dd-mm-yyyy"
+                    style="width: max-content;" />
+                <label>From Date</label>
+            </div>
+
+            <div class="form-floating mt-3">
+                <input type="date" class="form-control" id="to-order-date" placeholder="dd-mm-yyyy"
+                    style="width: max-content;" />
+                <label>To Date</label>
+            </div>
+
+            <button class="solid-btn mt-3 p-3 px-4 h-100 rounded border-0 text-nowrap" id="search-order-btn">
+                Search
+            </button>
+            <button class="hollow-btn mt-3 p-3 px-4 border-0 h-100 rounded text-nowrap" id="clear-order-btn">
+                Clear
+            </button>
+
+        </div>
+
+        <!-- Table -->
+        <div class="container-fluid p-0 pe-md-4">
+            <div class="table-main-div table-responsive p-3 bg-white ms-md-3 me-0 shadow-lg"
+                style="border-top-right-radius: 10px; border-top-Left-radius: 10px;">
+                <table id="table" class="table table-striped">
+                    <thead>
+                        <tr class="border border-top-0 border-end-0 border-start-0 border-dark">
+                            <th class="fw-bold text-start text-nowrap">Title <i class="bi bi-arrow-down-up ps-1"
+                                    id="sortable-name" data-column="Name" data-direction="asc"></i></th>
+                            <th class="fw-bold text-start text-nowrap">Due Date <i class="bi bi-arrow-down-up ps-1"
+                                    id="sortable-date" data-column="Date" data-direction="asc"></i></th>
+                            <th class="fw-bold text-start text-nowrap">Status <i class="bi bi-arrow-down-up ps-1"
+                                    id="sortable-status" data-column="Status" data-direction="asc"></i></th>
+                            <th class="fw-bold text-start">Action </th>
+                        </tr>
+                    </thead>
+                    <tbody id="TaskListBody">
+
+                    </tbody>
+                </table>
+
+
+            </div>
+            <!-- Start Pagination div -->
+            <div class="pagination-main-div shadow d-flex justify-content-end gap-2 p-3 pt-0 bg-white ps-3 ms-md-3 pe-3"
+                style="border-bottom-right-radius: 10px; border-bottom-left-radius: 10px;">
+
+                <span class="pt-2">Items Per page:</span>
+
+                <select id="item_Selected">
+                    <option value="3">3</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                </select>
+
+                <span class=" pt-2 ps-1" id="pagination-information"></span>
+                <button id="left-arrow" class="btn border border-dark bg-light ps-2">&lt;</button>
+                <button id="right-arrow" class="btn border border-dark bg-light ps-2">&gt;</button>
+            </div>
+            <!-- End Pagination div -->
+
+        </div>
+    </div>
+</div>
+
+<!------------------------------------------- Start Modal Section ------------------------------------------------>
+
+<!-- Save Task modal -->
+<div id="SaveTaskModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" id="SaveTaskModal-Content">
+
+    </div>
+</div>
+
+<!-- Delete Task modal -->
+<div class="modal fade" id="DeleteTaskModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fs-5 fw-bold text-secondary">Delete Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                <div class="d-flex justify-content-center mb-3">
+                    <i class="fa-solid fa-triangle-exclamation fa-3x text-warning"></i>
+                </div>
+                <p class="fw-semibold text-secondary text-center mb-3">Are you sure you want to delete this Task ?
+                </p>
+                <form id="DeleteTaxForm">
+                    <input type="hidden" id="DeleteTaskId" asp-for="@Model.Id" name="id">
+                    <div class="modal-footer mt-3 d-flex justify-content-center">
+                        <button type="submit" class="btn solid-btn" data-bs-dismiss="modal">Yes</button>
+                        <button type="button" class="btn hollow-btn" data-bs-dismiss="modal">No</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Logout Model -->
+<div class="modal fade" tabindex="-1" id="Logout_Modal_id">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-secondary">Logout Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                    <i class="fa-solid fa-triangle-exclamation fa-3x text-warning"></i>
+                </div>
+                <p class="text-secondary text-center pt-2">Are you sure you want Logout ?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a asp-action="Logout" asp-controller="Account" type="button" class="btn solid-btn">Yes</a>
+                <a type="button" class="btn hollow-btn" data-bs-dismiss="modal">No</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!------------------------------------------- End Modal Section ------------------------------------------------>
+
+
+<partial name="_ValidationScriptsPartial" />
+<partial name="_Toaster" />
+
+@section Scripts {
+
+    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> *@
+
+    <script>
+
+        function GetIdForDeleteTask(tag) {
+            let taskid = $(tag).data("id");
+            $("#DeleteTaskId").val(taskid);
+        }
+
+        // Add Edit Task Modal
+        $(document).on('click', ".SaveTaskId", function (event) {
+            var button = event.target
+            var taskid = $(button).data("id");
+            console.log(taskid, "idddd");
+            $.ajax({
+                url: "/Tasks/Save",
+                type: "GET",
+                data: { id: taskid },
+                success: function (data) {
+                    $("#SaveTaskModal-Content").html(data);
+                },
+                error: function (response) {
+                    callErrorToaster("Error Loading data");
+                }
+            });
+        });
+
+        // To show the Pending and Completed Count in Partial View
+        function GetDashboardData() {
+            $.ajax({
+                url: "/Tasks/GetDashboardData",
+                type: "GET",
+                success: function (data) {
+                    document.getElementById("Dashboard_Items").innerHTML = data;
+                }
+            });
+        }
+
+        let currentPage = 1;
+        let pageSize = $("#item_Selected").val();
+        let searchText = "";
+        let sortColumn = "";
+        let Filter = $("#Select-Filter").val();
+        let fromDate = "";
+        let toDate = "";
+        let sortDirection = "asc";
+
+        function loadTable(page = 1, sortColumn = "Name", sortDirection = "asc", pageSize = 3, Filter, fromDate, toDate) {
+            $.ajax({
+                url: "/Tasks/List",
+                type: "GET",
+                data: { sortColumn, sortDirection, pageNumber: page, pageSize, Filter, fromDate, toDate },
+                success: function (data) {
+
+                    $("#TaskListBody").html(data);
+
+                    currentPage = page;
+                    pageSize = parseInt(pageSize);
+
+                    var totalRecords = parseInt($("#totalRecords").val()) || 0;
+
+                    var startItem = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+
+                    var endItem = Math.min(currentPage * pageSize, totalRecords);
+
+                    $("#pagination-information").text("Showing " + startItem + " - " + endItem + " of " + totalRecords);
+                    $("#left-arrow").prop("disabled", currentPage === 1);
+                    $("#right-arrow").prop("disabled", currentPage * pageSize >= totalRecords);
+                },
+                error: function (response) {
+                    callErrorToaster("Error Loading data");
+                }
+            });
+        }
+
+        // Start READY
+        $(document).ready(function () {
+
+            console.log("frmop",fromDate);
+            console.log("to",toDate);
+
+
+            loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+
+            GetDashboardData();
+
+            $("#Select-Filter").on("change", function () {
+                Filter = $(this).val();
+                currentPage = 1;
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#sortable-name").on("click", function () {
+                sortColumn = $(this).data("column");
+                sortDirection = $(this).attr("data-direction") === "asc" ? "desc" : "asc";
+                $(this).attr("data-direction", sortDirection);
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#sortable-date").on("click", function () {
+                sortColumn = $(this).data("column");
+                sortDirection = $(this).attr("data-direction") === "asc" ? "desc" : "asc";
+                $(this).attr("data-direction", sortDirection);
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#sortable-status").on("click", function () {
+                sortColumn = $(this).data("column");
+                sortDirection = $(this).attr("data-direction") === "asc" ? "desc" : "asc";
+                $(this).attr("data-direction", sortDirection);
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#right-arrow").on("click", function () {
+                let rightarrow = !$(this).prop("disabled");
+                if (rightarrow) {
+                    currentPage++;
+                    loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+                }
+            });
+
+            $("#left-arrow").on("click", function () {
+                let leftarrow = !$(this).prop("disabled");
+                if (leftarrow) {
+                    currentPage--;
+                    loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+                }
+            });
+
+            $("#item_Selected").on("change", function () {
+                pageSize = $(this).val();
+                currentPage = 1;
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#search-order-btn").on("click", function () {
+                fromDate = $("#from-order-date").val();
+                toDate = $("#to-order-date").val();
+                currentPage = 1;
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#clear-order-btn").on("click", function () {
+                $("#from-order-date").val("");
+                $("#to-order-date").val("");
+                $("#Select-Filter").val("All");
+                fromDate = "";
+                toDate = "";
+                Filter = "";
+                currentPage = 1;
+                loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+            });
+
+            $("#from-order-date").on("change", function () {
+                fromDate = document.getElementById("from-order-date").value;
+                toDate = document.getElementById("to-order-date").value;
+                if (toDate == "") return
+                if (toDate < fromDate) {
+                    callErrorToaster("To-date should be greater than From-date. Reset To-date");
+                    document.getElementById("to-order-date").value = "";
+                }
+            });
+
+
+            $("#to-order-date").on("change", function () {
+                fromDate = document.getElementById("from-order-date").value;
+                toDate = document.getElementById("to-order-date").value;
+                if (toDate < fromDate) {
+                    callErrorToaster("To-date should be greater than From-date. Reset To-date");
+                    document.getElementById("to-order-date").value = "";
+                }
+            })
+
+            // Delete Task Modal POST
+            $(document).on("submit", "#DeleteTaskModal", function (e) {
+
+                e.preventDefault();
+
+                let taskid = document.getElementById("DeleteTaskId").value;
+                console.log(taskid, "taskidddd");
+
+                $.ajax({
+                    url: "/Tasks/Delete",
+                    type: "POST",
+                    data: { id: taskid },
+                    success: function (data) {
+                        if (data.success) {
+                            callSuccessToaster(data.text);
+                            currentPage = 1;
+                            loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
+                            GetDashboardData();
+                            $(".btn-close").click();
+                        } else {
+                            callErrorToaster(data.text);
+                        }
+                    },
+                    error: function (response, error) {
+                        console.error("Error:", error);
+                        callErrorToaster("Error in Loading data");
+                    }
+                });
+            });
+
+        });
+        // READY END
+    </script>
+
+    
+}

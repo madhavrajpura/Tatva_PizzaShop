@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
+
+html,body {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.custom-text-color{
+  color: rgb(54, 130, 133) !important;
+}
+
+.bg-custom-color-nav{
+  background-color: rgb(227, 242, 243);
+}
+
+input[type=checkbox]:checked{
+  background-color: rgb(48, 117, 119)  !important;
+  border: 1px solid rgb(48, 117, 119) !important;
+}
+
+#login-btn:hover{
+  background-color: rgb(25, 77, 78) !important;
+}
+
+.solid-btn{
+  background-color: rgb(48, 117, 119)  !important;
+  color: white !important;
+}
+
+.hollow-btn{
+  background-color: rgb(255, 255, 255)  !important;
+  color:rgb(48, 117, 119)  !important;
+  border: 1px solid rgb(48, 117, 119) !important;
+}
+
+.text-size{
+  font-size: 14px;
+}
+
+input:focus {
+  border-color: rgb(48, 117, 119) !important;
+  box-shadow: 0 0 0 .1rem rgb(48, 117, 119) !important;
+}
