@@ -21,6 +21,8 @@ public class TaskItemViewModel
     public int CategoryId { get; set; }
     public string PriorityName { get; set; }
     public string CategoryName { get; set; }
+        public bool ReminderSent { get; set; } // New property
+
     
 
 }

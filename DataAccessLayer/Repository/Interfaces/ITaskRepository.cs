@@ -13,4 +13,5 @@ public interface ITaskRepository
     bool CheckTaskExists(TaskItemViewModel taskVM, int userId);
     List<Category> GetCategories();
     List<Priority> GetPriorities();
+    Task<List<TaskReminderViewModel>> GetTasksDueTomorrow(DateTime tomorrow);
 }

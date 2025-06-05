@@ -41,6 +41,8 @@ builder.Services.AddScoped<IUserLoginService, UserLoginService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHostedService<TaskReminderService>();
 
 builder.Services.AddAuthentication(x =>
 {

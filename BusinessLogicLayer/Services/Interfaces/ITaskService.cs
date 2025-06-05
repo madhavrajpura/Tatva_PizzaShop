@@ -16,4 +16,6 @@ public interface ITaskService
     List<Category> GetCategories();
     List<Priority> GetPriorities();
 
+    Task<List<TaskReminderViewModel>> GetTasksDueTomorrow(); // New method
+
 }

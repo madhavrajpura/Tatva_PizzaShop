@@ -138,4 +138,20 @@ public class TaskRepository : ITaskRepository
         return _db.Priorities.ToList();
     }
 
+    public async Task<List<TaskReminderViewModel>> GetTasksDueTomorrow(DateTime tomorrow)
+    {
+        return await _db.TaskItems
+            .Where(t => t.DueDate.Date == tomorrow && !t.IsCompleted && !t.IsDelete)
+            .Join(_db.UserLogins,
+                task => task.UserLoginId,
+                user => user.Id,
+                (task, user) => new TaskReminderViewModel
+                {
+                    TaskTitle = task.Title,
+                    DueDate = task.DueDate.ToUniversalTime(),
+                    UserEmail = user.Email
+                })
+            .ToListAsync();
+    }
+
 }

@@ -35,7 +35,7 @@ public class TaskService : ITaskService
 
         if (!string.IsNullOrEmpty(fromDate) && DateTime.TryParse(fromDate, out DateTime from))
         {
-            from = TimeZoneInfo.ConvertTimeToUtc(from, timeZone); 
+            from = TimeZoneInfo.ConvertTimeToUtc(from, timeZone);
             query = query.Where(t => t.DueDate >= from);
         }
 
@@ -113,6 +113,12 @@ public class TaskService : ITaskService
     public List<Priority> GetPriorities()
     {
         return _taskRepository.GetPriorities();
+    }
+
+     public async Task<List<TaskReminderViewModel>> GetTasksDueTomorrow()
+    {
+        var tomorrow = DateTime.Today.AddDays(1);
+        return await _taskRepository.GetTasksDueTomorrow(tomorrow);
     }
 
 

@@ -104,6 +104,16 @@ public class TasksController : Controller
             return Json(new { success = false, text = NotificationMessage.TaskExists });
         }
 
+        // Ensure ReminderSent is preserved or reset appropriately
+        if (taskVM.Id == 0)
+        {
+            taskVM.ReminderSent = false; // New tasks start with no reminder sent
+        }
+        else
+        {
+            // TaskService handles ReminderSent reset if DueDate changes
+        }
+
         bool taskStatus = await _taskService.Save(taskVM);
         return Json(taskStatus
             ? new { success = true, text = taskVM.Id == 0 ? NotificationMessage.TaskCreated : NotificationMessage.TaskUpdated }

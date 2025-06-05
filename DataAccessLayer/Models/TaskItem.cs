@@ -26,6 +26,8 @@ public class TaskItem
     [Required]
     [ForeignKey("Category")]
     public int CategoryId { get; set; }
+        public bool ReminderSent { get; set; } // New property
+
 
     public virtual Category Category { get; set; } = null!;
     public virtual Priority Priority { get; set; } = null!;

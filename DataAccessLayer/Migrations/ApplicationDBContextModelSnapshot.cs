@@ -83,6 +83,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<int>("PriorityId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("ReminderSent")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
