@@ -2,6 +2,7 @@ using BusinessLogicLayer.Helper;
 using BusinessLogicLayer.Services.Interfaces;
 using DataAccessLayer.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Mini_Task_Management_System.Controllers;
 
@@ -66,10 +67,6 @@ public class TasksController : Controller
             TempData["ErrorMessage"] = NotificationMessage.TokenExpired;
             return RedirectToAction("Index", "Account");
         }
-
-        ViewBag.CategoryList = _taskService.GetCategories();
-        ViewBag.PriorityList = _taskService.GetPriorities();
-
         TaskItemViewModel taskVM = new TaskItemViewModel();
         if (id == 0)
         {
@@ -80,6 +77,10 @@ public class TasksController : Controller
         {
             taskVM = await _taskService.GetTaskById(id, userId: int.Parse(userId));
         }
+
+
+        ViewBag.CategoryList = new SelectList(_taskService.GetCategories(), "Id", "Name", taskVM.CategoryId);
+        ViewBag.PriorityList = new SelectList(_taskService.GetPriorities(), "Id", "Name", taskVM.PriorityId);
 
 
         return PartialView("_SaveTaskPartial", taskVM);

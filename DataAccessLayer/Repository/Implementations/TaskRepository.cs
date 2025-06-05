@@ -23,8 +23,14 @@ public class TaskRepository : ITaskRepository
                 Id = t.Id,
                 Title = t.Title,
                 DueDate = t.DueDate.ToUniversalTime(),
-                IsCompleted = t.IsCompleted
-            }).AsQueryable();
+                IsCompleted = t.IsCompleted,
+                Description = t.Description,
+                PriorityId = t.PriorityId,
+                CategoryId = t.CategoryId,
+                UserId = t.UserLoginId,
+                PriorityName = t.Priority.Name,
+                CategoryName = t.Category.Name
+            }).AsQueryable().OrderByDescending(t => t.DueDate);
         
         return query;
     }
@@ -39,7 +45,9 @@ public class TaskRepository : ITaskRepository
                 Description = t.Description,
                 DueDate = t.DueDate.ToUniversalTime(),
                 IsCompleted = t.IsCompleted,
-                UserId = t.UserLoginId
+                UserId = t.UserLoginId,
+                PriorityId = t.PriorityId,
+                CategoryId = t.CategoryId
             }).AsQueryable().FirstOrDefault();
         if (data == null)
         {

@@ -36,7 +36,7 @@
 
 <!-- Start Task List -->
 <div class="container-fluid p-4 pt-0">
-    <div class="container-fluid p-3 pt-0 shadow-sm" style="border-radius: 10px; background-color: rgb(227, 239, 240);">
+    <div class="container-fluid p-3 pt-0 pb-4 shadow-sm" style="border-radius: 10px; background-color: rgb(227, 239, 240);">
 
         <!-- -->
         <div class="d-md-flex justify-content-between">
@@ -99,6 +99,8 @@
                                     id="sortable-date" data-column="Date" data-direction="asc"></i></th>
                             <th class="fw-bold text-start text-nowrap">Status <i class="bi bi-arrow-down-up ps-1"
                                     id="sortable-status" data-column="Status" data-direction="asc"></i></th>
+                            <th class="fw-bold text-start">Category </th>
+                            <th class="fw-bold text-start">Priority </th>
                             <th class="fw-bold text-start">Action </th>
                         </tr>
                     </thead>
@@ -196,7 +198,7 @@
 
 @section Scripts {
 
-    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> *@
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
 
@@ -209,7 +211,6 @@
         $(document).on('click', ".SaveTaskId", function (event) {
             var button = event.target
             var taskid = $(button).data("id");
-            console.log(taskid, "idddd");
             $.ajax({
                 url: "/Tasks/Save",
                 type: "GET",
@@ -273,10 +274,6 @@
 
         // Start READY
         $(document).ready(function () {
-
-            console.log("frmop",fromDate);
-            console.log("to",toDate);
-
 
             loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
 
@@ -375,7 +372,6 @@
                 e.preventDefault();
 
                 let taskid = document.getElementById("DeleteTaskId").value;
-                console.log(taskid, "taskidddd");
 
                 $.ajax({
                     url: "/Tasks/Delete",
@@ -393,7 +389,6 @@
                         }
                     },
                     error: function (response, error) {
-                        console.error("Error:", error);
                         callErrorToaster("Error in Loading data");
                     }
                 });

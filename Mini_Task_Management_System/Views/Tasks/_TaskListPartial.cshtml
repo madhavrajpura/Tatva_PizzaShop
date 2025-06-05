@@ -24,9 +24,15 @@ else
                     <span class="badge fw-lighter text-black" style="background-color: rgb(255, 245, 155);">Pending</span>
                 }
             </td>
+            <td class="text-nowrap"><span class="badge fw-lighter text-black"
+                    style="background-color: rgb(255, 245, 155);">@item.CategoryName</span></td>
+            <td class="text-nowrap"><span class="badge fw-lighter text-black"
+                    style="background-color: rgb(255, 245, 155);">@item.PriorityName</span></td>
             <td class="text-start">
-                <i class="fa-solid fa-pen text-black-50 me-3 SaveTaskId" data-bs-toggle="modal" data-bs-target="#SaveTaskModal" data-id="@item.Id"></i>
-                <i class="fa-solid fa-trash-can text-black-50"  data-bs-toggle="modal" data-bs-target="#DeleteTaskModal" data-id="@item.Id" onclick=GetIdForDeleteTask(this)></i>
+                <i class="fa-solid fa-pen text-black-50 me-3 SaveTaskId" data-bs-toggle="modal" data-bs-target="#SaveTaskModal"
+                    data-id="@item.Id"></i>
+                <i class="fa-solid fa-trash-can text-black-50" data-bs-toggle="modal" data-bs-target="#DeleteTaskModal"
+                    data-id="@item.Id" onclick=GetIdForDeleteTask(this)></i>
             </td>
         </tr>
     }

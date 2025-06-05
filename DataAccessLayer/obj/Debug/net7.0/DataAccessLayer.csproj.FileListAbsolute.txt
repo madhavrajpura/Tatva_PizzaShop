@@ -1,0 +1,14 @@
+D:\Tatva_PizzaShop\DataAccessLayer\bin\Debug\net7.0\DataAccessLayer.deps.json
+D:\Tatva_PizzaShop\DataAccessLayer\bin\Debug\net7.0\DataAccessLayer.runtimeconfig.json
+D:\Tatva_PizzaShop\DataAccessLayer\bin\Debug\net7.0\DataAccessLayer.dll
+D:\Tatva_PizzaShop\DataAccessLayer\bin\Debug\net7.0\DataAccessLayer.pdb
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.csproj.AssemblyReference.cache
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.GeneratedMSBuildEditorConfig.editorconfig
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.AssemblyInfoInputs.cache
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.AssemblyInfo.cs
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.csproj.CoreCompileInputs.cache
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.dll
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\refint\DataAccessLayer.dll
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.pdb
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\DataAccessLayer.genruntimeconfig.cache
+D:\Tatva_PizzaShop\DataAccessLayer\obj\Debug\net7.0\ref\DataAccessLayer.dll

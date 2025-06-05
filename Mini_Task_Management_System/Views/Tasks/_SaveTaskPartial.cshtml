@@ -30,29 +30,18 @@
             </div>
 
             <div class="form-floating col mb-3">
-                <select class="form-select dropdown" id="floatingSelect" asp-for="@Model.CategoryId">
-                    <option value="">Select Category</option>
-
-                    @foreach (var category in ViewBag.CategoryList)
-                    {
-                        <option value="@category.Id">@category.Name</option>
-                    }
-
+                <select class="form-select dropdown" id="floatingSelect" asp-for="@Model.CategoryId"
+                    asp-items="ViewBag.CategoryList">
                 </select>
-                <label asp-for="@Model.CategoryId">Categories*</label>
+                <label>Categories*</label>
                 <span class="text-danger text-size" asp-validation-for="@Model.CategoryId"></span>
             </div>
 
             <div class="form-floating col mb-3">
-                <select class="form-select dropdown" id="floatingSelect" asp-for="@Model.PriorityId">
-                    <option value="">Select Priority</option>
-                    @foreach (var priority in ViewBag.PriorityList)
-                    {
-                        <option value="@priority.Id">@priority.Name</option>
-                    }
-
+                <select class="form-select dropdown" id="floatingSelect" asp-for="@Model.PriorityId"
+                    asp-items="ViewBag.PriorityList">
                 </select>
-                <label asp-for="@Model.PriorityId">Priority*</label>
+                <label>Priority*</label>
                 <span class="text-danger text-size" asp-validation-for="@Model.PriorityId"></span>
             </div>
 
@@ -91,17 +80,12 @@
             $("#DueDate").attr('min', today);
         }
     });
-
+    
     $("#SaveTaskForm").on("submit", function (e) {
-
         e.preventDefault();
-
         let form = $("#SaveTaskForm");
-
         if (form.valid()) {
-
             let formData = new FormData(this);
-
             $.ajax({
                 url: "/Tasks/Save",
                 type: "POST",
@@ -111,12 +95,15 @@
                 success: function (data) {
                     if (data.success) {
                         callSuccessToaster(data.text);
-                        loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, DueDate);
+                        loadTable(currentPage, sortColumn, sortDirection, pageSize, Filter, fromDate, toDate);
                         GetDashboardData();
-                        $(".btn-close").click();
+                        $("#SaveTaskModal").modal("hide");
                     } else {
-                        callErrorToaster(data.text);
+                        callErrorToaster(data.text || "Failed to save task.");
                     }
+                },
+                error: function (xhr, status, error) {
+                    callErrorToaster("An error occurred while saving the task: " + (xhr.responseText || error));
                 }
             });
         }
